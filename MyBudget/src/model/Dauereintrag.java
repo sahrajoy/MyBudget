@@ -2,9 +2,9 @@ package model;
 
 import java.time.LocalDate;
 
-public class Wiederholung {
+public class Dauereintrag {
 
-	private int wiederholungId;
+	private int dauereintragId;
 	private LocalDate naechsteFaelligkeit;
 	private String titel;
 	private double betrag;
@@ -13,10 +13,10 @@ public class Wiederholung {
 	private Benutzer benutzer;
 	private Kategorie kategorie;
 	
-	public Wiederholung(int wiederholungId, LocalDate naechsteFaelligkeit, String titel, double betrag,
+	public Dauereintrag(int dauereintragId, LocalDate naechsteFaelligkeit, String titel, double betrag,
 			LocalDate endedatum, Intervall intervall, Benutzer benutzer, Kategorie kategorie) {
 		super();
-		this.wiederholungId = wiederholungId;
+		this.dauereintragId = dauereintragId;
 		this.naechsteFaelligkeit = naechsteFaelligkeit;
 		this.titel = titel;
 		this.betrag = betrag;
@@ -26,12 +26,12 @@ public class Wiederholung {
 		this.kategorie = kategorie;
 	}
 
-	public int getWiederholungId() {
-		return wiederholungId;
+	public int getDauereintragId() {
+		return dauereintragId;
 	}
 
-	public void setWiederholungId(int wiederholungId) {
-		this.wiederholungId = wiederholungId;
+	public void setDauereintragId(int dauereintragId) {
+		this.dauereintragId = dauereintragId;
 	}
 
 	public LocalDate getNaechsteFaelligkeit() {
@@ -92,7 +92,7 @@ public class Wiederholung {
 
 	@Override
 	public String toString() {
-		return "Wiederholung [wiederholungId=" + wiederholungId + ", naechsteFaelligkeit=" + naechsteFaelligkeit
+		return "Dauereintrag [dauereintragId=" + dauereintragId + ", naechsteFaelligkeit=" + naechsteFaelligkeit
 				+ ", titel=" + titel + ", betrag=" + betrag + ", endedatum=" + endedatum + ", intervall=" + intervall
 				+ ", benutzer=" + benutzer + ", kategorie=" + kategorie + "]";
 	}

@@ -8,16 +8,16 @@ public class Kategorie {
 	private String name;
 	private boolean favorite = false;
 	private ArrayList<Eintrag> eintraege;
-	private ArrayList<Wiederholung> wiederholungen;
+	private ArrayList<Dauereintrag> dauereintraege;
 	
 	public Kategorie(int kategorieId, String name, boolean favorite, ArrayList<Eintrag> eintraege,
-			ArrayList<Wiederholung> wiederholungen) {
+			ArrayList<Dauereintrag> dauereintraege) {
 		super();
 		this.kategorieId = kategorieId;
 		this.name = name;
 		this.favorite = favorite;
 		this.eintraege = eintraege;
-		this.wiederholungen = wiederholungen;
+		this.dauereintraege = dauereintraege;
 	}
 
 	public int getKategorieId() {
@@ -52,12 +52,12 @@ public class Kategorie {
 		this.eintraege = eintraege;
 	}
 
-	public ArrayList<Wiederholung> getWiederholungen() {
-		return wiederholungen;
+	public ArrayList<Dauereintrag> getDauereintraege() {
+		return dauereintraege;
 	}
 
-	public void setWiederholungen(ArrayList<Wiederholung> wiederholungen) {
-		this.wiederholungen = wiederholungen;
+	public void setWiederholungen(ArrayList<Dauereintrag> dauereintraege) {
+		this.dauereintraege = dauereintraege;
 	}
 
 	@Override

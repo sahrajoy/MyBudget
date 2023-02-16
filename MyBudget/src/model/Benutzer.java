@@ -7,16 +7,16 @@ public class Benutzer {
 	private int benutzerId;
 	private String name;
 	private ArrayList<Eintrag> eintraege;
-	private ArrayList<Wiederholung> wiederholungen;
+	private ArrayList<Dauereintrag> dauereintraege;
 	
 	public Benutzer() {}
 	
-	public Benutzer(int benutzerId, String name, ArrayList<Eintrag> eintraege, ArrayList<Wiederholung> wiederholungen) {
+	public Benutzer(int benutzerId, String name, ArrayList<Eintrag> eintraege, ArrayList<Dauereintrag> dauereintraege) {
 		super();
 		this.benutzerId = benutzerId;
 		this.name = name;
 		this.eintraege = eintraege;
-		this.wiederholungen = wiederholungen;
+		this.dauereintraege = dauereintraege;
 	}
 
 	public int getBenutzerId() {
@@ -43,12 +43,12 @@ public class Benutzer {
 		this.eintraege = eintraege;
 	}
 
-	public ArrayList<Wiederholung> getWiederholungen() {
-		return wiederholungen;
+	public ArrayList<Dauereintrag> getDauereintrag() {
+		return dauereintraege;
 	}
 
-	public void setWiederholungen(ArrayList<Wiederholung> wiederholungen) {
-		this.wiederholungen = wiederholungen;
+	public void setWiederholungen(ArrayList<Dauereintrag> dauereintraege) {
+		this.dauereintraege = dauereintraege;
 	}
 
 	@Override
