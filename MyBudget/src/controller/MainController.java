@@ -1,6 +1,8 @@
 package controller;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -24,10 +26,12 @@ import model.Kategorie;
 
 public class MainController {
 	
-	ObservableList<String> olBenutzer = FXCollections.observableArrayList("Haushalt", "Benutzer1", "Benutzer2");
-	ObservableList<String> olSortierung = FXCollections.observableArrayList("Kategorie A-Z", "Kategorie Z-A", "Betrag aufsteigend","Betrag absteigend");
-
-	@FXML ComboBox<String> cbBenutzer; //Benutzer eintragen
+	ObservableList<String> olBenutzer = FXCollections.observableArrayList("Haushalt", "Benutzer1", "Benutzer2");		//Liste Benutzernamen hinterlegen
+	ObservableList<String> olSortierung = FXCollections.observableArrayList("Kategorie A-Z", "Kategorie Z-A", "Betrag aufsteigend","Betrag absteigend", "Datum aufsteigend", "Datum absteigend");
+	
+	@FXML HBox hbBenutzer;
+	@FXML Button bBenutzerAnlegen; 		//Funktion Benutzer anlegen
+	@FXML ComboBox<String> cbBenutzer; //Benutzer hinterlegen
 	
 	@FXML Tab tabEinnahmen;
 	@FXML Button bEinnahmenUebersicht;	
@@ -36,7 +40,6 @@ public class MainController {
 	
 	//StackPane Einnahmen Übersicht
 	@FXML StackPane spEinnahmenUebersicht;
-	@FXML Pane pEinnahmenUebersicht;
 	@FXML HBox hbEinnahmenUebersichtButtonsZeitraum;
 	@FXML Button bEinnahmenUebersichtMonat;
 	@FXML Button bEinnahmenUebersichtJahr;
@@ -44,7 +47,7 @@ public class MainController {
 	@FXML Button bEinnahmenUebersichtPfeilZurueck;
 	@FXML Label lblEinnahmenUebersichtZeitraum;
 	@FXML Button bEinnahmenUebersichtPfeilVorwaerts;
-	@FXML GridPane gpEinnahmenUebersichtPlusundSortieren;
+	@FXML GridPane gpEinnahmenUebersichtPlusUndSortieren;
 	@FXML Button bEinnahmenPlus;
 	@FXML Label lblEinnahmenUebersichtSortierung;
 	@FXML ComboBox<String> cbEinnahmenUebersichtSortierung;
@@ -54,8 +57,7 @@ public class MainController {
 	@FXML TableColumn<Kategorie, String> einnahmenUebersichtButtonsCol;		//Variable für Buttons?
 	
 	//StackPane Einnahmen Favoriten
-	@FXML StackPane spEinnahmenFavoriten;
-	@FXML Pane pEinnahmenFavoriten;			
+	@FXML StackPane spEinnahmenFavoriten;		
 	@FXML HBox hbEinnahmenFavoritenButtonsZeitraum;
 	@FXML Button bEinnahmenFavoritenTag;
 	@FXML Button bEinnahmenFavoritenWoche;
@@ -92,7 +94,12 @@ public class MainController {
 	@FXML TableColumn<Eintrag, String> einnahmenFavoritenButtonsCol; 		//Variable für Buttons?
 	
 	//StackPane Einnahmen Dauereintraege
-//	@FXML StackPane spEinnahmenFavoriten;
+	@FXML StackPane spEinnahmenDauereintraege;
+	@FXML Label hbEinnahmenDauereintraegeText;
+	@FXML Label lblEinnahmenDauereintraegeDatum;			
+	@FXML HBox hbEinnahmenDauereintraegeSortierung;
+	@FXML Label lblEinnahmenDauereintraegeSortierung;
+	@FXML ComboBox<String> cbEinnahmenDauereintraegeSortierung;
 	
 	
 	@FXML Tab tabAusgaben;
@@ -106,7 +113,10 @@ public class MainController {
 		cbBenutzer.setItems(olBenutzer);
 		cbEinnahmenUebersichtSortierung.getSelectionModel().select("Kategorie A-Z");
 		cbEinnahmenUebersichtSortierung.setItems(olSortierung);
-		
+		cbEinnahmenDauereintraegeSortierung.getSelectionModel().select("Datum aufsteigend");
+		cbEinnahmenDauereintraegeSortierung.setItems(olSortierung);
+		lblEinnahmenDauereintraegeDatum.setText(LocalDate.now().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)));
+		dpEinnahmenFavoritenEndeDauereintrag.setValue(LocalDate.now());
 //		bUebersicht.setDefaultButton(true);
 	}
 	
