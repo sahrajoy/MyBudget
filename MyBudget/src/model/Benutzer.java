@@ -53,7 +53,7 @@ public class Benutzer {
 
 	@Override
 	public String toString() {
-		return "Benutzer [benutzerId=" + benutzerId + ", name=" + name + "]";
+		return name;
 	}
 
 }

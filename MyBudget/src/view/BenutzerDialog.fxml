@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.ButtonType?>
+<?import javafx.scene.control.DialogPane?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TreeView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+
+<DialogPane fx:id="benutzerDialog" minHeight="300.0" minWidth="350.0" prefHeight="300.0" prefWidth="350.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.BenutzerDialogController">
+   <buttonTypes>
+      <ButtonType fx:constant="CANCEL" />
+      <ButtonType fx:constant="OK" />
+   </buttonTypes>
+   <graphic>
+      <VBox fx:id="vbBenutzer" prefHeight="200.0" prefWidth="300.0">
+         <children>
+            <HBox fx:id="hbNeuerBenutzer" prefHeight="100.0" prefWidth="200.0">
+               <children>
+                  <Label fx:id="lblNeuerBenutzer" text="Neuen Benutzer eingeben" />
+                  <TextField fx:id="tfNeuerBenutzer" />
+               </children>
+            </HBox>
+            <HBox prefHeight="100.0" prefWidth="200.0">
+               <children>
+                  <Label text="Bestehende Benutzer" />
+               </children>
+            </HBox>
+            <TreeView prefHeight="200.0" prefWidth="200.0" />
+         </children>
+      </VBox>
+   </graphic>
+</DialogPane>
