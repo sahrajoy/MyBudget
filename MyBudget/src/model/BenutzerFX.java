@@ -1,7 +1,5 @@
 package model;
 
-import javax.script.SimpleScriptContext;
-
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 

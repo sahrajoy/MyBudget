@@ -5,7 +5,6 @@ import java.util.ArrayList;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -20,9 +19,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import model.Benutzer;
-import model.BenutzerFX;
 import model.Datenbank;
-import model.Kategorie;
 
 public class BenutzerDialogController extends Dialog<ButtonType> {
 	ObservableList<String> olBenutzer = FXCollections.observableArrayList();
@@ -38,6 +35,8 @@ public class BenutzerDialogController extends Dialog<ButtonType> {
 	@FXML Label lblBestehendeBenutzer;
 	@FXML TableView<Benutzer> tvBenutzer;
 	@FXML TableColumn<Benutzer, String> benutzerCol;
+	
+	
 	
 	@FXML
 	public void initialize() {

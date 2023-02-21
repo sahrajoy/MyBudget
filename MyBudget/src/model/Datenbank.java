@@ -59,9 +59,9 @@ public class Datenbank {
 		try {
 			conn = DriverManager.getConnection(CONNECTION_URL);
 			stmt = conn.createStatement();
-			rs = conn.getMetaData().getTables(null, null, BENUTZER_TABLE.toUpperCase(), new String[] {"TABLE"}); 		
+			rs = conn.getMetaData().getTables(null, null, BENUTZER_TABLE.toUpperCase(), new String[] {"TABLE"}); 	//um zu prüfen ob die Tabelle schon exestiert	
 			if(rs.next()) {			
-				return;
+				return;		//wenn existiert
 			}
 			String ct = "CREATE TABLE " + BENUTZER_TABLE + " (" + 
 					BENUTZER_ID + " INTEGER GENERATED ALWAYS AS IDENTITY," +
@@ -138,7 +138,7 @@ public class Datenbank {
 					EINTRAG_BETRAG +  " DECIMAL," +
 					EINTRAG_BENUTZERID + " BIGINT," +
 					EINTRAG_KATEGORIEID + " BIGINT," +
-					"PRIMARY KEY(" + EINTRAG_ID + "))" +
+					"PRIMARY KEY(" + EINTRAG_ID + ")" +
 					"FOREIGN KEY(" + EINTRAG_BENUTZERID + ") REFERENCES " + BENUTZER_TABLE + "(" + BENUTZER_ID + ")" +
 					"FOREIGN KEY(" + EINTRAG_KATEGORIEID + ") REFERENCES " + KATEGORIE_TABLE + "(" + KATEGORIE_ID + "))";
 			stmt.executeUpdate(ct);

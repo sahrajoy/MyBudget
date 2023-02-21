@@ -28,7 +28,6 @@ import javafx.scene.control.TabPane;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
@@ -68,13 +67,19 @@ public class MainController {
 			Dialog<ButtonType> dialog = new Dialog<>();
 			dialog.setDialogPane(benutzerDialog);
 			dialog.setTitle("Benutzer verwalten");
+			
+			((Button) dialog.getDialogPane().lookupButton(ButtonType.OK)).setText("Speichern");
+			((Button) dialog.getDialogPane().lookupButton(ButtonType.CANCEL)).setText("Abbrechen");
 
 			Optional<ButtonType> clickedButton = dialog.showAndWait();
-			if(clickedButton.get() == ButtonType.OK) {
-				//Funktion hinterlegen
+			if(clickedButton.get() == ButtonType.OK && !Datenbank.benutzerExist(clickedButton.get().toString())) {
+//				Datenbank.insertBenutzer(new Benutzer(clickedButton.get().toString()));
+			}
+			if(clickedButton.get() == ButtonType.OK && Datenbank.benutzerExist(clickedButton.get().toString())) {
+//				Datenbank.insertBenutzer(new Benutzer(clickedButton.get().toString()));
 			}
 			if(clickedButton.get() == ButtonType.CANCEL) {
-				//Funktion hinterlegen
+				return;
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
