@@ -87,15 +87,15 @@
                                           </HBox>
                                           <AnchorPane layoutY="105.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="80.0">
                                              <children>
-                                                <TableView fx:id="tvEinnahmenFavoriten1" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                <TableView fx:id="tvEinnahmenDauereintraege" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                                    <columns>
-                                                      <TableColumn fx:id="einnahmenDatumCol1" prefWidth="187.33334350585938" text="Datum" />
-                                                      <TableColumn fx:id="einnahmenTitelCol1" prefWidth="231.66665649414062" text="Titel" />
-                                                      <TableColumn fx:id="einnahmenBetragCol1" prefWidth="209.33334350585938" text="Betrag" />
-                                                      <TableColumn fx:id="einnahmenBenutzerCol1" prefWidth="212.66668701171875" text="Benutzer" />
-                                                      <TableColumn fx:id="einnahmenDauereintragCol1" minWidth="7.0" prefWidth="211.33331298828125" text="Dauereintrag" />
-                                                      <TableColumn fx:id="einnahmenDauereintragEndedatumCol1" minWidth="0.0" prefWidth="248.0" text="Ende Dauereintrag" />
-                                                      <TableColumn fx:id="einnahmenFavoritenButtonsCol1" prefWidth="98.0" text="Buttons" />
+                                                      <TableColumn fx:id="einnahmenDauereintraegeDatumCol" prefWidth="187.33334350585938" text="Datum" />
+                                                      <TableColumn fx:id="einnahmenDauereintraegeTitelCol" prefWidth="231.66665649414062" text="Titel" />
+                                                      <TableColumn fx:id="einnahmenDauereintraegeBetragCol" prefWidth="209.33334350585938" text="Betrag" />
+                                                      <TableColumn fx:id="einnahmenDauereintraegeBenutzerCol" prefWidth="212.66668701171875" text="Benutzer" />
+                                                      <TableColumn fx:id="einnahmenDauereintraegeIntervallCol" minWidth="7.0" prefWidth="211.33331298828125" text="Intervall" />
+                                                      <TableColumn fx:id="einnahmenDauereintraegeEndeCol" minWidth="0.0" prefWidth="248.0" text="Ende " />
+                                                      <TableColumn fx:id="einnahmenDauereintraegeButtonsCol" prefWidth="98.0" text="Buttons" />
                                                    </columns>
                                                 </TableView>
                                              </children>
@@ -288,15 +288,15 @@
                                           </HBox>
                                           <AnchorPane layoutY="105.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="80.0">
                                              <children>
-                                                <TableView fx:id="tvEinnahmenFavoriten11" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                <TableView fx:id="tvAusgabenDauereintraege" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                                    <columns>
-                                                      <TableColumn fx:id="einnahmenDatumCol11" prefWidth="187.33334350585938" text="Datum" />
-                                                      <TableColumn fx:id="einnahmenTitelCol11" prefWidth="231.66665649414062" text="Titel" />
-                                                      <TableColumn fx:id="einnahmenBetragCol11" prefWidth="209.33334350585938" text="Betrag" />
-                                                      <TableColumn fx:id="einnahmenBenutzerCol11" prefWidth="212.66668701171875" text="Benutzer" />
-                                                      <TableColumn fx:id="einnahmenDauereintragCol11" minWidth="7.0" prefWidth="211.33331298828125" text="Dauereintrag" />
-                                                      <TableColumn fx:id="einnahmenDauereintragEndedatumCol11" minWidth="0.0" prefWidth="248.0" text="Ende Dauereintrag" />
-                                                      <TableColumn fx:id="einnahmenFavoritenButtonsCol11" prefWidth="98.0" text="Buttons" />
+                                                      <TableColumn fx:id="ausgabenDauereintraegeDatumCol" prefWidth="187.33334350585938" text="Datum" />
+                                                      <TableColumn fx:id="ausgabenDauereintraegeTitelCol" prefWidth="231.66665649414062" text="Titel" />
+                                                      <TableColumn fx:id="ausgabenDauereintraegeBetragCol" prefWidth="209.33334350585938" text="Betrag" />
+                                                      <TableColumn fx:id="ausgabenDauereintraegeBenutzerCol" prefWidth="212.66668701171875" text="Benutzer" />
+                                                      <TableColumn fx:id="ausgabenDauereintraegeIntervallCol" minWidth="7.0" prefWidth="211.33331298828125" text="Intervall" />
+                                                      <TableColumn fx:id="ausgabenDauereintraegeEndeCol" minWidth="0.0" prefWidth="248.0" text="Ende" />
+                                                      <TableColumn fx:id="ausgabenDauereintraegeButtonsCol" prefWidth="98.0" text="Buttons" />
                                                    </columns>
                                                 </TableView>
                                              </children>

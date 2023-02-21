@@ -65,10 +65,7 @@ public class Kategorie {
 	public String toString() {
 		return "Kategorie [kategorieId=" + kategorieId + ", name=" + name + ", favorite=" + favorite + "]";
 	}
-	public Object toXML() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+
 	
 	
 	

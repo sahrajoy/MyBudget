@@ -1,9 +1,11 @@
 package controller;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.util.ArrayList;
 import java.util.Optional;
 
 import javafx.collections.FXCollections;
@@ -11,6 +13,7 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
@@ -25,6 +28,8 @@ import javafx.scene.control.TabPane;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
@@ -33,6 +38,8 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import model.Benutzer;
+import model.Datenbank;
+import model.Dauereintrag;
 import model.Eintrag;
 import model.Intervall;
 import model.Kategorie;
@@ -41,19 +48,27 @@ public class MainController {
 	
 	ObservableList<Benutzer> olBenutzer = FXCollections.observableArrayList();		//Liste Benutzernamen hinterlegen
 	ObservableList<String> olSortierung = FXCollections.observableArrayList("Kategorie A-Z", "Kategorie Z-A", "Betrag aufsteigend","Betrag absteigend", "Datum aufsteigend", "Datum absteigend");
+	ObservableList<Eintrag> olEintraege = FXCollections.observableArrayList();
 	
 	@FXML HBox hbBenutzer;
 	@FXML Button bBenutzerAnlegen; 		
-	@FXML public void benutzerAnlegen(ActionEvent event){
+	@FXML public void benutzerAnlegen(ActionEvent event) throws SQLException{
+////			if(result.get() == ButtonType.OK && !Datenbank.benutzerExist(result.get().toString())) {
+//////				Datenbank.insertBenutzer(result.get().toString());
+////			}
+////			if(result.get() == ButtonType.OK && Datenbank.benutzerExist(result.get().toString())) {
+////				new Alert(AlertType.ERROR, "Benutzer existiert bereits").showAndWait();
+////			}
+
 		try {
 			FXMLLoader fxmlLoader = new FXMLLoader();
 			fxmlLoader.setLocation(getClass().getResource("/view/BenutzerDialog.fxml"));
 			DialogPane benutzerDialog = fxmlLoader.load();
-			
+
 			Dialog<ButtonType> dialog = new Dialog<>();
 			dialog.setDialogPane(benutzerDialog);
 			dialog.setTitle("Benutzer verwalten");
-			
+
 			Optional<ButtonType> clickedButton = dialog.showAndWait();
 			if(clickedButton.get() == ButtonType.OK) {
 				//Funktion hinterlegen
@@ -65,15 +80,41 @@ public class MainController {
 			e.printStackTrace();
 		}
 	}
+		
 	@FXML ComboBox<Benutzer> cbBenutzer; 
+	public void showBenutzer() {
+		try {
+			ArrayList<Benutzer> alBenutzer = Datenbank.readBenutzer();
+			olBenutzer.clear();
+			for(Benutzer einBenutzer : alBenutzer)
+				olBenutzer.add(einBenutzer);
+		} catch (SQLException e) {
+			new Alert(AlertType.ERROR, e.toString());
+		}	
+	}
 	
 	
 	//Einahmen
 	@FXML Tab tabEinnahmen;
 	@FXML AnchorPane apEinnahmen;
 	@FXML Button bEinnahmenUebersicht;	
+	@FXML
+	public void showKategorieEinnahmen() {
+//		tvEinnahmenUebersichtKategorien
+		
+	}
 	@FXML Button bEinnahmenFavoriten;
+	@FXML
+	public void showEintraegeEinnahmen() {
+//		tvEinnahmenFavoriten
+		
+	}
 	@FXML Button bEinnahmenDauereintraege;
+	@FXML
+	public void showDauereintraegeEinnahmen() {
+//		tvEinnahmenDauereintraege
+		
+	}
 	
 	//StackPane Einnahmen Übersicht
 	@FXML StackPane spEinnahmenUebersicht;
@@ -131,7 +172,7 @@ public class MainController {
 	@FXML TableColumn<Eintrag, LocalDate> einnahmenDauereintragEndedatumCol;
 	@FXML TableColumn<Eintrag, String> einnahmenFavoritenButtonsCol; 		//Variable für Buttons?
 
-	//StackPane Einnahmen Dauereintraege
+	//StackPane Einnahmen Dauereinträge
 	@FXML StackPane spEinnahmenDauereintraege;
 	@FXML HBox hbEinnahmenDauereintraegeText;
 	@FXML Label lblEinnahmenDauereintraegeText;
@@ -139,7 +180,15 @@ public class MainController {
 	@FXML HBox hbEinnahmenDauereintraegeSortierung;
 	@FXML Label lblEinnahmenDauereintraegeSortierung;
 	@FXML ComboBox<String> cbEinnahmenDauereintraegeSortierung;
-	
+	@FXML TableView<Dauereintrag> tvEinnahmenDauereintraege;
+	@FXML TableColumn<Dauereintrag, LocalDate> einnahmenDauereintraegeDatumCol;
+	@FXML TableColumn<Dauereintrag, String> einnahmenDauereintraegeTitelCol;
+	@FXML TableColumn<Dauereintrag, Double> einnahmenDauereintraegeBetragCol;
+	@FXML TableColumn<Dauereintrag, Benutzer> einnahmenDauereintraegeBenutzerCol;
+	@FXML TableColumn<Dauereintrag, Intervall> einnahmenDauereintraegeIntervallCol;
+	@FXML TableColumn<Dauereintrag, LocalDate> einnahmenDauereintraegeEndeCol;
+	@FXML TableColumn<Dauereintrag, String> einnahmenDauereintraegeButtonsCol;		//Variable für Buttons?
+		
 	@FXML 
 	public void showStackEinnahmenUebersicht(ActionEvent event) {
 		apEinnahmen.getChildren().remove(spEinnahmenUebersicht);
@@ -160,9 +209,24 @@ public class MainController {
 	@FXML Tab tabAusgaben;
 	@FXML AnchorPane apAusgaben;
 	@FXML Button bAusgabenUebersicht;
+	@FXML
+	public void showKategorieAusgaben() {
+//		tvAusgabenUebersichtKategorien
+		
+	}
 	@FXML Button bAusgabenFavoriten;
+	@FXML
+	public void showEintraegeAusgaben() {
+//		tvAusgabenFavoriten
+		
+	}
 	@FXML Button bAusgabenDauereintraege;
-	
+	@FXML
+	public void showDauereintraegeAusgaben() {
+//		tvAusgabenDauereintraege
+		
+	}
+
 	//StackPane Ausgaben Übersicht
 	@FXML StackPane spAusgabenUebersicht;
 	@FXML HBox hbAusgabenUebersichtButtonsZeitraum;
@@ -227,6 +291,14 @@ public class MainController {
 	@FXML HBox hbAusgabenDauereintraegeSortierung;
 	@FXML Label lblAusgabenDauereintraegeSortierung;
 	@FXML ComboBox<String> cbAusgabenDauereintraegeSortierung;
+	@FXML TableView<Dauereintrag> tvAusgabenDauereintraege;
+	@FXML TableColumn<Dauereintrag, LocalDate> ausgabenDauereintraegeDatumCol;
+	@FXML TableColumn<Dauereintrag, String> ausgabenDauereintraegeTitelCol;
+	@FXML TableColumn<Dauereintrag, Double> ausgabenDauereintraegeBetragCol;
+	@FXML TableColumn<Dauereintrag, Benutzer> ausgabenDauereintraegeBenutzerCol;
+	@FXML TableColumn<Dauereintrag, Intervall> ausgabenDauereintraegeIntervallCol;
+	@FXML TableColumn<Dauereintrag, LocalDate> ausgabenDauereintraegeEndeCol;
+	@FXML TableColumn<Dauereintrag, String> ausgabenDauereintraegeButtonsCol;		//Variable für Buttons?
 	
 	@FXML 
 	public void showStackAusgabenUebersicht(ActionEvent event) {
@@ -296,12 +368,10 @@ public class MainController {
 		cbAusgabenDauereintraegeSortierung.getSelectionModel().select("Datum aufsteigend");
 		cbAusgabenDauereintraegeSortierung.setItems(olSortierung);
 		//Statistik
-//		ivSaulendiagramm.setBorder(new Border(new BorderStroke(Color.GRAY, BorderStrokeStyle.SOLID, null, new BorderWidths(1))));
 //		cbHaushalt.setDefaultButton(true)
 //		bUebersicht.setDefaultButton(true);
 	}
 	
-//	Kategorienamen Bearbeiten Feld einbauen!!
 	
 
 

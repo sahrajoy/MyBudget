@@ -16,6 +16,15 @@ public class Benutzer {
 		this.eintraege = eintraege;
 		this.dauereintraege = dauereintraege;
 	}
+	public Benutzer(int benutzerId, String name) {
+		super();
+		this.benutzerId = benutzerId;
+		this.name = name;
+	}
+	public Benutzer(String name) {
+		super();
+		this.name = name;
+	}
 	public Benutzer() {}
 
 	public int getBenutzerId() {
@@ -55,16 +64,4 @@ public class Benutzer {
 		return name;
 	}
 
-	public String toXML() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("<benutzer>");
-		sb.append("<benutzerId>" + benutzerId + "</benutzerId>");
-		sb.append("<name>" + name + "</name>");
-		for(Eintrag einEintrag : eintraege) 
-			sb.append(einEintrag.toXML());
-		for(Dauereintrag einDauereintrag : dauereintraege) 
-			sb.append(einDauereintrag.toXML());
-		sb.append("</eintbenutzerrag>");
-		return sb.toString();
-	}
 }

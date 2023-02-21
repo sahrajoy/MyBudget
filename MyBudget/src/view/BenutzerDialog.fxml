@@ -30,12 +30,12 @@
                         <Insets bottom="10.0" />
                      </padding>
                   </HBox>
-                  <VBox spacing="5.0">
+                  <VBox fx:id="vbBestehendeBenutzer" spacing="5.0">
                      <children>
-                        <Label text="Bestehende Benutzer" />
-                        <TableView prefHeight="160.0" prefWidth="299.0">
+                        <Label fx:id="lblBestehendeBenutzer" text="Bestehende Benutzer" />
+                        <TableView fx:id="tvBenutzer" prefHeight="160.0" prefWidth="299.0">
                           <columns>
-                            <TableColumn prefWidth="349.0" />
+                            <TableColumn fx:id="benutzerCol" prefWidth="349.0" />
                           </columns>
                         </TableView>
                      </children>

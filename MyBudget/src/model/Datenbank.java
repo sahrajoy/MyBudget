@@ -7,6 +7,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.TreeSet;
+
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 
 public class Datenbank {
 
@@ -27,6 +32,7 @@ public class Datenbank {
 	//Eintrag Tabelle
 	private static final String EINTRAG_TABLE = "Eintrag";
 	private static final String EINTRAG_ID = "EintragId";
+	private static final String EINTRAG_EINNAHMEODERAUSGABE = "EintragEinnahmeOderAusgabe";
 	private static final String EINTRAG_DATUM = "EintragDatum";
 	private static final String EINTRAG_TITEL = "EintragTitel";
 	private static final String EINTRAG_BETRAG = "EintragBetrag";
@@ -36,6 +42,7 @@ public class Datenbank {
 	//Dauereinträge Tabelle
 	private static final String DAUEREINTRAG_TABLE = "Dauereintrag";
 	private static final String DAUEREINTRAG_ID = "DauereintragId";
+	private static final String DAUEREINTRAG_EINNAHMEODERAUSGABE = "DauereintragEinnahmeOderAusgabe";
 	private static final String DAUEREINTRAG_NAECHSTEFAELLIGKEIT = "DauereintragNaechsteFaelligkeit";
 	private static final String DAUEREINTRAG_TITEL = "DauereintragTitel";
 	private static final String DAUEREINTRAG_BETRAG = "DauereintragBetrag";
@@ -44,7 +51,8 @@ public class Datenbank {
 	private static final String DAUEREINTRAG_BENUTZERID = "DauereintragBenutzerId";
 	private static final String DAUEREINTRAG_KATEGORIEID = "DauereintragKategorieId";
 
-	public static void createBenutzerTable() throws SQLException{
+	//Tabellen erstellen
+	public static void createBenutzerTable() throws SQLException{		
 		Connection conn = null;
 		Statement stmt = null;
 		ResultSet rs = null;
@@ -56,7 +64,7 @@ public class Datenbank {
 				return;
 			}
 			String ct = "CREATE TABLE " + BENUTZER_TABLE + " (" + 
-					BENUTZER_ID + " BIGINT," +
+					BENUTZER_ID + " INTEGER GENERATED ALWAYS AS IDENTITY," +
 					BENUTZER_NAME + " VARCHAR(200)," +
 					"PRIMARY KEY(" + BENUTZER_ID + "))";
 			stmt.executeUpdate(ct);
@@ -76,8 +84,8 @@ public class Datenbank {
 			}
 		}
 	}
-	
-	public static void createKategorieTable() throws SQLException{
+
+	public static void createKategorieTable() throws SQLException{		
 		Connection conn = null;
 		Statement stmt = null;
 		ResultSet rs = null;
@@ -89,7 +97,7 @@ public class Datenbank {
 				return;
 			}
 			String ct = "CREATE TABLE " + KATEGORIE_TABLE + " (" + 
-					KATEGORIE_ID + " BIGINT," +
+					KATEGORIE_ID + " INTEGER GENERATED ALWAYS AS IDENTITY," +
 					KATEGORIE_NAME + " VARCHAR(200)," +
 					KATEGORIE_FAVORITE + " BOOLEAN," +
 					"PRIMARY KEY(" + KATEGORIE_ID + "))";
@@ -110,7 +118,7 @@ public class Datenbank {
 			}
 		}
 	}
-	
+
 	public static void createEintragTable() throws SQLException{
 		Connection conn = null;
 		Statement stmt = null;
@@ -123,7 +131,8 @@ public class Datenbank {
 				return;
 			}
 			String ct = "CREATE TABLE " + EINTRAG_TABLE + " (" + 
-					EINTRAG_ID + " BIGINT," +
+					EINTRAG_ID + " INTEGER GENERATED ALWAYS AS IDENTITY," +
+					EINTRAG_EINNAHMEODERAUSGABE + " BOOLEAN," +
 					EINTRAG_DATUM + " DATE," +
 					EINTRAG_TITEL + " VARCHAR(200)," +
 					EINTRAG_BETRAG +  " DECIMAL," +
@@ -149,8 +158,8 @@ public class Datenbank {
 			}
 		}
 	}
-	
-	public static void createDauereintragTable() throws SQLException{ //Enum wie Objektklassen behandeln, auch Tabelle erzeugen?
+
+	public static void createDauereintragTable() throws SQLException{ 
 		Connection conn = null;
 		Statement stmt = null;
 		ResultSet rs = null;
@@ -162,12 +171,13 @@ public class Datenbank {
 				return;
 			}
 			String ct = "CREATE TABLE " + DAUEREINTRAG_TABLE + " (" + 
-					DAUEREINTRAG_ID + " BIGINT," +
+					DAUEREINTRAG_ID + " INTEGER GENERATED ALWAYS AS IDENTITY," +
+					DAUEREINTRAG_EINNAHMEODERAUSGABE + " BOOLEAN," +
 					DAUEREINTRAG_NAECHSTEFAELLIGKEIT + " DATE," +
 					DAUEREINTRAG_TITEL + " VARCHAR(200)," +
 					DAUEREINTRAG_BETRAG +  " DECIMAL," +
 					DAUEREINTRAG_ENDEDATUM + " DATE," +
-					DAUEREINTRAG_INTERVALL + " ," +				//??
+					DAUEREINTRAG_INTERVALL + " SMALLINT," +				
 					DAUEREINTRAG_BENUTZERID + " BIGINT," +
 					DAUEREINTRAG_KATEGORIEID + " BIGINT," +
 					"PRIMARY KEY(" + DAUEREINTRAG_ID + "))" +
@@ -191,7 +201,46 @@ public class Datenbank {
 		}
 	}
 	
-	public static EintraegeList leseEintraege() throws SQLException{
+	//Daten auslesen
+	public static ArrayList<Benutzer> readBenutzer() throws SQLException{
+		return readBenutzer(null);
+	}
+	public static ArrayList<Benutzer> readBenutzer(String benutzerName) throws SQLException{		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		ArrayList<Benutzer> alBenutzer = new ArrayList<>();
+		String select = "SELECT * FROM " + BENUTZER_TABLE;
+		if(benutzerName != null)
+			select += " WHERE " + BENUTZER_NAME + "=?";
+		try {
+			conn = DriverManager.getConnection(CONNECTION_URL);
+			stmt = conn.prepareStatement(select);
+			if(benutzerName != null)
+				stmt.setString(1, benutzerName);
+			rs = stmt.executeQuery();
+			while(rs.next())
+				alBenutzer.add(new Benutzer(rs.getInt(BENUTZER_ID), rs.getString(BENUTZER_NAME)));
+			rs.close();
+		}
+		catch(SQLException e) {
+			throw e;
+		}
+		finally {
+			try {
+				if(stmt != null) 
+					stmt.close();
+				if(conn != null)
+					conn.close();
+			}
+			catch(SQLException e) {
+				throw e;
+			}
+		}
+		return alBenutzer;
+	}
+	
+	public static EintraegeList readEintraege(String Kategorie, String EinnahmeOdAusgabe, String Benutzer) throws SQLException{
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
@@ -202,7 +251,7 @@ public class Datenbank {
 			stmt = conn.prepareStatement(select);
 			rs = stmt.executeQuery();
 			while(rs.next()) {			
-				alEintraege.add(new Eintrag(rs.getInt(EINTRAG_ID), rs.getDate(EINTRAG_DATUM), rs.getString(EINTRAG_TITEL), rs.getDouble(EINTRAG_BETRAG), new Benutzer(rs.getInt(BENUTZER_ID)), new Kategorie(rs.getInt(KATEGORIE_ID))));
+				alEintraege.add(new Eintrag(rs.getInt(EINTRAG_ID),rs.getBoolean(EINTRAG_EINNAHMEODERAUSGABE), rs.getDate(EINTRAG_DATUM).toLocalDate(), rs.getString(EINTRAG_TITEL), rs.getDouble(EINTRAG_BETRAG), new Benutzer(rs.getInt(BENUTZER_ID), rs.getString(BENUTZER_NAME)), new Kategorie(rs.getInt(KATEGORIE_ID))));
 			}
 			rs.close();
 			}
@@ -223,7 +272,7 @@ public class Datenbank {
 		return new EintraegeList(alEintraege);
 	}
 	
-	public static DauereintraegeList leseDauereintraege() throws SQLException{
+	public static DauereintraegeList readDauereintraege(String Kategorie, String EinnahmeOdAusgabe, String Benutzer) throws SQLException{
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
@@ -234,7 +283,7 @@ public class Datenbank {
 			stmt = conn.prepareStatement(select);
 			rs = stmt.executeQuery();
 			while(rs.next()) {			
-				alDauereintraege.add(new Dauereintrag(rs.getInt(DAUEREINTRAG_ID), rs.getDate(DAUEREINTRAG_NAECHSTEFAELLIGKEIT), rs.getString(DAUEREINTRAG_TITEL), rs.getDouble(DAUEREINTRAG_BETRAG), rs.getDate(DAUEREINTRAG_ENDEDATUM), rs.getString(DAUEREINTRAG_INTERVALL), new Benutzer(rs.getInt(BENUTZER_ID)), new Kategorie(rs.getInt(KATEGORIE_ID))));
+				alDauereintraege.add(new Dauereintrag(rs.getInt(DAUEREINTRAG_ID), rs.getDate(DAUEREINTRAG_NAECHSTEFAELLIGKEIT), rs.getString(DAUEREINTRAG_TITEL), rs.getDouble(DAUEREINTRAG_BETRAG), rs.getDate(DAUEREINTRAG_ENDEDATUM), rs.getString(DAUEREINTRAG_INTERVALL), new Benutzer(rs.getInt(BENUTZER_ID), rs.getString(BENUTZER_NAME)), new Kategorie(rs.getInt(KATEGORIE_ID))));
 			}
 			rs.close();
 			}
@@ -255,6 +304,70 @@ public class Datenbank {
 		return new DauereintraegeList(alDauereintraege);
 	}
 	
+	//Daten überprüfen
+	public static boolean benutzerExist(String benutzerName) throws SQLException{
+		try {
+			List<Benutzer> alBenutzer = Datenbank.readBenutzer();
+			return alBenutzer.stream().anyMatch(b -> b.equals(benutzerName));
+		} catch (SQLException e) {
+			throw e;
+		}	
+	}
+	
+	//Daten adaptieren
+	public static void insertBenutzer(Benutzer b) throws SQLException{
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		try {
+			conn = DriverManager.getConnection(CONNECTION_URL);
+			String insert = "INSERT INTO " + BENUTZER_TABLE + " VALUES(" +
+					"?," + 	//BENUTZER_ID
+					"?)"; 	//BENUTZER_NAME
+			stmt = conn.prepareStatement(insert);
+			stmt.setString(1, b.getName());		//Fragezeichen 1
+			stmt.setString(2, b.getName());		//Fragezeichen 2
+			stmt.executeUpdate();		
+		}
+		catch(SQLException e) {
+			throw e;
+		}
+		finally {
+			try {
+				if(stmt != null) 
+					stmt.close();
+				if(conn != null)
+					conn.close();
+			}
+			catch(SQLException e) {
+				throw e;
+			}
+		}
+	}
+	public static void insertKategorie() throws SQLException{
+		
+	}
+	public static void insertEintrag() throws SQLException{
+		
+	}
+	public static void insertDauereintrag() throws SQLException{
+	
+	}
+	
+	//Daten ändern
+	public static void updateBenutzer(Benutzer benutzer) throws SQLException{
+		
+	}
+	public static void updateKategorie(Kategorie kategorie) throws SQLException{
+		
+	}
+	public static void updateEintrag(Eintrag eintrag) throws SQLException{
+		
+	}
+	public static void updateDauereintrag(Dauereintrag dauereintrag) throws SQLException{
+		
+	}
+	
+	//Daten löschen
 	public static void deleteBenutzer(int benutzerId) throws SQLException{
 		Connection conn = null;
 		PreparedStatement stmt = null;
