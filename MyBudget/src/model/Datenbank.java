@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 
 public class Datenbank {
 
@@ -188,6 +189,70 @@ public class Datenbank {
 				throw e;
 			}
 		}
+	}
+	
+	public static EintraegeList leseEintraege() throws SQLException{
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		ArrayList<Eintrag> alEintraege = new ArrayList<>();
+		String select = "SELECT * FROM " + EINTRAG_TABLE;
+		try {
+			conn = DriverManager.getConnection(CONNECTION_URL);
+			stmt = conn.prepareStatement(select);
+			rs = stmt.executeQuery();
+			while(rs.next()) {			
+				alEintraege.add(new Eintrag(rs.getInt(EINTRAG_ID), rs.getDate(EINTRAG_DATUM), rs.getString(EINTRAG_TITEL), rs.getDouble(EINTRAG_BETRAG), new Benutzer(rs.getInt(BENUTZER_ID)), new Kategorie(rs.getInt(KATEGORIE_ID))));
+			}
+			rs.close();
+			}
+		catch(SQLException e) {
+			throw e;
+		}
+		finally {
+			try {
+				if(stmt != null) 
+					stmt.close();
+				if(conn != null)
+					conn.close();
+			}
+			catch(SQLException e) {
+				throw e;
+			}
+		}
+		return new EintraegeList(alEintraege);
+	}
+	
+	public static DauereintraegeList leseDauereintraege() throws SQLException{
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		ArrayList<Eintrag> alDauereintraege = new ArrayList<>();
+		String select = "SELECT * FROM " + DAUEREINTRAG_TABLE;
+		try {
+			conn = DriverManager.getConnection(CONNECTION_URL);
+			stmt = conn.prepareStatement(select);
+			rs = stmt.executeQuery();
+			while(rs.next()) {			
+				alDauereintraege.add(new Dauereintrag(rs.getInt(DAUEREINTRAG_ID), rs.getDate(DAUEREINTRAG_NAECHSTEFAELLIGKEIT), rs.getString(DAUEREINTRAG_TITEL), rs.getDouble(DAUEREINTRAG_BETRAG), rs.getDate(DAUEREINTRAG_ENDEDATUM), rs.getString(DAUEREINTRAG_INTERVALL), new Benutzer(rs.getInt(BENUTZER_ID)), new Kategorie(rs.getInt(KATEGORIE_ID))));
+			}
+			rs.close();
+			}
+		catch(SQLException e) {
+			throw e;
+		}
+		finally {
+			try {
+				if(stmt != null) 
+					stmt.close();
+				if(conn != null)
+					conn.close();
+			}
+			catch(SQLException e) {
+				throw e;
+			}
+		}
+		return new DauereintraegeList(alDauereintraege);
 	}
 	
 	public static void deleteBenutzer(int benutzerId) throws SQLException{

@@ -1,5 +1,6 @@
 package model;
 
+import java.sql.Date;
 import java.time.LocalDate;
 
 public class Eintrag {
@@ -21,6 +22,7 @@ public class Eintrag {
 		this.benutzer = benutzer;
 		this.kategorie = kategorie;
 	}
+	public Eintrag() {}
 
 	public int getEintragId() {
 		return eintragId;
@@ -76,5 +78,17 @@ public class Eintrag {
 				+ ", benutzer=" + benutzer + ", kategorie=" + kategorie + "]";
 	}
 	
+	public String toXML() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("<eintrag>");
+		sb.append("<eintragId>" + eintragId + "</eintragId>");
+		sb.append("<datum>" + datum + "</datum>");
+		sb.append("<titel>" + titel + "</titel>");
+		sb.append("<betrag>" + betrag + "</betrag>");
+		sb.append("<benutzer>" + benutzer + "</benutzer>");
+		sb.append("<kategorie>" + kategorie + "</kategorie>");
+		sb.append("</eintrag>");
+		return sb.toString();
+	}
 	
 }

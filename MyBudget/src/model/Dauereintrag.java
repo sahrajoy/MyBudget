@@ -6,25 +6,26 @@ public class Dauereintrag {
 
 	private int dauereintragId;
 	private LocalDate naechsteFaelligkeit;
-	private String titel;
-	private double betrag;
-	private LocalDate endedatum;
+	private String deTitel;
+	private double deBetrag;
+	private LocalDate enddatum;
 	private Intervall intervall;
-	private Benutzer benutzer;
-	private Kategorie kategorie;
+	private Benutzer deBenutzer;
+	private Kategorie deKategorie;
 	
-	public Dauereintrag(int dauereintragId, LocalDate naechsteFaelligkeit, String titel, double betrag,
-			LocalDate endedatum, Intervall intervall, Benutzer benutzer, Kategorie kategorie) {
+	public Dauereintrag(int dauereintragId, LocalDate naechsteFaelligkeit, String deTitel, double deBetrag,
+			LocalDate enddatum, Intervall intervall, Benutzer deBenutzer, Kategorie deKategorie) {
 		super();
 		this.dauereintragId = dauereintragId;
 		this.naechsteFaelligkeit = naechsteFaelligkeit;
-		this.titel = titel;
-		this.betrag = betrag;
-		this.endedatum = endedatum;
+		this.deTitel = deTitel;
+		this.deBetrag = deBetrag;
+		this.enddatum = enddatum;
 		this.intervall = intervall;
-		this.benutzer = benutzer;
-		this.kategorie = kategorie;
+		this.deBenutzer = deBenutzer;
+		this.deKategorie = deKategorie;
 	}
+	public Dauereintrag() {}
 
 	public int getDauereintragId() {
 		return dauereintragId;
@@ -43,27 +44,27 @@ public class Dauereintrag {
 	}
 
 	public String getTitel() {
-		return titel;
+		return deTitel;
 	}
 
-	public void setTitel(String titel) {
-		this.titel = titel;
+	public void setTitel(String deTitel) {
+		this.deTitel = deTitel;
 	}
 
 	public double getBetrag() {
-		return betrag;
+		return deBetrag;
 	}
 
-	public void setBetrag(double betrag) {
-		this.betrag = betrag;
+	public void setBetrag(double deBetrag) {
+		this.deBetrag = deBetrag;
 	}
 
-	public LocalDate getEndedatum() {
-		return endedatum;
+	public LocalDate getEnddatum() {
+		return enddatum;
 	}
 
-	public void setEndedatum(LocalDate endedatum) {
-		this.endedatum = endedatum;
+	public void setEnddatum(LocalDate enddatum) {
+		this.enddatum = enddatum;
 	}
 
 	public Intervall getIntervall() {
@@ -75,27 +76,39 @@ public class Dauereintrag {
 	}
 
 	public Benutzer getBenutzer() {
-		return benutzer;
+		return deBenutzer;
 	}
 
-	public void setBenutzer(Benutzer benutzer) {
-		this.benutzer = benutzer;
+	public void setBenutzer(Benutzer deBenutzer) {
+		this.deBenutzer = deBenutzer;
 	}
 
 	public Kategorie getKategorie() {
-		return kategorie;
+		return deKategorie;
 	}
 
-	public void setKategorie(Kategorie kategorie) {
-		this.kategorie = kategorie;
+	public void setKategorie(Kategorie deKategorie) {
+		this.deKategorie = deKategorie;
 	}
-
+	
 	@Override
 	public String toString() {
 		return "Dauereintrag [dauereintragId=" + dauereintragId + ", naechsteFaelligkeit=" + naechsteFaelligkeit
-				+ ", titel=" + titel + ", betrag=" + betrag + ", endedatum=" + endedatum + ", intervall=" + intervall
-				+ ", benutzer=" + benutzer + ", kategorie=" + kategorie + "]";
+				+ ", deTitel=" + deTitel + ", deBetrag=" + deBetrag + ", enddatum=" + enddatum + ", intervall="
+				+ intervall + ", deBenutzer=" + deBenutzer + ", deKategorie=" + deKategorie + "]";
 	}
-	
-	
+	public String toXML() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("<dauereintrag>");
+		sb.append("<dauereintragId>" + dauereintragId + "</dauereintragId>");
+		sb.append("<naechsteFaelligkeit>" + naechsteFaelligkeit + "</naechsteFaelligkeit>");
+		sb.append("<deTitel>" + deTitel + "</deTitel>");
+		sb.append("<deBetrag>" + deBetrag + "</deBetrag>");
+		sb.append("<enddatum>" + enddatum + "</enddatum>");
+		sb.append(intervall.toXML());
+		sb.append(deBenutzer.toXML());
+		sb.append(deKategorie.toXML());
+		sb.append("</dauereintrag>");
+		return sb.toString();
+	}
 }

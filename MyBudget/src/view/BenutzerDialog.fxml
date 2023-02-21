@@ -1,35 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.ButtonType?>
 <?import javafx.scene.control.DialogPane?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.control.TreeView?>
+<?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-
-<DialogPane fx:id="benutzerDialog" minHeight="300.0" minWidth="350.0" prefHeight="300.0" prefWidth="350.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.BenutzerDialogController">
+<DialogPane fx:id="benutzerDialog" minHeight="300.0" minWidth="319.0" prefHeight="300.0" prefWidth="319.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.BenutzerDialogController">
    <buttonTypes>
       <ButtonType fx:constant="CANCEL" />
       <ButtonType fx:constant="OK" />
    </buttonTypes>
    <graphic>
-      <VBox fx:id="vbBenutzer" prefHeight="200.0" prefWidth="300.0">
+      <AnchorPane>
          <children>
-            <HBox fx:id="hbNeuerBenutzer" prefHeight="100.0" prefWidth="200.0">
+            <VBox fx:id="vbBenutzer" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                <children>
-                  <Label fx:id="lblNeuerBenutzer" text="Neuen Benutzer eingeben" />
-                  <TextField fx:id="tfNeuerBenutzer" />
+                  <HBox fx:id="hbNeuerBenutzer" spacing="10.0">
+                     <children>
+                        <Label fx:id="lblNeuerBenutzer" text="Neuen Benutzer eingeben" />
+                        <TextField fx:id="tfNeuerBenutzer" />
+                     </children>
+                     <padding>
+                        <Insets bottom="10.0" />
+                     </padding>
+                  </HBox>
+                  <VBox spacing="5.0">
+                     <children>
+                        <Label text="Bestehende Benutzer" />
+                        <TableView prefHeight="160.0" prefWidth="299.0">
+                          <columns>
+                            <TableColumn prefWidth="349.0" />
+                          </columns>
+                        </TableView>
+                     </children>
+                  </VBox>
                </children>
-            </HBox>
-            <HBox prefHeight="100.0" prefWidth="200.0">
-               <children>
-                  <Label text="Bestehende Benutzer" />
-               </children>
-            </HBox>
-            <TreeView prefHeight="200.0" prefWidth="200.0" />
+            </VBox>
          </children>
-      </VBox>
+      </AnchorPane>
    </graphic>
 </DialogPane>

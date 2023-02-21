@@ -9,8 +9,6 @@ public class Benutzer {
 	private ArrayList<Eintrag> eintraege;
 	private ArrayList<Dauereintrag> dauereintraege;
 	
-	public Benutzer() {}
-	
 	public Benutzer(int benutzerId, String name, ArrayList<Eintrag> eintraege, ArrayList<Dauereintrag> dauereintraege) {
 		super();
 		this.benutzerId = benutzerId;
@@ -18,6 +16,7 @@ public class Benutzer {
 		this.eintraege = eintraege;
 		this.dauereintraege = dauereintraege;
 	}
+	public Benutzer() {}
 
 	public int getBenutzerId() {
 		return benutzerId;
@@ -56,4 +55,16 @@ public class Benutzer {
 		return name;
 	}
 
+	public String toXML() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("<benutzer>");
+		sb.append("<benutzerId>" + benutzerId + "</benutzerId>");
+		sb.append("<name>" + name + "</name>");
+		for(Eintrag einEintrag : eintraege) 
+			sb.append(einEintrag.toXML());
+		for(Dauereintrag einDauereintrag : dauereintraege) 
+			sb.append(einDauereintrag.toXML());
+		sb.append("</eintbenutzerrag>");
+		return sb.toString();
+	}
 }
