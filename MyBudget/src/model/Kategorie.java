@@ -19,6 +19,12 @@ public class Kategorie {
 		this.eintraege = eintraege;
 		this.dauereintraege = dauereintraege;
 	}
+	public Kategorie(int kategorieId, String name, boolean favorite) {
+		super();
+		this.kategorieId = kategorieId;
+		this.name = name;
+		this.favorite = favorite;
+	}
 	public Kategorie() {}
 
 	public int getKategorieId() {

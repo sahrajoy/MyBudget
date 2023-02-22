@@ -8,13 +8,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TreeSet;
-
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
 
 public class Datenbank {
-
 	private static final String DB_LOCATION = "C:\\Users\\sahra\\git\\MyBudget\\Temp\\Datenbank";
 	private static final String CONNECTION_URL = "jdbc:derby:" + DB_LOCATION + ";create=true";
 	
@@ -136,10 +131,10 @@ public class Datenbank {
 					EINTRAG_DATUM + " DATE," +
 					EINTRAG_TITEL + " VARCHAR(200)," +
 					EINTRAG_BETRAG +  " DECIMAL," +
-					EINTRAG_BENUTZERID + " BIGINT," +
-					EINTRAG_KATEGORIEID + " BIGINT," +
-					"PRIMARY KEY(" + EINTRAG_ID + ")" +
-					"FOREIGN KEY(" + EINTRAG_BENUTZERID + ") REFERENCES " + BENUTZER_TABLE + "(" + BENUTZER_ID + ")" +
+					EINTRAG_BENUTZERID + " INTEGER," +
+					EINTRAG_KATEGORIEID + " INTEGER," +
+					"PRIMARY KEY(" + EINTRAG_ID + ")," +
+					"FOREIGN KEY(" + EINTRAG_BENUTZERID + ") REFERENCES " + BENUTZER_TABLE + "(" + BENUTZER_ID + ")," +
 					"FOREIGN KEY(" + EINTRAG_KATEGORIEID + ") REFERENCES " + KATEGORIE_TABLE + "(" + KATEGORIE_ID + "))";
 			stmt.executeUpdate(ct);
 		}
@@ -178,10 +173,10 @@ public class Datenbank {
 					DAUEREINTRAG_BETRAG +  " DECIMAL," +
 					DAUEREINTRAG_ENDEDATUM + " DATE," +
 					DAUEREINTRAG_INTERVALL + " SMALLINT," +				
-					DAUEREINTRAG_BENUTZERID + " BIGINT," +
-					DAUEREINTRAG_KATEGORIEID + " BIGINT," +
-					"PRIMARY KEY(" + DAUEREINTRAG_ID + "))" +
-					"FOREIGN KEY(" + DAUEREINTRAG_BENUTZERID + ") REFERENCES " + BENUTZER_TABLE + "(" + BENUTZER_ID + ")" +
+					DAUEREINTRAG_BENUTZERID + " INTEGER," +
+					DAUEREINTRAG_KATEGORIEID + " INTEGER," +
+					"PRIMARY KEY(" + DAUEREINTRAG_ID + ")," +
+					"FOREIGN KEY(" + DAUEREINTRAG_BENUTZERID + ") REFERENCES " + BENUTZER_TABLE + "(" + BENUTZER_ID + ")," +
 					"FOREIGN KEY(" + DAUEREINTRAG_KATEGORIEID + ") REFERENCES " + KATEGORIE_TABLE + "(" + KATEGORIE_ID + "))";
 			stmt.executeUpdate(ct);
 		}
@@ -203,7 +198,7 @@ public class Datenbank {
 	
 	//Daten auslesen
 	public static ArrayList<Benutzer> readBenutzer() throws SQLException{
-		return readBenutzer(null);
+			return readBenutzer(null);
 	}
 	public static ArrayList<Benutzer> readBenutzer(String benutzerName) throws SQLException{		
 		Connection conn = null;
@@ -240,7 +235,7 @@ public class Datenbank {
 		return alBenutzer;
 	}
 	
-	public static EintraegeList readEintraege(String Kategorie, String EinnahmeOdAusgabe, String Benutzer) throws SQLException{
+	public static EintraegeList readEintraege(String Kategorie, Boolean EinnahmeOdAusgabe, String Benutzer) throws SQLException{
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
@@ -251,7 +246,7 @@ public class Datenbank {
 			stmt = conn.prepareStatement(select);
 			rs = stmt.executeQuery();
 			while(rs.next()) {			
-				alEintraege.add(new Eintrag(rs.getInt(EINTRAG_ID),rs.getBoolean(EINTRAG_EINNAHMEODERAUSGABE), rs.getDate(EINTRAG_DATUM).toLocalDate(), rs.getString(EINTRAG_TITEL), rs.getDouble(EINTRAG_BETRAG), new Benutzer(rs.getInt(BENUTZER_ID), rs.getString(BENUTZER_NAME)), new Kategorie(rs.getInt(KATEGORIE_ID))));
+				alEintraege.add(new Eintrag(rs.getInt(EINTRAG_ID),rs.getBoolean(EINTRAG_EINNAHMEODERAUSGABE), rs.getDate(EINTRAG_DATUM).toLocalDate(), rs.getString(EINTRAG_TITEL), rs.getDouble(EINTRAG_BETRAG), new Benutzer(rs.getInt(BENUTZER_ID), rs.getString(BENUTZER_NAME)), new Kategorie(rs.getInt(KATEGORIE_ID), rs.getString(KATEGORIE_NAME), rs.getBoolean(KATEGORIE_FAVORITE))));
 			}
 			rs.close();
 			}
@@ -276,14 +271,14 @@ public class Datenbank {
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
-		ArrayList<Eintrag> alDauereintraege = new ArrayList<>();
+		ArrayList<Dauereintrag> alDauereintraege = new ArrayList<>();
 		String select = "SELECT * FROM " + DAUEREINTRAG_TABLE;
 		try {
 			conn = DriverManager.getConnection(CONNECTION_URL);
 			stmt = conn.prepareStatement(select);
 			rs = stmt.executeQuery();
 			while(rs.next()) {			
-				alDauereintraege.add(new Dauereintrag(rs.getInt(DAUEREINTRAG_ID), rs.getDate(DAUEREINTRAG_NAECHSTEFAELLIGKEIT), rs.getString(DAUEREINTRAG_TITEL), rs.getDouble(DAUEREINTRAG_BETRAG), rs.getDate(DAUEREINTRAG_ENDEDATUM), rs.getString(DAUEREINTRAG_INTERVALL), new Benutzer(rs.getInt(BENUTZER_ID), rs.getString(BENUTZER_NAME)), new Kategorie(rs.getInt(KATEGORIE_ID))));
+				alDauereintraege.add(new Dauereintrag(rs.getInt(DAUEREINTRAG_ID), rs.getBoolean(DAUEREINTRAG_EINNAHMEODERAUSGABE), rs.getDate(DAUEREINTRAG_NAECHSTEFAELLIGKEIT).toLocalDate(), rs.getString(DAUEREINTRAG_TITEL), rs.getDouble(DAUEREINTRAG_BETRAG), rs.getDate(DAUEREINTRAG_ENDEDATUM).toLocalDate(), Enum.valueOf(Intervall.class, rs.getString(DAUEREINTRAG_INTERVALL)), new Benutzer(rs.getInt(BENUTZER_ID), rs.getString(BENUTZER_NAME)), new Kategorie(rs.getInt(KATEGORIE_ID), rs.getString(KATEGORIE_NAME), rs.getBoolean(KATEGORIE_FAVORITE))));
 			}
 			rs.close();
 			}
@@ -308,7 +303,7 @@ public class Datenbank {
 	public static boolean benutzerExist(String benutzerName) throws SQLException{
 		try {
 			List<Benutzer> alBenutzer = Datenbank.readBenutzer();
-			return alBenutzer.stream().anyMatch(b -> b.equals(benutzerName));
+			return alBenutzer.stream().anyMatch(b -> b.getName().equals(benutzerName));
 		} catch (SQLException e) {
 			throw e;
 		}	
@@ -320,13 +315,12 @@ public class Datenbank {
 		PreparedStatement stmt = null;
 		try {
 			conn = DriverManager.getConnection(CONNECTION_URL);
-			String insert = "INSERT INTO " + BENUTZER_TABLE + " VALUES(" +
-					"?," + 	//BENUTZER_ID
-					"?)"; 	//BENUTZER_NAME
+			String insert = "INSERT INTO " + BENUTZER_TABLE + " (" +
+                    BENUTZER_NAME +
+                    ") VALUES (?)"; 	//BENUTZER_NAME
 			stmt = conn.prepareStatement(insert);
-			stmt.setString(1, b.getName());		//Fragezeichen 1
-			stmt.setString(2, b.getName());		//Fragezeichen 2
-			stmt.executeUpdate();		
+			stmt.setString(1, b.getName());		
+			int entryId = stmt.executeUpdate();		
 		}
 		catch(SQLException e) {
 			throw e;

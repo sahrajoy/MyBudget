@@ -37,6 +37,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import model.Benutzer;
+import model.BenutzerFX;
 import model.Datenbank;
 import model.Dauereintrag;
 import model.Eintrag;
@@ -51,19 +52,13 @@ public class MainController {
 	
 	@FXML HBox hbBenutzer;
 	@FXML Button bBenutzerAnlegen; 		
-	@FXML public void benutzerAnlegen(ActionEvent event) throws SQLException{
-////			if(result.get() == ButtonType.OK && !Datenbank.benutzerExist(result.get().toString())) {
-//////				Datenbank.insertBenutzer(result.get().toString());
-////			}
-////			if(result.get() == ButtonType.OK && Datenbank.benutzerExist(result.get().toString())) {
-////				new Alert(AlertType.ERROR, "Benutzer existiert bereits").showAndWait();
-////			}
-
+	@FXML 
+	public void benutzerAnlegen(ActionEvent event) throws SQLException{
 		try {
 			FXMLLoader fxmlLoader = new FXMLLoader();
 			fxmlLoader.setLocation(getClass().getResource("/view/BenutzerDialog.fxml"));
 			DialogPane benutzerDialog = fxmlLoader.load();
-
+			
 			Dialog<ButtonType> dialog = new Dialog<>();
 			dialog.setDialogPane(benutzerDialog);
 			dialog.setTitle("Benutzer verwalten");
@@ -72,15 +67,16 @@ public class MainController {
 			((Button) dialog.getDialogPane().lookupButton(ButtonType.CANCEL)).setText("Abbrechen");
 
 			Optional<ButtonType> clickedButton = dialog.showAndWait();
-			if(clickedButton.get() == ButtonType.OK && !Datenbank.benutzerExist(clickedButton.get().toString())) {
-//				Datenbank.insertBenutzer(new Benutzer(clickedButton.get().toString()));
+			if(clickedButton.get() == ButtonType.OK && !Datenbank.benutzerExist("Testperson2")) {		//tfNeuerBenutzer.getText
+				Datenbank.insertBenutzer(new Benutzer("Testperson2"));
+				showBenutzer();
 			}
-			if(clickedButton.get() == ButtonType.OK && Datenbank.benutzerExist(clickedButton.get().toString())) {
-//				Datenbank.insertBenutzer(new Benutzer(clickedButton.get().toString()));
+			else if(clickedButton.get() == ButtonType.OK && Datenbank.benutzerExist("Testperson2")) {			//tfNeuerBenutzer.getText
+				new Alert(AlertType.ERROR, "Benutzer existiert bereits").showAndWait();
 			}
-			if(clickedButton.get() == ButtonType.CANCEL) {
+			else if(clickedButton.get() == ButtonType.CANCEL) {
 				return;
-			}
+			}			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -97,7 +93,6 @@ public class MainController {
 			new Alert(AlertType.ERROR, e.toString());
 		}	
 	}
-	
 	
 	//Einahmen
 	@FXML Tab tabEinnahmen;
@@ -346,6 +341,10 @@ public class MainController {
 	//Methoden
 	@FXML
 	public void initialize() {
+		
+		// Benutzer laden und der Observer List hinzufügen
+		 showBenutzer();
+		
 		cbBenutzer.setItems(olBenutzer);
 //		cbBenutzer.getSelectionModel().select("Haushalt");			//Haushalt Objekt hinterlegen
 		//Einnahmen

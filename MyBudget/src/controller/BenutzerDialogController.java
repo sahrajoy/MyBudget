@@ -8,6 +8,7 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
@@ -37,10 +38,13 @@ public class BenutzerDialogController extends Dialog<ButtonType> {
 	@FXML TableColumn<Benutzer, String> benutzerCol;
 	
 	
+
 	
+	//Methoden
 	@FXML
 	public void initialize() {
-		benutzerCol.setCellValueFactory(new PropertyValueFactory<>(""));
+		
+		benutzerCol.setCellValueFactory(new PropertyValueFactory<>("Benutzer"));
 		showBenutzer();
 	}
 	
@@ -53,5 +57,10 @@ public class BenutzerDialogController extends Dialog<ButtonType> {
 		} catch (SQLException e) {
 			new Alert(AlertType.ERROR, e.toString());
 		}	
+	}
+	
+	@FXML
+	public void setResult() {
+		
 	}
 }
