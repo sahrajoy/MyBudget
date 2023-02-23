@@ -2,7 +2,6 @@ package controller;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -50,8 +49,18 @@ public class BenutzerDialogController extends Dialog<ButtonType> {
 	}
 	
 	@FXML
-	public void insertBenutzerToList() {		
-		olBenutzer.add(new BenutzerFX(new Benutzer(tfNeuerBenutzer.getText())));
+	public void insertBenutzerToList() {	
+		boolean exists = false;
+	    for (BenutzerFX einBenutzerFX : olBenutzer) {
+	        if (einBenutzerFX.getName().equals(tfNeuerBenutzer.getText())) {	
+	            new Alert(AlertType.ERROR, "Benutzer existiert bereits!").showAndWait();
+	            exists = true;
+	            break;
+	        }
+	    }
+	    if (!exists) {
+	        olBenutzer.add(new BenutzerFX(new Benutzer(tfNeuerBenutzer.getText())));	
+	    }
 	}
 	
 	@FXML
@@ -72,7 +81,7 @@ public class BenutzerDialogController extends Dialog<ButtonType> {
 		}	
 	}
 
-	public ObservableList<BenutzerFX> getUpdatetList() {
+	public ObservableList<BenutzerFX> getUpdatetBenutzerList() {
 		return olBenutzer;
 	}
 	

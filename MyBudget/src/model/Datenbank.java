@@ -9,6 +9,8 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import javafx.collections.ObservableList;
+
 public class Datenbank {
 	private static final String DB_LOCATION = "C:\\Users\\sahra\\git\\MyBudget\\Temp\\Datenbank";
 	private static final String CONNECTION_URL = "jdbc:derby:" + DB_LOCATION + ";create=true";
@@ -300,10 +302,10 @@ public class Datenbank {
 	}
 	
 	//Daten überprüfen
-	public static boolean benutzerExist(String benutzerName) throws SQLException{
+	public static boolean benutzerExist(BenutzerFX einBenutzerFX) throws SQLException{
 		try {
 			List<Benutzer> alBenutzer = Datenbank.readBenutzer();
-			return alBenutzer.stream().anyMatch(b -> b.getName().equals(benutzerName));
+			return alBenutzer.stream().anyMatch(b -> b.getName().equals(einBenutzerFX));
 		} catch (SQLException e) {
 			throw e;
 		}	
@@ -348,8 +350,51 @@ public class Datenbank {
 	}
 	
 	//Daten ändern
-	public static void updateBenutzer(Benutzer benutzer) throws SQLException{
-		
+	public static void updateBenutzer(ObservableList<BenutzerFX> olBenutzerFX) throws SQLException{
+		Connection conn = null;
+		PreparedStatement insertStmt = null;
+		PreparedStatement deleteStmt = null;
+		try {
+			conn = DriverManager.getConnection(CONNECTION_URL);
+			String insert = "INSERT INTO " + BENUTZER_TABLE + " (" + 
+					BENUTZER_NAME + 
+					") VALUES (?)";
+			insertStmt = conn.prepareStatement(insert);
+			 
+			String delete = "DELETE FROM " + BENUTZER_TABLE;
+			deleteStmt = conn.prepareStatement(delete);
+			conn.setAutoCommit(false);
+			 
+			//Löschen alter Daten
+			deleteStmt.executeUpdate();
+			 
+			//Einfügen neuer Daten
+			for (BenutzerFX einBenutzerFX : olBenutzerFX) {
+				insertStmt.setString(1, einBenutzerFX.getName());
+				insertStmt.executeUpdate();
+				}
+			conn.commit();
+		} 
+		catch (SQLException e)
+		{
+			if (conn != null) {
+				conn.rollback();
+			}
+			 throw e;
+		   } 
+		finally {
+			try {
+				if (insertStmt != null)
+					insertStmt.close();
+				if (deleteStmt != null)
+					deleteStmt.close();
+				if (conn != null)
+					conn.close();
+				} 
+			catch (SQLException e) {
+				 throw e;
+			}
+		}
 	}
 	public static void updateKategorie(Kategorie kategorie) throws SQLException{
 		

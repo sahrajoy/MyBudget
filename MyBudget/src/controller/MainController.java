@@ -7,7 +7,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.Optional;
-
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -61,6 +60,9 @@ public class MainController {
 			fxmlLoader.setLocation(getClass().getResource("/view/BenutzerDialog.fxml"));
 			DialogPane benutzerDialog = fxmlLoader.load();
 			
+			//Holen der BenutzerDialogController-Instanzen
+			BenutzerDialogController bdc = fxmlLoader.getController();		
+						
 			Dialog<ButtonType> dialog = new Dialog<>();
 			dialog.setDialogPane(benutzerDialog);
 			dialog.setTitle("Benutzer verwalten");
@@ -69,16 +71,13 @@ public class MainController {
 			((Button) dialog.getDialogPane().lookupButton(ButtonType.CANCEL)).setText("Abbrechen");
 
 			Optional<ButtonType> clickedButton = dialog.showAndWait();
-			if(clickedButton.get() == ButtonType.OK && !Datenbank.benutzerExist("")) {		//tfNeuerBenutzer.getText
-				Datenbank.insertBenutzer(new Benutzer(""));
+			if(clickedButton.get() == ButtonType.OK ) {		
+				Datenbank.updateBenutzer(bdc.getUpdatetBenutzerList());
 				showBenutzer();
-			}
-			else if(clickedButton.get() == ButtonType.OK && Datenbank.benutzerExist("")) {			//tfNeuerBenutzer.getText
-				new Alert(AlertType.ERROR, "Benutzer existiert bereits").showAndWait();
-			}
-			else if(clickedButton.get() == ButtonType.CANCEL) {
-				return;
-			}			
+				cbBenutzer.setItems(bdc.getUpdatetBenutzerList()); 		
+				}
+			else 
+				return;			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

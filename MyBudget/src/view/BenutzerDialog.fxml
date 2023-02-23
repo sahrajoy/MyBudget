@@ -11,6 +11,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
 <DialogPane fx:id="benutzerDialog" minHeight="300.0" minWidth="319.0" prefHeight="300.0" prefWidth="319.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.BenutzerDialogController">
    <buttonTypes>
@@ -22,9 +23,18 @@
          <children>
             <VBox fx:id="vbBenutzer" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                <children>
-                  <HBox fx:id="hbNeuerBenutzer" spacing="10.0">
+                  <HBox fx:id="hbNeuerBenutzer" alignment="CENTER_RIGHT" spacing="10.0">
                      <children>
-                        <Label fx:id="lblNeuerBenutzer" text="Neuen Benutzer eingeben" />
+                        <VBox alignment="CENTER_LEFT">
+                           <children>
+                              <Label fx:id="lblNeuerBenutzer" text="Neuen Benutzer eingeben " />
+                              <Label text="(und mit Eingabetaste bestätigen)" textFill="#000000a7">
+                                 <font>
+                                    <Font size="10.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </VBox>
                         <TextField fx:id="tfNeuerBenutzer" onAction="#insertBenutzerToList" />
                      </children>
                      <padding>
