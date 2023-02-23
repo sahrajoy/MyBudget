@@ -39,7 +39,10 @@ public class BenutzerFX {
 	public final void setName(final String name) {
 		this.nameProperty().set(name);
 	}
-	
+
+
+
+
 	
 	
 	

@@ -22,6 +22,8 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -36,6 +38,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.util.Callback;
 import model.Benutzer;
 import model.BenutzerFX;
 import model.Datenbank;
@@ -46,14 +49,13 @@ import model.Kategorie;
 
 public class MainController {
 	
-	ObservableList<Benutzer> olBenutzer = FXCollections.observableArrayList();		//Liste Benutzernamen hinterlegen
+	ObservableList<BenutzerFX> olBenutzer = FXCollections.observableArrayList();		//Liste Benutzernamen hinterlegen
 	ObservableList<String> olSortierung = FXCollections.observableArrayList("Kategorie A-Z", "Kategorie Z-A", "Betrag aufsteigend","Betrag absteigend", "Datum aufsteigend", "Datum absteigend");
 	ObservableList<Eintrag> olEintraege = FXCollections.observableArrayList();
 	
 	@FXML HBox hbBenutzer;
-	@FXML Button bBenutzerAnlegen; 		
-	@FXML 
-	public void benutzerAnlegen(ActionEvent event) throws SQLException{
+	@FXML Button bBenutzerAnlegenEntfernen; 		
+	@FXML public void benutzerAnlegen(ActionEvent event) throws SQLException{
 		try {
 			FXMLLoader fxmlLoader = new FXMLLoader();
 			fxmlLoader.setLocation(getClass().getResource("/view/BenutzerDialog.fxml"));
@@ -67,11 +69,11 @@ public class MainController {
 			((Button) dialog.getDialogPane().lookupButton(ButtonType.CANCEL)).setText("Abbrechen");
 
 			Optional<ButtonType> clickedButton = dialog.showAndWait();
-			if(clickedButton.get() == ButtonType.OK && !Datenbank.benutzerExist("Testperson2")) {		//tfNeuerBenutzer.getText
-				Datenbank.insertBenutzer(new Benutzer("Testperson2"));
+			if(clickedButton.get() == ButtonType.OK && !Datenbank.benutzerExist("")) {		//tfNeuerBenutzer.getText
+				Datenbank.insertBenutzer(new Benutzer(""));
 				showBenutzer();
 			}
-			else if(clickedButton.get() == ButtonType.OK && Datenbank.benutzerExist("Testperson2")) {			//tfNeuerBenutzer.getText
+			else if(clickedButton.get() == ButtonType.OK && Datenbank.benutzerExist("")) {			//tfNeuerBenutzer.getText
 				new Alert(AlertType.ERROR, "Benutzer existiert bereits").showAndWait();
 			}
 			else if(clickedButton.get() == ButtonType.CANCEL) {
@@ -82,13 +84,34 @@ public class MainController {
 		}
 	}
 		
-	@FXML ComboBox<Benutzer> cbBenutzer; 
+	@FXML ComboBox<BenutzerFX> cbBenutzer; 
+	
+	public void vbBenutzerCallback(){
+		cbBenutzer.setCellFactory(new Callback<ListView<BenutzerFX>, ListCell<BenutzerFX>>() {
+			@Override
+			public ListCell<BenutzerFX> call(ListView<BenutzerFX> param) {
+				return new ListCell<BenutzerFX>() {
+					@Override
+					protected void updateItem(BenutzerFX item, boolean empty) {
+						super.updateItem(item, empty);
+						if (item != null) {
+							textProperty().bind(item.nameProperty());
+						} else {
+							textProperty().unbind();
+							setText("");
+						}
+					}
+				};
+			}
+		});
+	}
+	
 	public void showBenutzer() {
 		try {
 			ArrayList<Benutzer> alBenutzer = Datenbank.readBenutzer();
 			olBenutzer.clear();
 			for(Benutzer einBenutzer : alBenutzer)
-				olBenutzer.add(einBenutzer);
+				olBenutzer.add(new BenutzerFX(einBenutzer));
 		} catch (SQLException e) {
 			new Alert(AlertType.ERROR, e.toString());
 		}	
@@ -100,20 +123,17 @@ public class MainController {
 	@FXML Button bEinnahmenUebersicht;	
 	@FXML
 	public void showKategorieEinnahmen() {
-//		tvEinnahmenUebersichtKategorien
-		
+//		tvEinnahmenUebersichtKategorien	
 	}
 	@FXML Button bEinnahmenFavoriten;
 	@FXML
 	public void showEintraegeEinnahmen() {
 //		tvEinnahmenFavoriten
-		
 	}
 	@FXML Button bEinnahmenDauereintraege;
 	@FXML
 	public void showDauereintraegeEinnahmen() {
 //		tvEinnahmenDauereintraege
-		
 	}
 	
 	//StackPane Einnahmen Übersicht
@@ -156,7 +176,7 @@ public class MainController {
 	@FXML Label lblEinnahmenFavoritenBetrag;
 	@FXML TextField txtEinnahmenFavoritenBetrag;
 	@FXML Label lblEinnahmenFavoritenBenutzer;
-	@FXML ComboBox<Benutzer> cbEinnahmenFavoritenBenutzer;
+	@FXML ComboBox<BenutzerFX> cbEinnahmenFavoritenBenutzer;
 	@FXML Label lblEinnahmenFavoritenDauereintrag;
 	@FXML ComboBox<Intervall> cbEinnahmenFavoritenIntervall;
 	@FXML Label lblEinnahmenFavoritenEndeDauereintrag;
@@ -212,19 +232,16 @@ public class MainController {
 	@FXML
 	public void showKategorieAusgaben() {
 //		tvAusgabenUebersichtKategorien
-		
 	}
 	@FXML Button bAusgabenFavoriten;
 	@FXML
 	public void showEintraegeAusgaben() {
 //		tvAusgabenFavoriten
-		
 	}
 	@FXML Button bAusgabenDauereintraege;
 	@FXML
 	public void showDauereintraegeAusgaben() {
 //		tvAusgabenDauereintraege
-		
 	}
 
 	//StackPane Ausgaben Übersicht
@@ -267,7 +284,7 @@ public class MainController {
 	@FXML Label lblAusgabenFavoritenBetrag;
 	@FXML TextField txtAusgabenFavoritenBetrag;
 	@FXML Label lblAusgabenFavoritenBenutzer;
-	@FXML ComboBox<Benutzer> cbAusgabenFavoritenBenutzer;
+	@FXML ComboBox<BenutzerFX> cbAusgabenFavoritenBenutzer;
 	@FXML Label lblAusgabenFavoritenDauereintrag;
 	@FXML ComboBox<Intervall> cbAusgabenFavoritenIntervall;
 	@FXML Label lblAusgabenFavoritenEndeDauereintrag;
@@ -341,12 +358,12 @@ public class MainController {
 	//Methoden
 	@FXML
 	public void initialize() {
-		
-		// Benutzer laden und der Observer List hinzufügen
-		 showBenutzer();
-		
+		//Benutzer laden und der ObserverList hinzufügen
+		showBenutzer();
+		cbBenutzer.setValue(new BenutzerFX(new Benutzer("Haushalt")));		//name formatiert anzeigen
+		vbBenutzerCallback();
 		cbBenutzer.setItems(olBenutzer);
-//		cbBenutzer.getSelectionModel().select("Haushalt");			//Haushalt Objekt hinterlegen
+		
 		//Einnahmen
 		cbEinnahmenUebersichtSortierung.getSelectionModel().select("Kategorie A-Z");
 		cbEinnahmenUebersichtSortierung.setItems(olSortierung);
@@ -359,6 +376,9 @@ public class MainController {
 		lblEinnahmenDauereintraegeDatum.setText(LocalDate.now().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)));
 		cbEinnahmenDauereintraegeSortierung.getSelectionModel().select("Datum aufsteigend");
 		cbEinnahmenDauereintraegeSortierung.setItems(olSortierung);
+		
+//		set Favoriten on disable wenn keine Favoriten vorhanden
+		
 		//Ausgaben
 		cbAusgabenUebersichtSortierung.getSelectionModel().select("Kategorie A-Z");
 		cbAusgabenUebersichtSortierung.setItems(olSortierung);
@@ -371,6 +391,9 @@ public class MainController {
 		lblAusgabenDauereintraegeDatum.setText(LocalDate.now().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)));
 		cbAusgabenDauereintraegeSortierung.getSelectionModel().select("Datum aufsteigend");
 		cbAusgabenDauereintraegeSortierung.setItems(olSortierung);
+		
+//		set Favoriten on disable wenn keine Favoriten vorhanden
+		
 		//Statistik
 //		cbHaushalt.setDefaultButton(true)
 //		bUebersicht.setDefaultButton(true);

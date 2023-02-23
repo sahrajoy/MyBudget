@@ -32,7 +32,7 @@
             <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
          </BorderPane.margin>
          <children>
-            <Button fx:id="bBenutzerAnlegen" mnemonicParsing="false" onAction="#benutzerAnlegen" text="+" />
+            <Button fx:id="bBenutzerAnlegenEntfernen" mnemonicParsing="false" onAction="#benutzerAnlegen" text="+ / -" />
             <ComboBox fx:id="cbBenutzer" minWidth="-Infinity" prefHeight="25.0" prefWidth="121.0" />
          </children>
       </HBox>

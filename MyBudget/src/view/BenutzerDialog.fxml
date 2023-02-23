@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ButtonType?>
 <?import javafx.scene.control.DialogPane?>
 <?import javafx.scene.control.Label?>
@@ -24,7 +25,7 @@
                   <HBox fx:id="hbNeuerBenutzer" spacing="10.0">
                      <children>
                         <Label fx:id="lblNeuerBenutzer" text="Neuen Benutzer eingeben" />
-                        <TextField fx:id="tfNeuerBenutzer" />
+                        <TextField fx:id="tfNeuerBenutzer" onAction="#insertBenutzerToList" />
                      </children>
                      <padding>
                         <Insets bottom="10.0" />
@@ -38,6 +39,7 @@
                             <TableColumn fx:id="benutzerCol" prefWidth="349.0" />
                           </columns>
                         </TableView>
+                        <Button fx:id="bBenutzerLoeschen" mnemonicParsing="false" onAction="#loescheBenutzer" text="Benutzer löschen" />
                      </children>
                   </VBox>
                </children>

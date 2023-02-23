@@ -20,10 +20,12 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import model.Benutzer;
+import model.BenutzerFX;
 import model.Datenbank;
 
 public class BenutzerDialogController extends Dialog<ButtonType> {
-	ObservableList<String> olBenutzer = FXCollections.observableArrayList();
+	ArrayList<Benutzer> alBenutzer = new ArrayList<>();
+	ObservableList<BenutzerFX> olBenutzer = FXCollections.observableArrayList();
 	
 	@FXML DialogPane benutzerDialog;
 	@FXML VBox vbBenutzer;
@@ -34,33 +36,45 @@ public class BenutzerDialogController extends Dialog<ButtonType> {
 	
 	@FXML VBox vbBestehendeBenutzer;
 	@FXML Label lblBestehendeBenutzer;
-	@FXML TableView<Benutzer> tvBenutzer;
-	@FXML TableColumn<Benutzer, String> benutzerCol;
+	@FXML TableView<BenutzerFX> tvBenutzer;
+	@FXML TableColumn<BenutzerFX, String> benutzerCol;
 	
-	
-
+	@FXML Button bBenutzerLoeschen;
 	
 	//Methoden
 	@FXML
 	public void initialize() {
-		
-		benutzerCol.setCellValueFactory(new PropertyValueFactory<>("Benutzer"));
+		benutzerCol.setCellValueFactory(new PropertyValueFactory<>("name"));
+		tvBenutzer.setItems(olBenutzer);
 		showBenutzer();
 	}
 	
+	@FXML
+	public void insertBenutzerToList() {		
+		olBenutzer.add(new BenutzerFX(new Benutzer(tfNeuerBenutzer.getText())));
+	}
+	
+	@FXML
+	public void loescheBenutzer(){							
+		int i = tvBenutzer.getSelectionModel().getSelectedIndex();
+		olBenutzer.remove(i);
+	}
+	
+	@FXML
 	public void showBenutzer() {
 		try {
-			ArrayList<Benutzer> alBenutzer = Datenbank.readBenutzer();
+			alBenutzer = Datenbank.readBenutzer();
 			olBenutzer.clear();
 			for(Benutzer einBenutzer : alBenutzer)
-				olBenutzer.add(einBenutzer.toString());
+				olBenutzer.add(new BenutzerFX(einBenutzer));
 		} catch (SQLException e) {
 			new Alert(AlertType.ERROR, e.toString());
 		}	
 	}
-	
-	@FXML
-	public void setResult() {
-		
+
+	public ObservableList<BenutzerFX> getUpdatetList() {
+		return olBenutzer;
 	}
+	
+	
 }
