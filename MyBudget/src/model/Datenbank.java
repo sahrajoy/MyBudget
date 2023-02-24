@@ -57,7 +57,7 @@ public class Datenbank {
 			conn = DriverManager.getConnection(CONNECTION_URL);
 			stmt = conn.createStatement();
 			rs = conn.getMetaData().getTables(null, null, BENUTZER_TABLE.toUpperCase(), new String[] {"TABLE"}); 	//um zu prüfen ob die Tabelle schon exestiert	
-			if(rs.next()) {			
+			if(rs.next()) {	
 				return;		//wenn existiert
 			}
 			String ct = "CREATE TABLE " + BENUTZER_TABLE + " (" + 
@@ -65,6 +65,7 @@ public class Datenbank {
 					BENUTZER_NAME + " VARCHAR(200)," +
 					"PRIMARY KEY(" + BENUTZER_ID + "))";
 			stmt.executeUpdate(ct);
+			
 		}
 		catch(SQLException e) {
 			throw e;
@@ -80,6 +81,7 @@ public class Datenbank {
 				throw e;
 			}
 		}
+		insertBenutzer(new Benutzer("HAUSHALT"));
 	}
 
 	public static void createKategorieTable() throws SQLException{		
@@ -237,6 +239,44 @@ public class Datenbank {
 		return alBenutzer;
 	}
 	
+	public static ArrayList<Kategorie> readKategorie() throws SQLException {
+		return readKategorie(null);
+	}
+	public static ArrayList<Kategorie> readKategorie(String kategorieName) throws SQLException {
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		ArrayList<Kategorie> alKategorie = new ArrayList<>();
+		String select = "SELECT * FROM " + KATEGORIE_TABLE;
+		if(kategorieName != null)
+			select += " WHERE " + KATEGORIE_NAME + "=?";
+		try {
+			conn = DriverManager.getConnection(CONNECTION_URL);
+			stmt = conn.prepareStatement(select);
+			if(kategorieName != null)
+				stmt.setString(1, kategorieName);
+			rs = stmt.executeQuery();
+			while(rs.next())
+				alKategorie.add(new Kategorie(rs.getInt(KATEGORIE_ID), rs.getString(KATEGORIE_NAME), rs.getBoolean(KATEGORIE_FAVORITE)));
+			rs.close();
+		}
+		catch(SQLException e) {
+			throw e;
+		}
+		finally {
+			try {
+				if(stmt != null) 
+					stmt.close();
+				if(conn != null)
+					conn.close();
+			}
+			catch(SQLException e) {
+				throw e;
+			}
+		}
+		return alKategorie;
+	}
+	
 	public static EintraegeList readEintraege(String Kategorie, Boolean EinnahmeOdAusgabe, String Benutzer) throws SQLException{
 		Connection conn = null;
 		PreparedStatement stmt = null;
@@ -305,14 +345,14 @@ public class Datenbank {
 	public static boolean benutzerExist(BenutzerFX einBenutzerFX) throws SQLException{
 		try {
 			List<Benutzer> alBenutzer = Datenbank.readBenutzer();
-			return alBenutzer.stream().anyMatch(b -> b.getName().equals(einBenutzerFX));
+			return alBenutzer.stream().anyMatch(b -> b.getName().equals(einBenutzerFX.getName()));
 		} catch (SQLException e) {
 			throw e;
 		}	
 	}
 	
 	//Daten adaptieren
-	public static void insertBenutzer(Benutzer b) throws SQLException{
+	public static void insertBenutzer(Benutzer benutzer) throws SQLException{
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		try {
@@ -321,7 +361,7 @@ public class Datenbank {
                     BENUTZER_NAME +
                     ") VALUES (?)"; 	//BENUTZER_NAME
 			stmt = conn.prepareStatement(insert);
-			stmt.setString(1, b.getName());		
+			stmt.setString(1, benutzer.getName());		
 			int entryId = stmt.executeUpdate();		
 		}
 		catch(SQLException e) {
@@ -339,8 +379,34 @@ public class Datenbank {
 			}
 		}
 	}
-	public static void insertKategorie() throws SQLException{
-		
+	public static void insertKategorie(Kategorie kategorie) throws SQLException{
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		try {
+			conn = DriverManager.getConnection(CONNECTION_URL);
+			String insert = "INSERT INTO " + KATEGORIE_TABLE + 
+					"(" + KATEGORIE_NAME + "," + KATEGORIE_FAVORITE + ") VALUES(" +
+					"?," +	//KATEGORIE_NAME
+					"?)"; 	//KATEGORIE_FAVORITE
+			stmt = conn.prepareStatement(insert);
+			stmt.setString(1, kategorie.getName());	
+			stmt.setBoolean(2, kategorie.isFavorite());
+			stmt.executeUpdate();		
+		}
+		catch(SQLException e) {
+			throw e;
+		}
+		finally {
+			try {
+				if(stmt != null) 
+					stmt.close();
+				if(conn != null)
+					conn.close();
+			}
+			catch(SQLException e) {
+				throw e;
+			}
+		}
 	}
 	public static void insertEintrag() throws SQLException{
 		
@@ -351,50 +417,7 @@ public class Datenbank {
 	
 	//Daten ändern
 	public static void updateBenutzer(ObservableList<BenutzerFX> olBenutzerFX) throws SQLException{
-		Connection conn = null;
-		PreparedStatement insertStmt = null;
-		PreparedStatement deleteStmt = null;
-		try {
-			conn = DriverManager.getConnection(CONNECTION_URL);
-			String insert = "INSERT INTO " + BENUTZER_TABLE + " (" + 
-					BENUTZER_NAME + 
-					") VALUES (?)";
-			insertStmt = conn.prepareStatement(insert);
-			 
-			String delete = "DELETE FROM " + BENUTZER_TABLE;
-			deleteStmt = conn.prepareStatement(delete);
-			conn.setAutoCommit(false);
-			 
-			//Löschen alter Daten
-			deleteStmt.executeUpdate();
-			 
-			//Einfügen neuer Daten
-			for (BenutzerFX einBenutzerFX : olBenutzerFX) {
-				insertStmt.setString(1, einBenutzerFX.getName());
-				insertStmt.executeUpdate();
-				}
-			conn.commit();
-		} 
-		catch (SQLException e)
-		{
-			if (conn != null) {
-				conn.rollback();
-			}
-			 throw e;
-		   } 
-		finally {
-			try {
-				if (insertStmt != null)
-					insertStmt.close();
-				if (deleteStmt != null)
-					deleteStmt.close();
-				if (conn != null)
-					conn.close();
-				} 
-			catch (SQLException e) {
-				 throw e;
-			}
-		}
+		
 	}
 	public static void updateKategorie(Kategorie kategorie) throws SQLException{
 		
@@ -509,5 +532,6 @@ public class Datenbank {
 				throw e;
 			}
 		}
-	} 
+	}
+
 }

@@ -40,11 +40,9 @@ public class BenutzerFX {
 		this.nameProperty().set(name);
 	}
 
+	@Override
+	public String toString() {
+		return name.get();
+	}
 
-
-
-	
-	
-	
-	
 }

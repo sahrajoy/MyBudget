@@ -1,6 +1,7 @@
 package model;
 
 public enum Intervall {
+	KEINE("keine"),
 	TAEGLICH("täglich"),
 	WOECHENTLICH("wöchentlich"),
 	MONATLICH("monatlich"),
@@ -24,9 +25,8 @@ public enum Intervall {
 	
 	@Override
 	public String toString() {
-		return "Intervall [iName=" + iName + "]"; 
+		return iName; 
 	}
-
 
 }
 	

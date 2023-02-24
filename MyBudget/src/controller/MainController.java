@@ -52,68 +52,13 @@ public class MainController {
 	ObservableList<String> olSortierung = FXCollections.observableArrayList("Kategorie A-Z", "Kategorie Z-A", "Betrag aufsteigend","Betrag absteigend", "Datum aufsteigend", "Datum absteigend");
 	ObservableList<Eintrag> olEintraege = FXCollections.observableArrayList();
 	
+	//Benutzer
 	@FXML HBox hbBenutzer;
-	@FXML Button bBenutzerAnlegenEntfernen; 		
-	@FXML public void benutzerAnlegen(ActionEvent event) throws SQLException{
-		try {
-			FXMLLoader fxmlLoader = new FXMLLoader();
-			fxmlLoader.setLocation(getClass().getResource("/view/BenutzerDialog.fxml"));
-			DialogPane benutzerDialog = fxmlLoader.load();
-			
-			//Holen der BenutzerDialogController-Instanzen
-			BenutzerDialogController bdc = fxmlLoader.getController();		
-						
-			Dialog<ButtonType> dialog = new Dialog<>();
-			dialog.setDialogPane(benutzerDialog);
-			dialog.setTitle("Benutzer verwalten");
-			
-			((Button) dialog.getDialogPane().lookupButton(ButtonType.OK)).setText("Speichern");
-			((Button) dialog.getDialogPane().lookupButton(ButtonType.CANCEL)).setText("Abbrechen");
-
-			Optional<ButtonType> clickedButton = dialog.showAndWait();
-			if(clickedButton.get() == ButtonType.OK ) {		
-				Datenbank.updateBenutzer(bdc.getUpdatetBenutzerList());
-				showBenutzer();
-				cbBenutzer.setItems(bdc.getUpdatetBenutzerList()); 		
-				}
-			else 
-				return;			
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-		
+	@FXML Button bBenutzerAnlegenEntfernen; 			
 	@FXML ComboBox<BenutzerFX> cbBenutzer; 
 	
-	public void vbBenutzerCallback(){
-		cbBenutzer.setCellFactory(new Callback<ListView<BenutzerFX>, ListCell<BenutzerFX>>() {
-			@Override
-			public ListCell<BenutzerFX> call(ListView<BenutzerFX> param) {
-				return new ListCell<BenutzerFX>() {
-					@Override
-					protected void updateItem(BenutzerFX item, boolean empty) {
-						super.updateItem(item, empty);
-						if (item != null) {
-							textProperty().bind(item.nameProperty());
-						} else {
-							textProperty().unbind();
-							setText("");
-						}
-					}
-				};
-			}
-		});
-	}
-	
-	public void showBenutzer() {
-		try {
-			ArrayList<Benutzer> alBenutzer = Datenbank.readBenutzer();
-			olBenutzer.clear();
-			for(Benutzer einBenutzer : alBenutzer)
-				olBenutzer.add(new BenutzerFX(einBenutzer));
-		} catch (SQLException e) {
-			new Alert(AlertType.ERROR, e.toString());
-		}	
+	@FXML public void benutzerAuswaehlen() {			//Methode ausarbeiten um Benutzer zu wählen und die dementsprechenden Daten anzuzeigen
+		cbBenutzer.getSelectionModel().getSelectedItem().getBenutzerId();
 	}
 	
 	//Einahmen
@@ -207,22 +152,6 @@ public class MainController {
 	@FXML TableColumn<Dauereintrag, Intervall> einnahmenDauereintraegeIntervallCol;
 	@FXML TableColumn<Dauereintrag, LocalDate> einnahmenDauereintraegeEndeCol;
 	@FXML TableColumn<Dauereintrag, String> einnahmenDauereintraegeButtonsCol;		//Variable für Buttons?
-		
-	@FXML 
-	public void showStackEinnahmenUebersicht(ActionEvent event) {
-		apEinnahmen.getChildren().remove(spEinnahmenUebersicht);
-		apEinnahmen.getChildren().add(spEinnahmenUebersicht);
-	}
-	@FXML 
-	public void showStackEinnahmenFavoriten(ActionEvent event) {
-		apEinnahmen.getChildren().remove(spEinnahmenFavoriten);
-		apEinnahmen.getChildren().add(spEinnahmenFavoriten);
-	}
-	@FXML 
-	public void showStackEinnahmenDauereintraege(ActionEvent event) {
-		apEinnahmen.getChildren().remove(spEinnahmenDauereintraege);
-		apEinnahmen.getChildren().add(spEinnahmenDauereintraege);
-	}
 	
 	//Ausgaben
 	@FXML Tab tabAusgaben;
@@ -316,22 +245,6 @@ public class MainController {
 	@FXML TableColumn<Dauereintrag, LocalDate> ausgabenDauereintraegeEndeCol;
 	@FXML TableColumn<Dauereintrag, String> ausgabenDauereintraegeButtonsCol;		//Variable für Buttons?
 	
-	@FXML 
-	public void showStackAusgabenUebersicht(ActionEvent event) {
-		apAusgaben.getChildren().remove(spAusgabenUebersicht);
-		apAusgaben.getChildren().add(spAusgabenUebersicht);
-	}
-	@FXML 
-	public void showStackAusgabenFavoriten(ActionEvent event) {
-		apAusgaben.getChildren().remove(spAusgabenFavoriten);
-		apAusgaben.getChildren().add(spAusgabenFavoriten);
-	}
-	@FXML 
-	public void showStackAusgabenDauereintraege(ActionEvent event) {
-		apAusgaben.getChildren().remove(spAusgabenDauereintraege);
-		apAusgaben.getChildren().add(spAusgabenDauereintraege);
-	}
-	
 	//Statistik
 	@FXML Tab tabStatistik;
 	@FXML HBox hbStatistik;
@@ -359,8 +272,7 @@ public class MainController {
 	public void initialize() {
 		//Benutzer laden und der ObserverList hinzufügen
 		showBenutzer();
-		cbBenutzer.setValue(new BenutzerFX(new Benutzer("Haushalt")));		//name formatiert anzeigen
-		vbBenutzerCallback();
+//		cbBenutzer.setValue("HAUSHALT");
 		cbBenutzer.setItems(olBenutzer);
 		
 		//Einnahmen
@@ -396,8 +308,105 @@ public class MainController {
 		//Statistik
 //		cbHaushalt.setDefaultButton(true)
 //		bUebersicht.setDefaultButton(true);
+		
+	}
+//	@FXML public void bEinnahmenEintragSpeichern() {
+//		if(cbEinnahmenFavoritenIntervall.getValue().equals("keine")) {
+//			
+//		}
+//		dpEinnahmenFavoritenDatum.getValue().set
+//		txtEinnahmenFavoritenTitel
+//		txtEinnahmenFavoritenBetrag
+//		cbEinnahmenFavoritenBenutzer
+//		cbEinnahmenFavoritenIntervall
+//		dpEinnahmenFavoritenEndeDauereintrag
+//	}
+	
+	//Benutzer aus Datenbank auslesen und ObservableList hinzufügen
+	public void showBenutzer() {
+		try {
+			ArrayList<Benutzer> alBenutzer = Datenbank.readBenutzer();
+			olBenutzer.clear();
+			for(Benutzer einBenutzer : alBenutzer)
+				olBenutzer.add(new BenutzerFX(einBenutzer));
+		} catch (SQLException e) {
+			new Alert(AlertType.ERROR, e.toString());
+		}	
 	}
 	
+	//Wechseln der Stacks in Einnahmen per klick auf Button(Übersicht, Favoriten, Dauereintraege)
+	@FXML public void showStackEinnahmenUebersicht(ActionEvent event) {
+		apEinnahmen.getChildren().remove(spEinnahmenUebersicht);
+		apEinnahmen.getChildren().add(spEinnahmenUebersicht);
+	}
+	@FXML public void showStackEinnahmenFavoriten(ActionEvent event) {
+		apEinnahmen.getChildren().remove(spEinnahmenFavoriten);
+		apEinnahmen.getChildren().add(spEinnahmenFavoriten);
+	}
+	@FXML public void showStackEinnahmenDauereintraege(ActionEvent event) {
+		apEinnahmen.getChildren().remove(spEinnahmenDauereintraege);
+		apEinnahmen.getChildren().add(spEinnahmenDauereintraege);
+	}
+	
+	//Wechseln der Stacks in Ausgaben per klick auf Button(Übersicht, Favoriten, Dauereintraege)
+	@FXML public void showStackAusgabenUebersicht(ActionEvent event) {
+		apAusgaben.getChildren().remove(spAusgabenUebersicht);
+		apAusgaben.getChildren().add(spAusgabenUebersicht);
+	}
+	@FXML public void showStackAusgabenFavoriten(ActionEvent event) {
+		apAusgaben.getChildren().remove(spAusgabenFavoriten);
+		apAusgaben.getChildren().add(spAusgabenFavoriten);
+	}
+	@FXML public void showStackAusgabenDauereintraege(ActionEvent event) {
+		apAusgaben.getChildren().remove(spAusgabenDauereintraege);
+		apAusgaben.getChildren().add(spAusgabenDauereintraege);
+	}
+	
+	//öffnen des BenutzerDialog
+	@FXML public void benutzerAnlegen(ActionEvent event) throws SQLException{
+		try {
+			FXMLLoader fxmlLoaderBenutzer = new FXMLLoader();
+			fxmlLoaderBenutzer.setLocation(getClass().getResource("/view/BenutzerDialog.fxml"));
+			DialogPane benutzerDialog = fxmlLoaderBenutzer.load();
+			
+			//Holen der BenutzerDialogController-Instanzen
+			BenutzerDialogController bdc = fxmlLoaderBenutzer.getController();		
+						
+			Dialog<ButtonType> dialogBenutzer = new Dialog<>();
+			dialogBenutzer.setDialogPane(benutzerDialog);
+			dialogBenutzer.setTitle("Benutzer verwalten");
+
+			Optional<ButtonType> clickedButton = dialogBenutzer.showAndWait();			
+			if(clickedButton.get() == ButtonType.OK ) {		
+				showBenutzer();
+				cbBenutzer.setItems(olBenutzer);
+				}
+			else 
+				return;			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	//öffnen des KategorieDialog
+	@FXML public void kategorieAnlegen(ActionEvent event) throws SQLException {
+		try {
+			FXMLLoader fxmlLoaderKategorie = new FXMLLoader();
+			fxmlLoaderKategorie.setLocation(getClass().getResource("/view/KategorieDialog.fxml"));
+			DialogPane kategorieDialog = fxmlLoaderKategorie.load();
+			
+			//Holen der KategorieDialogController-Instanzen
+			KategorieDialogController bdc = fxmlLoaderKategorie.getController();		
+						
+			Dialog<ButtonType> dialogKategorie = new Dialog<>();
+			dialogKategorie.setDialogPane(kategorieDialog);
+			dialogKategorie.setTitle("Kategorien verwalten");
+
+			Optional<ButtonType> clickedButton = dialogKategorie.showAndWait();					
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 	
 
 

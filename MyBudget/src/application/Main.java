@@ -19,6 +19,7 @@ public class Main extends Application {
 			Datenbank.createKategorieTable();
 			Datenbank.createEintragTable();
 			Datenbank.createDauereintragTable();
+			//Dauereintraege durchgehen und ausführen
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

@@ -25,6 +25,11 @@ public class Kategorie {
 		this.name = name;
 		this.favorite = favorite;
 	}
+	public Kategorie(String name, boolean favorite) {
+		super();
+		this.name = name;
+		this.favorite = favorite;
+	}
 	public Kategorie() {}
 
 	public int getKategorieId() {

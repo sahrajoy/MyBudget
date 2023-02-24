@@ -2,6 +2,7 @@ package controller;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Optional;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -41,18 +42,16 @@ public class BenutzerDialogController extends Dialog<ButtonType> {
 	@FXML Button bBenutzerLoeschen;
 	
 	//Methoden
-	@FXML
-	public void initialize() {
+	@FXML public void initialize() {
 		benutzerCol.setCellValueFactory(new PropertyValueFactory<>("name"));
 		tvBenutzer.setItems(olBenutzer);
 		showBenutzer();
 	}
 	
-	@FXML
-	public void insertBenutzerToList() {	
+	@FXML public void insertBenutzerToList() {	
 		boolean exists = false;
 	    for (BenutzerFX einBenutzerFX : olBenutzer) {
-	        if (einBenutzerFX.getName().equals(tfNeuerBenutzer.getText())) {	
+	        if (einBenutzerFX.getName().equalsIgnoreCase(tfNeuerBenutzer.getText())) {	
 	            new Alert(AlertType.ERROR, "Benutzer existiert bereits!").showAndWait();
 	            exists = true;
 	            break;
@@ -60,22 +59,40 @@ public class BenutzerDialogController extends Dialog<ButtonType> {
 	    }
 	    if (!exists) {
 	        olBenutzer.add(new BenutzerFX(new Benutzer(tfNeuerBenutzer.getText())));	
+	        try {
+				Datenbank.insertBenutzer(new Benutzer(tfNeuerBenutzer.getText()));
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 	    }
 	}
 	
-	@FXML
-	public void loescheBenutzer(){							
-		int i = tvBenutzer.getSelectionModel().getSelectedIndex();
-		olBenutzer.remove(i);
+	@FXML public void loescheBenutzer(){
+	    Alert confirmationDialog = new Alert(Alert.AlertType.CONFIRMATION);
+	    confirmationDialog.setTitle("Benutzer löschen");
+	    confirmationDialog.setContentText("Soll der Benutzer wirklich gelöscht werden, Änderungen können nicht rückgängig gemacht werden!");
+	    Optional<ButtonType> clickedButton = confirmationDialog.showAndWait();
+
+	    if (clickedButton.isPresent() && clickedButton.get() == ButtonType.OK) {
+	        BenutzerFX selectedBenutzer = tvBenutzer.getSelectionModel().getSelectedItem();
+	        if (selectedBenutzer != null) {
+	            try {
+	                Datenbank.deleteBenutzer(selectedBenutzer.getBenutzerId());
+	            } catch (SQLException e) {
+	                e.printStackTrace();
+	            }
+	            olBenutzer.remove(selectedBenutzer);
+	        }
+	    }
 	}
 	
-	@FXML
-	public void showBenutzer() {
+	@FXML public void showBenutzer() {
 		try {
 			alBenutzer = Datenbank.readBenutzer();
 			olBenutzer.clear();
 			for(Benutzer einBenutzer : alBenutzer)
-				olBenutzer.add(new BenutzerFX(einBenutzer));
+				if(!einBenutzer.getName().equals("HAUSHALT"))
+					olBenutzer.add(new BenutzerFX(einBenutzer));
 		} catch (SQLException e) {
 			new Alert(AlertType.ERROR, e.toString());
 		}	

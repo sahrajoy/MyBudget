@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ButtonType?>
 <?import javafx.scene.control.DialogPane?>
 <?import javafx.scene.control.Label?>
@@ -13,20 +12,17 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<DialogPane fx:id="benutzerDialog" minHeight="320.0" minWidth="328.0" prefHeight="320.0" prefWidth="328.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.BenutzerDialogController">
-   <buttonTypes>
-      <ButtonType fx:constant="OK" />
-   </buttonTypes>
+<DialogPane fx:id="kategorieDialog" minHeight="280.0" minWidth="328.0" prefHeight="280.0" prefWidth="328.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.KategorieDialogController">
    <graphic>
       <AnchorPane>
          <children>
-            <VBox fx:id="vbBenutzer" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <VBox fx:id="vbKategorie" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                <children>
-                  <HBox fx:id="hbNeuerBenutzer" alignment="CENTER_RIGHT" spacing="10.0">
+                  <HBox fx:id="hbNeueKategorie" alignment="CENTER_RIGHT" spacing="10.0">
                      <children>
                         <VBox alignment="CENTER_LEFT">
                            <children>
-                              <Label fx:id="lblNeuerBenutzer" text="Neuen Benutzer eingeben " />
+                              <Label fx:id="lblNeueKategorie" text="Neue Kategorie eingeben " />
                               <Label text="(und mit Eingabetaste bestätigen)" textFill="#000000a7">
                                  <font>
                                     <Font size="10.0" />
@@ -34,21 +30,20 @@
                               </Label>
                            </children>
                         </VBox>
-                        <TextField fx:id="tfNeuerBenutzer" onAction="#insertBenutzerToList" />
+                        <TextField fx:id="tfNeueKategorie" onAction="#insertKategorieToList" />
                      </children>
                      <padding>
                         <Insets bottom="10.0" />
                      </padding>
                   </HBox>
-                  <VBox fx:id="vbBestehendeBenutzer" spacing="5.0">
+                  <VBox fx:id="vbBestehendeKategorien" spacing="5.0">
                      <children>
-                        <Label fx:id="lblBestehendeBenutzer" text="Bestehende Benutzer" />
-                        <TableView fx:id="tvBenutzer" prefHeight="160.0" prefWidth="299.0">
+                        <Label fx:id="lblBestehendeKategorien" text="Bestehende Kategorien" />
+                        <TableView fx:id="tvKategorie" prefHeight="160.0" prefWidth="299.0">
                           <columns>
-                            <TableColumn fx:id="benutzerCol" maxWidth="-1.0" minWidth="200.0" prefWidth="-1.0" />
+                            <TableColumn fx:id="kategorieCol" prefWidth="349.0" />
                           </columns>
                         </TableView>
-                        <Button fx:id="bBenutzerLoeschen" mnemonicParsing="false" onAction="#loescheBenutzer" text="Benutzer löschen" />
                      </children>
                   </VBox>
                </children>
@@ -56,4 +51,7 @@
          </children>
       </AnchorPane>
    </graphic>
+   <buttonTypes>
+      <ButtonType fx:constant="OK" />
+   </buttonTypes>
 </DialogPane>
