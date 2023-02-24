@@ -45,12 +45,13 @@ import model.Dauereintrag;
 import model.Eintrag;
 import model.Intervall;
 import model.Kategorie;
+import model.KategorieFX;
 
 public class MainController {
 	
 	ObservableList<BenutzerFX> olBenutzer = FXCollections.observableArrayList();		//Liste Benutzernamen hinterlegen
 	ObservableList<String> olSortierung = FXCollections.observableArrayList("Kategorie A-Z", "Kategorie Z-A", "Betrag aufsteigend","Betrag absteigend", "Datum aufsteigend", "Datum absteigend");
-	ObservableList<Eintrag> olEintraege = FXCollections.observableArrayList();
+	ObservableList<KategorieFX> olFavoriten = FXCollections.observableArrayList();
 	
 	//Benutzer
 	@FXML HBox hbBenutzer;
@@ -97,6 +98,7 @@ public class MainController {
 	@FXML TableColumn<Kategorie, String> einnahmenKategorieCol;
 	@FXML TableColumn<Kategorie, Double> einnahmenSummeCol;
 	@FXML TableColumn<Kategorie, String> einnahmenUebersichtButtonsCol;		//Variable für Buttons?
+	Button bFavoritEinnahmen;			//funktion hinterlegen neue Tabs anzulegen und Kategorie der olFavoriten hinzufügen
 	
 	//StackPane Einnahmen Favoriten
 	@FXML StackPane spEinnahmenFavoriten;		
@@ -110,7 +112,7 @@ public class MainController {
 	@FXML Label lblEinnahmenFavoritenZeitraum;
 	@FXML Button bEinnahmenFavoritenPfeilVorwaerts;
 	@FXML TabPane tpEinnahmenFavoriten;
-	@FXML Tab tabEinnahmenFavoriten;		//Favoriten hinterlegen 
+	@FXML Tab tabEinnahmenFavoriten;		//Tab lt. olFavoriten, wenn einnahmeOderAusgabe true, anlegen
 	
 	@FXML HBox hbEinnahmenFavoritenEingabezeile;
 	@FXML Label lblEinnahmenFavoritenDatum;
@@ -189,6 +191,7 @@ public class MainController {
 	@FXML TableColumn<Kategorie, String> ausgabenKategorieCol;
 	@FXML TableColumn<Kategorie, Double> ausgabenSummeCol;
 	@FXML TableColumn<Kategorie, String> ausgabenUebersichtButtonsCol;		//Variable für Buttons?
+	Button bFavoritAusgaben;			//funktion hinterlegen neue Tabs anzulegen und Kategorie der olFavoriten hinzufügen
 	
 	//StackPane Ausgaben Favoriten
 	@FXML StackPane spAusgabenFavoriten;
@@ -202,7 +205,7 @@ public class MainController {
 	@FXML Label lblAusgabenFavoritenZeitraum;
 	@FXML Button bAusgabenFavoritenPfeilVorwaerts;
 	@FXML TabPane tpAusgabenFavoriten;
-	@FXML Tab tabAusgabenFavoriten;		//Favoriten hinterlegen
+	@FXML Tab tabAusgabenFavoriten;		//Tab lt. olFavoriten, wenn einnahmeOderAusgabe false, anlegen
 	
 	@FXML HBox hbAusgabenFavoritenEingabezeile;
 	@FXML Label lblAusgabenFavoritenDatum;
@@ -310,17 +313,38 @@ public class MainController {
 //		bUebersicht.setDefaultButton(true);
 		
 	}
-//	@FXML public void bEinnahmenEintragSpeichern() {
-//		if(cbEinnahmenFavoritenIntervall.getValue().equals("keine")) {
-//			
-//		}
-//		dpEinnahmenFavoritenDatum.getValue().set
-//		txtEinnahmenFavoritenTitel
-//		txtEinnahmenFavoritenBetrag
-//		cbEinnahmenFavoritenBenutzer
-//		cbEinnahmenFavoritenIntervall
-//		dpEinnahmenFavoritenEndeDauereintrag
-//	}
+	@FXML public void bEinnahmenEintragSpeichern(ActionEvent event) {
+		if(cbEinnahmenFavoritenIntervall.getValue().toString().equals("keine")) {
+			try {
+				Datenbank.insertEintrag(new Eintrag(
+						true,		//true für Einnahme
+						dpEinnahmenFavoritenDatum.getValue(),
+						txtEinnahmenFavoritenTitel.getText(),
+						Double.parseDouble(txtEinnahmenFavoritenBetrag.getText()),
+						cbEinnahmenFavoritenBenutzer.getSelectionModel().getSelectedItem()
+//					,tabEinnahmenFavoriten.getText()			//Kategorie objekt vom Tab holen und im Kategorie Konstruktor adaptieren
+						));
+			} catch (NumberFormatException | SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		else {
+			try {
+				Datenbank.insertDauereintrag(new Dauereintrag(
+						true,		//true für Einnahme
+						dpEinnahmenFavoritenDatum.getValue(),
+						txtEinnahmenFavoritenTitel.getText(),
+						Double.parseDouble(txtEinnahmenFavoritenBetrag.getText()),
+						cbEinnahmenFavoritenBenutzer.getSelectionModel().getSelectedItem(),
+						cbEinnahmenFavoritenIntervall.getSelectionModel().getSelectedItem(),
+						dpEinnahmenFavoritenEndeDauereintrag.getValue()
+//					,tabEinnahmenFavoriten.getText()			//Kategorie objekt vom Tab holen und im Kategorie Konstruktor adaptieren
+						));
+			} catch (NumberFormatException | SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 	
 	//Benutzer aus Datenbank auslesen und ObservableList hinzufügen
 	public void showBenutzer() {

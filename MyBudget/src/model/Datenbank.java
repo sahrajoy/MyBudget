@@ -6,6 +6,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -408,11 +411,88 @@ public class Datenbank {
 			}
 		}
 	}
-	public static void insertEintrag() throws SQLException{
-		
+	public static void insertEintrag(Eintrag eintrag) throws SQLException{
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		try {
+			conn = DriverManager.getConnection(CONNECTION_URL);
+			String insert = "INSERT INTO " + EINTRAG_TABLE + 
+					"(" + EINTRAG_EINNAHMEODERAUSGABE + "," + EINTRAG_DATUM + "," + EINTRAG_TITEL + "," + EINTRAG_BETRAG + "," + EINTRAG_BENUTZERID + "," + EINTRAG_KATEGORIEID + ") VALUES(" +
+					"?," +	//EINTRAG_EINNAHMEODERAUSGABE
+					"?," +	//EINTRAG_DATUM
+					"?," +	//EINTRAG_TITEL
+					"?," +	//EINTRAG_BETRAG
+					"?," +	//EINTRAG_BENUTZERID
+					"?)"; 	//EINTRAG_KATEGORIEID
+			stmt = conn.prepareStatement(insert);
+			stmt.setBoolean(1, eintrag.isEinnahmeOderAusgabe());	
+			LocalDateTime ldt = LocalDateTime.of(eintrag.getDatum(), LocalTime.of(0, 0, 0));
+			java.sql.Date date = new java.sql.Date(ldt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()); //in altes Date Objekt für JDBC umwandeln - ldt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+			stmt.setDate(2, date);
+			stmt.setString(3, eintrag.getTitel());	
+			stmt.setDouble(4, eintrag.getBetrag());	
+			stmt.setInt(5, eintrag.getBenutzer().getBenutzerId());
+			stmt.setInt(6, eintrag.getKategorie().getKategorieId());
+			stmt.executeUpdate();		
+		}
+		catch(SQLException e) {
+			throw e;
+		}
+		finally {
+			try {
+				if(stmt != null) 
+					stmt.close();
+				if(conn != null)
+					conn.close();
+			}
+			catch(SQLException e) {
+				throw e;
+			}
+		}
 	}
-	public static void insertDauereintrag() throws SQLException{
-	
+	public static void insertDauereintrag(Dauereintrag dauereintrag) throws SQLException{
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		try {
+			conn = DriverManager.getConnection(CONNECTION_URL);
+			String insert = "INSERT INTO " + DAUEREINTRAG_TABLE + 
+					"(" + DAUEREINTRAG_EINNAHMEODERAUSGABE + "," + DAUEREINTRAG_NAECHSTEFAELLIGKEIT + "," + DAUEREINTRAG_TITEL + "," + DAUEREINTRAG_BETRAG + "," + DAUEREINTRAG_ENDEDATUM + "," + DAUEREINTRAG_INTERVALL + "," + DAUEREINTRAG_BENUTZERID + "," + DAUEREINTRAG_KATEGORIEID + ") VALUES(" +
+					"?," +	//DAUEREINTRAG_EINNAHMEODERAUSGABE
+					"?," +	//DAUEREINTRAG_NAECHSTEFAELLIGKEIT
+					"?," +	//DAUEREINTRAG_TITEL
+					"?," +	//DAUEREINTRAG_BETRAG
+					"?," +	//DAUEREINTRAG_ENDEDATUM
+					"?," +	//DAUEREINTRAG_INTERVALL
+					"?," +	//DAUEREINTRAG_BENUTZERID
+					"?)"; 	//DAUEREINTRAG_KATEGORIEID
+			stmt = conn.prepareStatement(insert);
+			stmt.setBoolean(1, dauereintrag.isEinnahmeOderAusgabe());	
+			LocalDateTime ldt1 = LocalDateTime.of(dauereintrag.getNaechsteFaelligkeit(), LocalTime.of(0, 0, 0));
+			java.sql.Date naechsteFaelligkeit = new java.sql.Date(ldt1.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()); //in altes Date Objekt für JDBC umwandeln - ldt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+			stmt.setDate(2, naechsteFaelligkeit);
+			stmt.setString(3, dauereintrag.getDeTitel());	
+			stmt.setDouble(4, dauereintrag.getDeBetrag());
+			LocalDateTime ldt2 = LocalDateTime.of(dauereintrag.getEnddatum(), LocalTime.of(0, 0, 0));
+			java.sql.Date endedatum = new java.sql.Date(ldt2.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()); //in altes Date Objekt für JDBC umwandeln - ldt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+			stmt.setDate(5, endedatum);
+			stmt.setInt(6, dauereintrag.getDeBenutzer().getBenutzerId());
+			stmt.setInt(7, dauereintrag.getDeKategorie().getKategorieId());
+			stmt.executeUpdate();		
+		}
+		catch(SQLException e) {
+			throw e;
+		}
+		finally {
+			try {
+				if(stmt != null) 
+					stmt.close();
+				if(conn != null)
+					conn.close();
+			}
+			catch(SQLException e) {
+				throw e;
+			}
+		}
 	}
 	
 	//Daten ändern

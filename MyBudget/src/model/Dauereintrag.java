@@ -9,9 +9,9 @@ public class Dauereintrag {
 	private LocalDate naechsteFaelligkeit;
 	private String deTitel;
 	private double deBetrag;
-	private LocalDate enddatum;
-	private Intervall intervall;
 	private Benutzer deBenutzer;
+	private Intervall intervall;
+	private LocalDate enddatum;
 	private Kategorie deKategorie;
 	
 	public Dauereintrag(int dauereintragId, boolean einnahmeOderAusgabe, LocalDate naechsteFaelligkeit, String deTitel,
@@ -26,6 +26,17 @@ public class Dauereintrag {
 		this.intervall = intervall;
 		this.deBenutzer = deBenutzer;
 		this.deKategorie = deKategorie;
+	}
+	public Dauereintrag(boolean einnahmeOderAusgabe, LocalDate naechsteFaelligkeit, String deTitel, double deBetrag,
+			BenutzerFX deBenutzerFX, Intervall intervall, LocalDate enddatum) {
+		super();
+		this.einnahmeOderAusgabe = einnahmeOderAusgabe;
+		this.naechsteFaelligkeit = naechsteFaelligkeit;
+		this.deTitel = deTitel;
+		this.deBetrag = deBetrag;
+		this.deBenutzer = deBenutzerFX;
+		this.intervall = intervall;
+		this.enddatum = enddatum;
 	}
 	public Dauereintrag() {}
 	

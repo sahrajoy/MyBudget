@@ -23,6 +23,15 @@ public class Eintrag {
 		this.benutzer = benutzer;
 		this.kategorie = kategorie;
 	}
+	public Eintrag(boolean einnahmeOderAusgabe, LocalDate datum, String titel, double betrag, BenutzerFX benutzerFX) {
+		super();
+		this.einnahmeOderAusgabe = einnahmeOderAusgabe;
+		this.datum = datum;
+		this.titel = titel;
+		this.betrag = betrag;
+		this.benutzer = benutzer;
+//		this.kategorie = kategorie;
+	}
 	public Eintrag() {}
 
 	public int getEintragId() {
