@@ -48,6 +48,7 @@ public class BenutzerDialogController extends Dialog<ButtonType> {
 		showBenutzer();
 	}
 	
+	//Methode für TextField
 	@FXML public void insertBenutzerToList() {	
 		boolean exists = false;
 	    for (BenutzerFX einBenutzerFX : olBenutzer) {
@@ -67,6 +68,7 @@ public class BenutzerDialogController extends Dialog<ButtonType> {
 	    }
 	}
 	
+	//Methode für Löschen Button
 	@FXML public void loescheBenutzer(){
 	    Alert confirmationDialog = new Alert(Alert.AlertType.CONFIRMATION);
 	    confirmationDialog.setTitle("Benutzer löschen");
@@ -86,6 +88,7 @@ public class BenutzerDialogController extends Dialog<ButtonType> {
 	    }
 	}
 	
+	//Benutzer auslesen und der ObserverList hinzufügen
 	@FXML public void showBenutzer() {
 		try {
 			alBenutzer = Datenbank.readBenutzer();
@@ -96,10 +99,6 @@ public class BenutzerDialogController extends Dialog<ButtonType> {
 		} catch (SQLException e) {
 			new Alert(AlertType.ERROR, e.toString());
 		}	
-	}
-
-	public ObservableList<BenutzerFX> getUpdatetBenutzerList() {
-		return olBenutzer;
 	}
 	
 	

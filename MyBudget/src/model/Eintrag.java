@@ -5,32 +5,29 @@ import java.time.LocalDate;
 public class Eintrag {
 
 	private int eintragId;
-	private boolean einnahmeOderAusgabe;
 	private LocalDate datum;
 	private String titel;
 	private double betrag;
 	private Benutzer benutzer;
 	private Kategorie kategorie;
 	
-	public Eintrag(int eintragId, boolean einnahmeOderAusgabe, LocalDate datum, String titel, double betrag,
+	public Eintrag(int eintragId, LocalDate datum, String titel, double betrag,
 			Benutzer benutzer, Kategorie kategorie) {
 		super();
 		this.eintragId = eintragId;
-		this.einnahmeOderAusgabe = einnahmeOderAusgabe;
 		this.datum = datum;
 		this.titel = titel;
 		this.betrag = betrag;
 		this.benutzer = benutzer;
 		this.kategorie = kategorie;
 	}
-	public Eintrag(boolean einnahmeOderAusgabe, LocalDate datum, String titel, double betrag, BenutzerFX benutzerFX) {
+	public Eintrag(LocalDate datum, String titel, double betrag, Benutzer benutzer, Kategorie kategorie) {
 		super();
-		this.einnahmeOderAusgabe = einnahmeOderAusgabe;
 		this.datum = datum;
 		this.titel = titel;
 		this.betrag = betrag;
 		this.benutzer = benutzer;
-//		this.kategorie = kategorie;
+		this.kategorie = kategorie;
 	}
 	public Eintrag() {}
 
@@ -39,12 +36,6 @@ public class Eintrag {
 	}
 	public void setEintragId(int eintragId) {
 		this.eintragId = eintragId;
-	}
-	public boolean isEinnahmeOderAusgabe() {
-		return einnahmeOderAusgabe;
-	}
-	public void setEinnahmeOderAusgabe(boolean einnahmeOderAusgabe) {
-		this.einnahmeOderAusgabe = einnahmeOderAusgabe;
 	}
 	public LocalDate getDatum() {
 		return datum;
@@ -76,12 +67,10 @@ public class Eintrag {
 	public void setKategorie(Kategorie kategorie) {
 		this.kategorie = kategorie;
 	}
-
 	@Override
 	public String toString() {
-		return "Eintrag [eintragId=" + eintragId + ", einnahmeOderAusgabe=" + einnahmeOderAusgabe + ", datum=" + datum
-				+ ", titel=" + titel + ", betrag=" + betrag + ", benutzer=" + benutzer + ", kategorie=" + kategorie
-				+ "]";
+		return "Eintrag [eintragId=" + eintragId + ", datum=" + datum + ", titel=" + titel + ", betrag=" + betrag
+				+ ", benutzer=" + benutzer + ", kategorie=" + kategorie + "]";
 	}
 	
 }

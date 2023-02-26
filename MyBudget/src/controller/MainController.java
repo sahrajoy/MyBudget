@@ -21,8 +21,6 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -30,6 +28,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
@@ -37,7 +36,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.util.Callback;
 import model.Benutzer;
 import model.BenutzerFX;
 import model.Datenbank;
@@ -52,6 +50,8 @@ public class MainController {
 	ObservableList<BenutzerFX> olBenutzer = FXCollections.observableArrayList();		//Liste Benutzernamen hinterlegen
 	ObservableList<String> olSortierung = FXCollections.observableArrayList("Kategorie A-Z", "Kategorie Z-A", "Betrag aufsteigend","Betrag absteigend", "Datum aufsteigend", "Datum absteigend");
 	ObservableList<KategorieFX> olFavoriten = FXCollections.observableArrayList();
+	ObservableList<KategorieFX> olEinnahmenKategorien = FXCollections.observableArrayList();
+	ObservableList<KategorieFX> olAusgabenKategorien = FXCollections.observableArrayList();
 	
 	//Benutzer
 	@FXML HBox hbBenutzer;
@@ -61,14 +61,14 @@ public class MainController {
 	@FXML public void benutzerAuswaehlen() {			//Methode ausarbeiten um Benutzer zu wählen und die dementsprechenden Daten anzuzeigen
 		cbBenutzer.getSelectionModel().getSelectedItem().getBenutzerId();
 	}
+	@FXML TabPane tpEinnahmenAusgabenStatistik;
 	
 	//Einahmen
 	@FXML Tab tabEinnahmen;
 	@FXML AnchorPane apEinnahmen;
 	@FXML Button bEinnahmenUebersicht;	
-	@FXML
 	public void showKategorieEinnahmen() {
-//		tvEinnahmenUebersichtKategorien	
+//		tvEinnahmenFavoriten
 	}
 	@FXML Button bEinnahmenFavoriten;
 	@FXML
@@ -94,12 +94,12 @@ public class MainController {
 	@FXML Button bEinnahmenPlus;
 	@FXML Label lblEinnahmenUebersichtSortierung;
 	@FXML ComboBox<String> cbEinnahmenUebersichtSortierung;
-	@FXML TableView<Kategorie> tvEinnahmenUebersichtKategorien;	
-	@FXML TableColumn<Kategorie, String> einnahmenKategorieCol;
-	@FXML TableColumn<Kategorie, Double> einnahmenSummeCol;
-	@FXML TableColumn<Kategorie, String> einnahmenUebersichtButtonsCol;		//Variable für Buttons?
+	@FXML TableView<KategorieFX> tvEinnahmenUebersichtKategorien;	
+	@FXML TableColumn<KategorieFX, String> einnahmenKategorieCol;
+	@FXML TableColumn<KategorieFX, Double> einnahmenSummeCol;
+	@FXML TableColumn<KategorieFX, String> einnahmenUebersichtButtonsCol;		//Variable für Buttons?
 	Button bFavoritEinnahmen;			//funktion hinterlegen neue Tabs anzulegen und Kategorie der olFavoriten hinzufügen
-	
+
 	//StackPane Einnahmen Favoriten
 	@FXML StackPane spEinnahmenFavoriten;		
 	@FXML HBox hbEinnahmenFavoritenButtonsZeitraum;
@@ -273,14 +273,21 @@ public class MainController {
 	//Methoden
 	@FXML
 	public void initialize() {
-		//Benutzer laden und der ObserverList hinzufügen
+		//Benutzer auslesen und der ObserverList hinzufügen
 		showBenutzer();
 //		cbBenutzer.setValue("HAUSHALT");
 		cbBenutzer.setItems(olBenutzer);
 		
-		//Einnahmen
+		//Einnahmen 
 		cbEinnahmenUebersichtSortierung.getSelectionModel().select("Kategorie A-Z");
 		cbEinnahmenUebersichtSortierung.setItems(olSortierung);
+		
+		//Einnahmen Übersicht TableView füllen
+		showKategorien();
+		einnahmenKategorieCol.setCellValueFactory(new PropertyValueFactory<>("name"));
+//		einnahmenKategorieCol.setCellValueFactory(new PropertyValueFactory<>());			Summe aller Einträge übergeben
+//		einnahmenKategorieCol.setCellValueFactory(new PropertyValueFactory<>());			Buttons
+		tvEinnahmenUebersichtKategorien.setItems(olEinnahmenKategorien);
 		
 		dpEinnahmenFavoritenDatum.setValue(LocalDate.now());
 		cbEinnahmenFavoritenBenutzer.setItems(olBenutzer);
@@ -313,37 +320,39 @@ public class MainController {
 //		bUebersicht.setDefaultButton(true);
 		
 	}
+	
+	//Einnahmen Einträge speichern
 	@FXML public void bEinnahmenEintragSpeichern(ActionEvent event) {
-		if(cbEinnahmenFavoritenIntervall.getValue().toString().equals("keine")) {
-			try {
-				Datenbank.insertEintrag(new Eintrag(
-						true,		//true für Einnahme
-						dpEinnahmenFavoritenDatum.getValue(),
-						txtEinnahmenFavoritenTitel.getText(),
-						Double.parseDouble(txtEinnahmenFavoritenBetrag.getText()),
-						cbEinnahmenFavoritenBenutzer.getSelectionModel().getSelectedItem()
-//					,tabEinnahmenFavoriten.getText()			//Kategorie objekt vom Tab holen und im Kategorie Konstruktor adaptieren
-						));
-			} catch (NumberFormatException | SQLException e) {
-				e.printStackTrace();
-			}
-		}
-		else {
-			try {
-				Datenbank.insertDauereintrag(new Dauereintrag(
-						true,		//true für Einnahme
-						dpEinnahmenFavoritenDatum.getValue(),
-						txtEinnahmenFavoritenTitel.getText(),
-						Double.parseDouble(txtEinnahmenFavoritenBetrag.getText()),
-						cbEinnahmenFavoritenBenutzer.getSelectionModel().getSelectedItem(),
-						cbEinnahmenFavoritenIntervall.getSelectionModel().getSelectedItem(),
-						dpEinnahmenFavoritenEndeDauereintrag.getValue()
-//					,tabEinnahmenFavoriten.getText()			//Kategorie objekt vom Tab holen und im Kategorie Konstruktor adaptieren
-						));
-			} catch (NumberFormatException | SQLException e) {
-				e.printStackTrace();
-			}
-		}
+//		if(cbEinnahmenFavoritenIntervall.getValue().toString().equals("keine")) {
+//			try {
+//				Datenbank.insertEintrag(new Eintrag(
+//						true,		//true für Einnahme
+//						dpEinnahmenFavoritenDatum.getValue(),
+//						txtEinnahmenFavoritenTitel.getText(),
+//						Double.parseDouble(txtEinnahmenFavoritenBetrag.getText()),
+//						cbEinnahmenFavoritenBenutzer.getSelectionModel().getSelectedItem()
+////					,tabEinnahmenFavoriten.getText()			//Kategorie objekt vom Tab holen und im Kategorie Konstruktor adaptieren
+//						));
+//			} catch (NumberFormatException | SQLException e) {
+//				e.printStackTrace();
+//			}
+//		}
+//		else {
+//			try {
+//				Datenbank.insertDauereintrag(new Dauereintrag(
+//						true,		//true für Einnahme
+//						dpEinnahmenFavoritenDatum.getValue(),
+//						txtEinnahmenFavoritenTitel.getText(),
+//						Double.parseDouble(txtEinnahmenFavoritenBetrag.getText()),
+//						cbEinnahmenFavoritenBenutzer.getSelectionModel().getSelectedItem(),
+//						cbEinnahmenFavoritenIntervall.getSelectionModel().getSelectedItem(),
+//						dpEinnahmenFavoritenEndeDauereintrag.getValue()
+////					,tabEinnahmenFavoriten.getText()			//Kategorie objekt vom Tab holen und im Kategorie Konstruktor adaptieren
+//						));
+//			} catch (NumberFormatException | SQLException e) {
+//				e.printStackTrace();
+//			}
+//		}
 	}
 	
 	//Benutzer aus Datenbank auslesen und ObservableList hinzufügen
@@ -353,6 +362,22 @@ public class MainController {
 			olBenutzer.clear();
 			for(Benutzer einBenutzer : alBenutzer)
 				olBenutzer.add(new BenutzerFX(einBenutzer));
+		} catch (SQLException e) {
+			new Alert(AlertType.ERROR, e.toString());
+		}	
+	}
+	
+	//Kategorien aus Datenbank auslesen und ObservableList hinzufügen
+	public void showKategorien() {
+		try {
+			ArrayList<Kategorie> alKategorien = Datenbank.readKategorie();
+			olEinnahmenKategorien.clear();
+			olAusgabenKategorien.clear();
+			for(Kategorie eineKategorie : alKategorien)
+				if(eineKategorie.isEinnahmeOderAusgabe())
+					olEinnahmenKategorien.add(new KategorieFX(eineKategorie));					
+				else
+					olAusgabenKategorien.add(new KategorieFX(eineKategorie));
 		} catch (SQLException e) {
 			new Alert(AlertType.ERROR, e.toString());
 		}	
@@ -386,7 +411,7 @@ public class MainController {
 		apAusgaben.getChildren().add(spAusgabenDauereintraege);
 	}
 	
-	//öffnen des BenutzerDialog
+	//Öffnen des BenutzerDialog
 	@FXML public void benutzerAnlegen(ActionEvent event) throws SQLException{
 		try {
 			FXMLLoader fxmlLoaderBenutzer = new FXMLLoader();

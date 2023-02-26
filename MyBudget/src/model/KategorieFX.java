@@ -1,7 +1,5 @@
 package model;
 
-import java.util.ArrayList;
-
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -9,6 +7,7 @@ import javafx.beans.property.SimpleStringProperty;
 public class KategorieFX {
 
 	private Kategorie modellKategorie;
+	private SimpleBooleanProperty einnahmeOderAusgabe;
 	private SimpleIntegerProperty kategorieId;
 	private SimpleStringProperty name;
 	private SimpleBooleanProperty favorite;
@@ -16,11 +15,22 @@ public class KategorieFX {
 	public KategorieFX(Kategorie modellKategorie) {
 		super();
 		this.modellKategorie = modellKategorie;
+		einnahmeOderAusgabe = new SimpleBooleanProperty(modellKategorie.isEinnahmeOderAusgabe());
 		kategorieId = new SimpleIntegerProperty(modellKategorie.getKategorieId());
 		name = new SimpleStringProperty(modellKategorie.getName());
 		favorite = new SimpleBooleanProperty(modellKategorie.isFavorite());
 	}
 
+	public final SimpleBooleanProperty einnahmeOderAusgabeProperty() {
+		return this.einnahmeOderAusgabe;
+	}
+	public final boolean isEinnahmeOderAusgabe() {
+		return this.einnahmeOderAusgabeProperty().get();
+	}
+	public final void setEinnahmeOderAusgabe(final boolean einnahmeOderAusgabe) {
+		this.einnahmeOderAusgabeProperty().set(einnahmeOderAusgabe);
+	}
+	
 	public final SimpleIntegerProperty kategorieIdProperty() {
 		return this.kategorieId;
 	}

@@ -26,13 +26,13 @@ public class Datenbank {
 	//Kategorie Tabelle
 	private static final String KATEGORIE_TABLE = "Kategorie";
 	private static final String KATEGORIE_ID = "KategorieId";
+	private static final String KATEGORIE_EINNAHMEODERAUSGABE = "KategorieEinnahmeOderAusgabe";
 	private static final String KATEGORIE_NAME = "KategorieName";
 	private static final String KATEGORIE_FAVORITE = "KategorieFavorite";
 	
 	//Eintrag Tabelle
 	private static final String EINTRAG_TABLE = "Eintrag";
 	private static final String EINTRAG_ID = "EintragId";
-	private static final String EINTRAG_EINNAHMEODERAUSGABE = "EintragEinnahmeOderAusgabe";
 	private static final String EINTRAG_DATUM = "EintragDatum";
 	private static final String EINTRAG_TITEL = "EintragTitel";
 	private static final String EINTRAG_BETRAG = "EintragBetrag";
@@ -42,13 +42,12 @@ public class Datenbank {
 	//Dauereinträge Tabelle
 	private static final String DAUEREINTRAG_TABLE = "Dauereintrag";
 	private static final String DAUEREINTRAG_ID = "DauereintragId";
-	private static final String DAUEREINTRAG_EINNAHMEODERAUSGABE = "DauereintragEinnahmeOderAusgabe";
 	private static final String DAUEREINTRAG_NAECHSTEFAELLIGKEIT = "DauereintragNaechsteFaelligkeit";
 	private static final String DAUEREINTRAG_TITEL = "DauereintragTitel";
 	private static final String DAUEREINTRAG_BETRAG = "DauereintragBetrag";
-	private static final String DAUEREINTRAG_ENDEDATUM = "DauereintragEndedatum";
-	private static final String DAUEREINTRAG_INTERVALL = "DauereintragIntervall";
 	private static final String DAUEREINTRAG_BENUTZERID = "DauereintragBenutzerId";
+	private static final String DAUEREINTRAG_INTERVALL = "DauereintragIntervall";
+	private static final String DAUEREINTRAG_ENDEDATUM = "DauereintragEndedatum";
 	private static final String DAUEREINTRAG_KATEGORIEID = "DauereintragKategorieId";
 
 	//Tabellen erstellen
@@ -100,6 +99,7 @@ public class Datenbank {
 			}
 			String ct = "CREATE TABLE " + KATEGORIE_TABLE + " (" + 
 					KATEGORIE_ID + " INTEGER GENERATED ALWAYS AS IDENTITY," +
+					KATEGORIE_EINNAHMEODERAUSGABE + " BOOLEAN," +
 					KATEGORIE_NAME + " VARCHAR(200)," +
 					KATEGORIE_FAVORITE + " BOOLEAN," +
 					"PRIMARY KEY(" + KATEGORIE_ID + "))";
@@ -134,7 +134,6 @@ public class Datenbank {
 			}
 			String ct = "CREATE TABLE " + EINTRAG_TABLE + " (" + 
 					EINTRAG_ID + " INTEGER GENERATED ALWAYS AS IDENTITY," +
-					EINTRAG_EINNAHMEODERAUSGABE + " BOOLEAN," +
 					EINTRAG_DATUM + " DATE," +
 					EINTRAG_TITEL + " VARCHAR(200)," +
 					EINTRAG_BETRAG +  " DECIMAL," +
@@ -174,13 +173,12 @@ public class Datenbank {
 			}
 			String ct = "CREATE TABLE " + DAUEREINTRAG_TABLE + " (" + 
 					DAUEREINTRAG_ID + " INTEGER GENERATED ALWAYS AS IDENTITY," +
-					DAUEREINTRAG_EINNAHMEODERAUSGABE + " BOOLEAN," +
 					DAUEREINTRAG_NAECHSTEFAELLIGKEIT + " DATE," +
 					DAUEREINTRAG_TITEL + " VARCHAR(200)," +
 					DAUEREINTRAG_BETRAG +  " DECIMAL," +
-					DAUEREINTRAG_ENDEDATUM + " DATE," +
-					DAUEREINTRAG_INTERVALL + " SMALLINT," +				
 					DAUEREINTRAG_BENUTZERID + " INTEGER," +
+					DAUEREINTRAG_INTERVALL + " SMALLINT," +				
+					DAUEREINTRAG_ENDEDATUM + " DATE," +
 					DAUEREINTRAG_KATEGORIEID + " INTEGER," +
 					"PRIMARY KEY(" + DAUEREINTRAG_ID + ")," +
 					"FOREIGN KEY(" + DAUEREINTRAG_BENUTZERID + ") REFERENCES " + BENUTZER_TABLE + "(" + BENUTZER_ID + ")," +
@@ -260,7 +258,7 @@ public class Datenbank {
 				stmt.setString(1, kategorieName);
 			rs = stmt.executeQuery();
 			while(rs.next())
-				alKategorie.add(new Kategorie(rs.getInt(KATEGORIE_ID), rs.getString(KATEGORIE_NAME), rs.getBoolean(KATEGORIE_FAVORITE)));
+				alKategorie.add(new Kategorie(rs.getInt(KATEGORIE_ID), rs.getBoolean(KATEGORIE_EINNAHMEODERAUSGABE), rs.getString(KATEGORIE_NAME), rs.getBoolean(KATEGORIE_FAVORITE)));
 			rs.close();
 		}
 		catch(SQLException e) {
@@ -291,7 +289,7 @@ public class Datenbank {
 			stmt = conn.prepareStatement(select);
 			rs = stmt.executeQuery();
 			while(rs.next()) {			
-				alEintraege.add(new Eintrag(rs.getInt(EINTRAG_ID),rs.getBoolean(EINTRAG_EINNAHMEODERAUSGABE), rs.getDate(EINTRAG_DATUM).toLocalDate(), rs.getString(EINTRAG_TITEL), rs.getDouble(EINTRAG_BETRAG), new Benutzer(rs.getInt(BENUTZER_ID), rs.getString(BENUTZER_NAME)), new Kategorie(rs.getInt(KATEGORIE_ID), rs.getString(KATEGORIE_NAME), rs.getBoolean(KATEGORIE_FAVORITE))));
+				alEintraege.add(new Eintrag(rs.getInt(EINTRAG_ID), rs.getDate(EINTRAG_DATUM).toLocalDate(), rs.getString(EINTRAG_TITEL), rs.getDouble(EINTRAG_BETRAG), new Benutzer(rs.getInt(BENUTZER_ID), rs.getString(BENUTZER_NAME)), new Kategorie(rs.getInt(KATEGORIE_ID), rs.getBoolean(KATEGORIE_EINNAHMEODERAUSGABE), rs.getString(KATEGORIE_NAME), rs.getBoolean(KATEGORIE_FAVORITE))));
 			}
 			rs.close();
 			}
@@ -323,7 +321,7 @@ public class Datenbank {
 			stmt = conn.prepareStatement(select);
 			rs = stmt.executeQuery();
 			while(rs.next()) {			
-				alDauereintraege.add(new Dauereintrag(rs.getInt(DAUEREINTRAG_ID), rs.getBoolean(DAUEREINTRAG_EINNAHMEODERAUSGABE), rs.getDate(DAUEREINTRAG_NAECHSTEFAELLIGKEIT).toLocalDate(), rs.getString(DAUEREINTRAG_TITEL), rs.getDouble(DAUEREINTRAG_BETRAG), rs.getDate(DAUEREINTRAG_ENDEDATUM).toLocalDate(), Enum.valueOf(Intervall.class, rs.getString(DAUEREINTRAG_INTERVALL)), new Benutzer(rs.getInt(BENUTZER_ID), rs.getString(BENUTZER_NAME)), new Kategorie(rs.getInt(KATEGORIE_ID), rs.getString(KATEGORIE_NAME), rs.getBoolean(KATEGORIE_FAVORITE))));
+				alDauereintraege.add(new Dauereintrag(rs.getInt(DAUEREINTRAG_ID), rs.getDate(DAUEREINTRAG_NAECHSTEFAELLIGKEIT).toLocalDate(), rs.getString(DAUEREINTRAG_TITEL), rs.getDouble(DAUEREINTRAG_BETRAG), new Benutzer(rs.getInt(BENUTZER_ID), rs.getString(BENUTZER_NAME)), Enum.valueOf(Intervall.class, rs.getString(DAUEREINTRAG_INTERVALL)), rs.getDate(DAUEREINTRAG_ENDEDATUM).toLocalDate(), new Kategorie(rs.getInt(KATEGORIE_ID), rs.getBoolean(KATEGORIE_EINNAHMEODERAUSGABE), rs.getString(KATEGORIE_NAME), rs.getBoolean(KATEGORIE_FAVORITE))));
 			}
 			rs.close();
 			}
@@ -388,12 +386,14 @@ public class Datenbank {
 		try {
 			conn = DriverManager.getConnection(CONNECTION_URL);
 			String insert = "INSERT INTO " + KATEGORIE_TABLE + 
-					"(" + KATEGORIE_NAME + "," + KATEGORIE_FAVORITE + ") VALUES(" +
+					"(" + KATEGORIE_EINNAHMEODERAUSGABE + "," + KATEGORIE_NAME + "," + KATEGORIE_FAVORITE + ") VALUES(" +
+					"?," +	//KATEGORIE_EINNAHMEODERAUSGABE
 					"?," +	//KATEGORIE_NAME
 					"?)"; 	//KATEGORIE_FAVORITE
 			stmt = conn.prepareStatement(insert);
-			stmt.setString(1, kategorie.getName());	
-			stmt.setBoolean(2, kategorie.isFavorite());
+			stmt.setBoolean(1, kategorie.isEinnahmeOderAusgabe());
+			stmt.setString(2, kategorie.getName());	
+			stmt.setBoolean(3, kategorie.isFavorite());
 			stmt.executeUpdate();		
 		}
 		catch(SQLException e) {
@@ -417,22 +417,20 @@ public class Datenbank {
 		try {
 			conn = DriverManager.getConnection(CONNECTION_URL);
 			String insert = "INSERT INTO " + EINTRAG_TABLE + 
-					"(" + EINTRAG_EINNAHMEODERAUSGABE + "," + EINTRAG_DATUM + "," + EINTRAG_TITEL + "," + EINTRAG_BETRAG + "," + EINTRAG_BENUTZERID + "," + EINTRAG_KATEGORIEID + ") VALUES(" +
-					"?," +	//EINTRAG_EINNAHMEODERAUSGABE
+					"(" + EINTRAG_DATUM + "," + EINTRAG_TITEL + "," + EINTRAG_BETRAG + "," + EINTRAG_BENUTZERID + "," + EINTRAG_KATEGORIEID + ") VALUES(" +
 					"?," +	//EINTRAG_DATUM
 					"?," +	//EINTRAG_TITEL
 					"?," +	//EINTRAG_BETRAG
 					"?," +	//EINTRAG_BENUTZERID
 					"?)"; 	//EINTRAG_KATEGORIEID
 			stmt = conn.prepareStatement(insert);
-			stmt.setBoolean(1, eintrag.isEinnahmeOderAusgabe());	
 			LocalDateTime ldt = LocalDateTime.of(eintrag.getDatum(), LocalTime.of(0, 0, 0));
 			java.sql.Date date = new java.sql.Date(ldt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()); //in altes Date Objekt für JDBC umwandeln - ldt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-			stmt.setDate(2, date);
-			stmt.setString(3, eintrag.getTitel());	
-			stmt.setDouble(4, eintrag.getBetrag());	
-			stmt.setInt(5, eintrag.getBenutzer().getBenutzerId());
-			stmt.setInt(6, eintrag.getKategorie().getKategorieId());
+			stmt.setDate(1, date);
+			stmt.setString(2, eintrag.getTitel());	
+			stmt.setDouble(3, eintrag.getBetrag());	
+			stmt.setInt(4, eintrag.getBenutzer().getBenutzerId());
+			stmt.setInt(5, eintrag.getKategorie().getKategorieId());
 			stmt.executeUpdate();		
 		}
 		catch(SQLException e) {
@@ -456,26 +454,25 @@ public class Datenbank {
 		try {
 			conn = DriverManager.getConnection(CONNECTION_URL);
 			String insert = "INSERT INTO " + DAUEREINTRAG_TABLE + 
-					"(" + DAUEREINTRAG_EINNAHMEODERAUSGABE + "," + DAUEREINTRAG_NAECHSTEFAELLIGKEIT + "," + DAUEREINTRAG_TITEL + "," + DAUEREINTRAG_BETRAG + "," + DAUEREINTRAG_ENDEDATUM + "," + DAUEREINTRAG_INTERVALL + "," + DAUEREINTRAG_BENUTZERID + "," + DAUEREINTRAG_KATEGORIEID + ") VALUES(" +
-					"?," +	//DAUEREINTRAG_EINNAHMEODERAUSGABE
+					"(" + DAUEREINTRAG_NAECHSTEFAELLIGKEIT + "," + DAUEREINTRAG_TITEL + "," + DAUEREINTRAG_BETRAG + "," + DAUEREINTRAG_BENUTZERID + "," + DAUEREINTRAG_INTERVALL + ","+ DAUEREINTRAG_ENDEDATUM + "," + DAUEREINTRAG_KATEGORIEID + ") VALUES(" +
 					"?," +	//DAUEREINTRAG_NAECHSTEFAELLIGKEIT
 					"?," +	//DAUEREINTRAG_TITEL
 					"?," +	//DAUEREINTRAG_BETRAG
-					"?," +	//DAUEREINTRAG_ENDEDATUM
-					"?," +	//DAUEREINTRAG_INTERVALL
 					"?," +	//DAUEREINTRAG_BENUTZERID
+					"?," +	//DAUEREINTRAG_INTERVALL
+					"?," +	//DAUEREINTRAG_ENDEDATUM
 					"?)"; 	//DAUEREINTRAG_KATEGORIEID
 			stmt = conn.prepareStatement(insert);
-			stmt.setBoolean(1, dauereintrag.isEinnahmeOderAusgabe());	
 			LocalDateTime ldt1 = LocalDateTime.of(dauereintrag.getNaechsteFaelligkeit(), LocalTime.of(0, 0, 0));
 			java.sql.Date naechsteFaelligkeit = new java.sql.Date(ldt1.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()); //in altes Date Objekt für JDBC umwandeln - ldt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-			stmt.setDate(2, naechsteFaelligkeit);
-			stmt.setString(3, dauereintrag.getDeTitel());	
-			stmt.setDouble(4, dauereintrag.getDeBetrag());
+			stmt.setDate(1, naechsteFaelligkeit);
+			stmt.setString(2, dauereintrag.getDeTitel());	
+			stmt.setDouble(3, dauereintrag.getDeBetrag());
+			stmt.setInt(4, dauereintrag.getDeBenutzer().getBenutzerId());
 			LocalDateTime ldt2 = LocalDateTime.of(dauereintrag.getEnddatum(), LocalTime.of(0, 0, 0));
 			java.sql.Date endedatum = new java.sql.Date(ldt2.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()); //in altes Date Objekt für JDBC umwandeln - ldt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-			stmt.setDate(5, endedatum);
-			stmt.setInt(6, dauereintrag.getDeBenutzer().getBenutzerId());
+			stmt.setString(5, dauereintrag.getIntervall().getIName()); 		
+			stmt.setDate(6, endedatum);
 			stmt.setInt(7, dauereintrag.getDeKategorie().getKategorieId());
 			stmt.executeUpdate();		
 		}

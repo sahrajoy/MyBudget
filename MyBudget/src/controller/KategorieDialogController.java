@@ -22,8 +22,8 @@ import model.Kategorie;
 import model.KategorieFX;
 
 public class KategorieDialogController extends Dialog<ButtonType> {
-	ArrayList<Kategorie> alKategorie = new ArrayList<>();
-	ObservableList<KategorieFX> olKategorie = FXCollections.observableArrayList();
+	ArrayList<Kategorie> alKategorien = new ArrayList<>();
+	ObservableList<KategorieFX> olKategorien = FXCollections.observableArrayList();
 	
 	@FXML DialogPane kategorieDialog;
 	@FXML VBox vbKategorie;
@@ -40,13 +40,14 @@ public class KategorieDialogController extends Dialog<ButtonType> {
 	//Methoden
 	@FXML public void initialize() {
 		kategorieCol.setCellValueFactory(new PropertyValueFactory<>("name"));
-		tvKategorie.setItems(olKategorie);
+		tvKategorie.setItems(olKategorien);
 		showKategorie();
 	}
 	
+	//Methode für TextField
 	@FXML public void insertKategorieToList() {	
 		boolean exists = false;
-	    for (KategorieFX einKategorieFX : olKategorie) {
+	    for (KategorieFX einKategorieFX : olKategorien) {
 	        if (einKategorieFX.getName().equalsIgnoreCase(tfNeueKategorie.getText())) {	
 	            new Alert(AlertType.ERROR, "Kategorie existiert bereits!").showAndWait();
 	            exists = true;
@@ -54,28 +55,26 @@ public class KategorieDialogController extends Dialog<ButtonType> {
 	        }
 	    }
 	    if (!exists) {
-	        olKategorie.add(new KategorieFX(new Kategorie(tfNeueKategorie.getText(), false)));	
+	    	
+	        olKategorien.add(new KategorieFX(new Kategorie(false, tfNeueKategorie.getText(), false)));	//Überprüfen ob Einahmen oder Ausgabe
 	        try {
-				Datenbank.insertKategorie(new Kategorie(tfNeueKategorie.getText(), false));
+				Datenbank.insertKategorie(new Kategorie(false, tfNeueKategorie.getText(), false));		//Überprüfen ob Einahmen oder Ausgabe
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
 	    }
 	}
 	
+	//Kategorien auslesen und der ObserverList hinzufügen
 	@FXML public void showKategorie() {
 		try {
-		alKategorie = Datenbank.readKategorie();
-		olKategorie.clear();
-		for(Kategorie einKategorie : alKategorie)
-			olKategorie.add(new KategorieFX(einKategorie));	
+		alKategorien = Datenbank.readKategorie();
+		olKategorien.clear();
+		for(Kategorie einKategorie : alKategorien)
+			olKategorien.add(new KategorieFX(einKategorie));	
 		} catch (SQLException e) {
 			new Alert(AlertType.ERROR, e.toString());
 		}
-	}
-
-	public ObservableList<KategorieFX> getUpdatetKategorieList() {
-		return olKategorie;
 	}
 
 }
