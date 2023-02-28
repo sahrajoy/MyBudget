@@ -205,7 +205,7 @@ public class Datenbank {
 	public static ArrayList<Benutzer> readBenutzer() throws SQLException{
 			return readBenutzer(null);
 	}
-	public static ArrayList<Benutzer> readBenutzer(String benutzerName) throws SQLException{		
+	public static ArrayList<Benutzer> readBenutzer(String benutzerName) throws SQLException{		//String benutzerName übergabe notwenidg?		
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
@@ -243,19 +243,19 @@ public class Datenbank {
 	public static ArrayList<Kategorie> readKategorie() throws SQLException {
 		return readKategorie(null);
 	}
-	public static ArrayList<Kategorie> readKategorie(String kategorieName) throws SQLException {
+	public static ArrayList<Kategorie> readKategorie(String einnahmeOderAusgabe) throws SQLException{  	//String benutzerName übergabe notwenidg?
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 		ArrayList<Kategorie> alKategorie = new ArrayList<>();
 		String select = "SELECT * FROM " + KATEGORIE_TABLE;
-		if(kategorieName != null)
+		if(einnahmeOderAusgabe != null)
 			select += " WHERE " + KATEGORIE_NAME + "=?";
 		try {
 			conn = DriverManager.getConnection(CONNECTION_URL);
 			stmt = conn.prepareStatement(select);
-			if(kategorieName != null)
-				stmt.setString(1, kategorieName);
+			if(einnahmeOderAusgabe != null)		//if einnahmeOderAusgabe == "Einnahme" oder == "Ausgabe"
+				stmt.setString(1, einnahmeOderAusgabe);
 			rs = stmt.executeQuery();
 			while(rs.next())
 				alKategorie.add(new Kategorie(rs.getInt(KATEGORIE_ID), rs.getBoolean(KATEGORIE_EINNAHMEODERAUSGABE), rs.getString(KATEGORIE_NAME), rs.getBoolean(KATEGORIE_FAVORITE)));
@@ -278,12 +278,17 @@ public class Datenbank {
 		return alKategorie;
 	}
 	
-	public static EintraegeList readEintraege(String Kategorie, Boolean EinnahmeOdAusgabe, String Benutzer) throws SQLException{
+	public static ArrayList<Eintrag> readEintraege(int benutzerId, String einnahmeOderAusgabe, String kategorie) throws SQLException{
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 		ArrayList<Eintrag> alEintraege = new ArrayList<>();
 		String select = "SELECT * FROM " + EINTRAG_TABLE;
+		if(benutzerId != 0)
+			select += " WHERE " + EINTRAG_BENUTZERID + "=" + benutzerId;
+			//return alle Einträge eines Benutzers, welche Einnahmen oder Ausgaben sind zu einer bestimmten Kategorie
+		if(benutzerId == 0)	//aus Haushalt vergleichen
+			//return alle Einträge(Haushalt), welche Einnahmen oder Ausgaben sind zu einer bestimmten Kategorie
 		try {
 			conn = DriverManager.getConnection(CONNECTION_URL);
 			stmt = conn.prepareStatement(select);
@@ -307,10 +312,10 @@ public class Datenbank {
 				throw e;
 			}
 		}
-		return new EintraegeList(alEintraege);
+		return alEintraege;
 	}
 	
-	public static DauereintraegeList readDauereintraege(String Kategorie, String EinnahmeOdAusgabe, String Benutzer) throws SQLException{
+	public static ArrayList<Dauereintrag> readDauereintraege(int benutzerId, String einnahmeOderAusgabe) throws SQLException{
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
@@ -339,9 +344,12 @@ public class Datenbank {
 				throw e;
 			}
 		}
-		return new DauereintraegeList(alDauereintraege);
+		return alDauereintraege;
 	}
 	
+	public static ArrayList<Kategorie> readFavoriten(String einnahmeOderAusgabe) throws SQLException{
+		return null;
+	}
 	//Daten überprüfen
 	public static boolean benutzerExist(BenutzerFX einBenutzerFX) throws SQLException{
 		try {

@@ -1,17 +1,23 @@
 package controller;
 
 import java.io.IOException;
+import java.net.URL;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.ResourceBundle;
+import java.util.stream.Collectors;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -22,6 +28,7 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableColumn;
@@ -40,37 +47,42 @@ import model.Benutzer;
 import model.BenutzerFX;
 import model.Datenbank;
 import model.Dauereintrag;
+import model.DauereintragFX;
 import model.Eintrag;
+import model.EintragFX;
 import model.Intervall;
 import model.Kategorie;
 import model.KategorieFX;
 
 public class MainController {
 	
-	ObservableList<BenutzerFX> olBenutzer = FXCollections.observableArrayList();		//Liste Benutzernamen hinterlegen
-	ObservableList<String> olSortierung = FXCollections.observableArrayList("Kategorie A-Z", "Kategorie Z-A", "Betrag aufsteigend","Betrag absteigend", "Datum aufsteigend", "Datum absteigend");
-	ObservableList<KategorieFX> olFavoriten = FXCollections.observableArrayList();
-	ObservableList<KategorieFX> olEinnahmenKategorien = FXCollections.observableArrayList();
-	ObservableList<KategorieFX> olAusgabenKategorien = FXCollections.observableArrayList();
+	@FXML ObservableList<BenutzerFX> olBenutzer = FXCollections.observableArrayList();		//Liste Benutzernamen hinterlegen
+	@FXML ObservableList<String> olSortierung = FXCollections.observableArrayList("Kategorie A-Z", "Kategorie Z-A", "Betrag aufsteigend","Betrag absteigend", "Datum aufsteigend", "Datum absteigend");
+	
+	//KategorieDialogController initialisieren
+//	@FXML private KategorieDialogController kategorieDialogController = new KategorieDialogController();
+//	public void setKategorieDialogController(KategorieDialogController kategorieDialogController) {
+//		this.kategorieDialogController = kategorieDialogController;
+//	}
 	
 	//Benutzer
 	@FXML HBox hbBenutzer;
 	@FXML Button bBenutzerAnlegenEntfernen; 			
 	@FXML ComboBox<BenutzerFX> cbBenutzer; 
-	
-	@FXML public void benutzerAuswaehlen() {			//Methode ausarbeiten um Benutzer zu wählen und die dementsprechenden Daten anzuzeigen
-		cbBenutzer.getSelectionModel().getSelectedItem().getBenutzerId();
-	}
+
 	@FXML TabPane tpEinnahmenAusgabenStatistik;
+	public TabPane getTabPane() {
+	        return tpEinnahmenAusgabenStatistik;
+	    }
 	
 	//Einahmen
 	@FXML Tab tabEinnahmen;
 	@FXML AnchorPane apEinnahmen;
 	@FXML Button bEinnahmenUebersicht;	
 	public void showKategorieEinnahmen() {
-//		tvEinnahmenFavoriten
+		getTableViewUebersicht();
 	}
-	@FXML Button bEinnahmenFavoriten;
+	@FXML Button bEinnahmenFavoriten;			//Set on disable bis Favoriten hinzugefügt wurden, wenn Favoriten vorhanden und Button geklickt dann setTabsFavoritenAusgaben();
 	@FXML
 	public void showEintraegeEinnahmen() {
 //		tvEinnahmenFavoriten
@@ -94,11 +106,8 @@ public class MainController {
 	@FXML Button bEinnahmenPlus;
 	@FXML Label lblEinnahmenUebersichtSortierung;
 	@FXML ComboBox<String> cbEinnahmenUebersichtSortierung;
-	@FXML TableView<KategorieFX> tvEinnahmenUebersichtKategorien;	
-	@FXML TableColumn<KategorieFX, String> einnahmenKategorieCol;
-	@FXML TableColumn<KategorieFX, Double> einnahmenSummeCol;
-	@FXML TableColumn<KategorieFX, String> einnahmenUebersichtButtonsCol;		//Variable für Buttons?
-	Button bFavoritEinnahmen;			//funktion hinterlegen neue Tabs anzulegen und Kategorie der olFavoriten hinzufügen
+	@FXML AnchorPane apEinnahmenUebersicht;
+	Button bFavoritEinnahmen;									//funktion hinterlegen - wenn gedrückt kategorie alFavoritenKategorie hinzufügen 
 
 	//StackPane Einnahmen Favoriten
 	@FXML StackPane spEinnahmenFavoriten;		
@@ -112,7 +121,6 @@ public class MainController {
 	@FXML Label lblEinnahmenFavoritenZeitraum;
 	@FXML Button bEinnahmenFavoritenPfeilVorwaerts;
 	@FXML TabPane tpEinnahmenFavoriten;
-	@FXML Tab tabEinnahmenFavoriten;		//Tab lt. olFavoriten, wenn einnahmeOderAusgabe true, anlegen
 	
 	@FXML HBox hbEinnahmenFavoritenEingabezeile;
 	@FXML Label lblEinnahmenFavoritenDatum;
@@ -127,16 +135,7 @@ public class MainController {
 	@FXML ComboBox<Intervall> cbEinnahmenFavoritenIntervall;
 	@FXML Label lblEinnahmenFavoritenEndeDauereintrag;
 	@FXML DatePicker dpEinnahmenFavoritenEndeDauereintrag;
-	@FXML Button bEinnahmenFavoritenSpeichern;			//Prüfungen auf vollständigkeit der eingegebenen Daten hinterlegen
-	
-	@FXML TableView<Eintrag> tvEinnahmenFavoriten;
-	@FXML TableColumn<Eintrag, LocalDate> einnahmenDatumCol;
-	@FXML TableColumn<Eintrag, String> einnahmenTitelCol;
-	@FXML TableColumn<Eintrag, Double> einnahmenBetragCol;
-	@FXML TableColumn<Eintrag, Benutzer> einnahmenBenutzerCol;
-	@FXML TableColumn<Eintrag, String> einnahmenDauereintragCol;
-	@FXML TableColumn<Eintrag, LocalDate> einnahmenDauereintragEndedatumCol;
-	@FXML TableColumn<Eintrag, String> einnahmenFavoritenButtonsCol; 		//Variable für Buttons?
+	@FXML Button bEinnahmenFavoritenSpeichern;					//Prüfungen auf vollständigkeit der eingegebenen Daten hinterlegen
 
 	//StackPane Einnahmen Dauereinträge
 	@FXML StackPane spEinnahmenDauereintraege;
@@ -146,14 +145,7 @@ public class MainController {
 	@FXML HBox hbEinnahmenDauereintraegeSortierung;
 	@FXML Label lblEinnahmenDauereintraegeSortierung;
 	@FXML ComboBox<String> cbEinnahmenDauereintraegeSortierung;
-	@FXML TableView<Dauereintrag> tvEinnahmenDauereintraege;
-	@FXML TableColumn<Dauereintrag, LocalDate> einnahmenDauereintraegeDatumCol;
-	@FXML TableColumn<Dauereintrag, String> einnahmenDauereintraegeTitelCol;
-	@FXML TableColumn<Dauereintrag, Double> einnahmenDauereintraegeBetragCol;
-	@FXML TableColumn<Dauereintrag, Benutzer> einnahmenDauereintraegeBenutzerCol;
-	@FXML TableColumn<Dauereintrag, Intervall> einnahmenDauereintraegeIntervallCol;
-	@FXML TableColumn<Dauereintrag, LocalDate> einnahmenDauereintraegeEndeCol;
-	@FXML TableColumn<Dauereintrag, String> einnahmenDauereintraegeButtonsCol;		//Variable für Buttons?
+	@FXML AnchorPane apEinnahmenDauereintraege;
 	
 	//Ausgaben
 	@FXML Tab tabAusgaben;
@@ -161,9 +153,9 @@ public class MainController {
 	@FXML Button bAusgabenUebersicht;
 	@FXML
 	public void showKategorieAusgaben() {
-//		tvAusgabenUebersichtKategorien
+		
 	}
-	@FXML Button bAusgabenFavoriten;
+	@FXML Button bAusgabenFavoriten;							//Set on disable bis Favoriten hinzugefügt wurden, wenn Favoriten vorhanden und Button geklickt dann setTabsFavoritenAusgaben();
 	@FXML
 	public void showEintraegeAusgaben() {
 //		tvAusgabenFavoriten
@@ -187,11 +179,8 @@ public class MainController {
 	@FXML Button bAusgabenPlus;
 	@FXML Label lblAusgabenUebersichtSortierung;
 	@FXML ComboBox<String> cbAusgabenUebersichtSortierung;
-	@FXML TableView<Kategorie> tvAusgabenUebersichtKategorien;
-	@FXML TableColumn<Kategorie, String> ausgabenKategorieCol;
-	@FXML TableColumn<Kategorie, Double> ausgabenSummeCol;
-	@FXML TableColumn<Kategorie, String> ausgabenUebersichtButtonsCol;		//Variable für Buttons?
-	Button bFavoritAusgaben;			//funktion hinterlegen neue Tabs anzulegen und Kategorie der olFavoriten hinzufügen
+	@FXML AnchorPane apAusgabenUebersicht;
+	Button bFavoritAusgaben;										//funktion hinterlegen - wenn gedrückt kategorie alFavoritenKategorie hinzufügen 
 	
 	//StackPane Ausgaben Favoriten
 	@FXML StackPane spAusgabenFavoriten;
@@ -205,7 +194,6 @@ public class MainController {
 	@FXML Label lblAusgabenFavoritenZeitraum;
 	@FXML Button bAusgabenFavoritenPfeilVorwaerts;
 	@FXML TabPane tpAusgabenFavoriten;
-	@FXML Tab tabAusgabenFavoriten;		//Tab lt. olFavoriten, wenn einnahmeOderAusgabe false, anlegen
 	
 	@FXML HBox hbAusgabenFavoritenEingabezeile;
 	@FXML Label lblAusgabenFavoritenDatum;
@@ -220,17 +208,8 @@ public class MainController {
 	@FXML ComboBox<Intervall> cbAusgabenFavoritenIntervall;
 	@FXML Label lblAusgabenFavoritenEndeDauereintrag;
 	@FXML DatePicker dpAusgabenFavoritenEndeDauereintrag;
-	@FXML Button bAusgabenFavoritenSpeichern;			//Prüfungen auf vollständigkeit der eingegebenen Daten hinterlegen
-	
-	@FXML TableView<Eintrag> tvAusgabenFavoriten;
-	@FXML TableColumn<Eintrag, LocalDate> ausgabenDatumCol;
-	@FXML TableColumn<Eintrag, String> ausgabenTitelCol;
-	@FXML TableColumn<Eintrag, Double> ausgabenBetragCol;
-	@FXML TableColumn<Eintrag, Benutzer> ausgabenBenutzerCol;
-	@FXML TableColumn<Eintrag, String> ausgabenDauereintragCol;
-	@FXML TableColumn<Eintrag, LocalDate> ausgabenDauereintragEndedatumCol;
-	@FXML TableColumn<Eintrag, String> ausgabenFavoritenButtonsCol; 		//Variable für Buttons?
-	
+	@FXML Button bAusgabenFavoritenSpeichern;						//Prüfungen auf vollständigkeit der eingegebenen Daten hinterlegen
+
 	//StackPane Ausgaben Dauereintraege
 	@FXML StackPane spAusgabenDauereintraege;
 	@FXML HBox hbAusgabenDauereintraegeDatum;
@@ -239,14 +218,7 @@ public class MainController {
 	@FXML HBox hbAusgabenDauereintraegeSortierung;
 	@FXML Label lblAusgabenDauereintraegeSortierung;
 	@FXML ComboBox<String> cbAusgabenDauereintraegeSortierung;
-	@FXML TableView<Dauereintrag> tvAusgabenDauereintraege;
-	@FXML TableColumn<Dauereintrag, LocalDate> ausgabenDauereintraegeDatumCol;
-	@FXML TableColumn<Dauereintrag, String> ausgabenDauereintraegeTitelCol;
-	@FXML TableColumn<Dauereintrag, Double> ausgabenDauereintraegeBetragCol;
-	@FXML TableColumn<Dauereintrag, Benutzer> ausgabenDauereintraegeBenutzerCol;
-	@FXML TableColumn<Dauereintrag, Intervall> ausgabenDauereintraegeIntervallCol;
-	@FXML TableColumn<Dauereintrag, LocalDate> ausgabenDauereintraegeEndeCol;
-	@FXML TableColumn<Dauereintrag, String> ausgabenDauereintraegeButtonsCol;		//Variable für Buttons?
+	@FXML AnchorPane apAusgabenDauereintraege;
 	
 	//Statistik
 	@FXML Tab tabStatistik;
@@ -267,12 +239,15 @@ public class MainController {
 	@FXML Label lblStatistikZeitraum;
 	@FXML Button bStatistikPfeilVorwaerts;
 	@FXML VBox vbStatistikBenutzer;
-	@FXML CheckBox cbStatistikBenutzer;	
 	@FXML Pane pStatistik;
 	
 	//Methoden
+
 	@FXML
 	public void initialize() {
+//		setKategorieDialogController(kategorieDialogController);
+
+		
 		//Benutzer auslesen und der ObserverList hinzufügen
 		showBenutzer();
 //		cbBenutzer.setValue("HAUSHALT");
@@ -281,13 +256,6 @@ public class MainController {
 		//Einnahmen 
 		cbEinnahmenUebersichtSortierung.getSelectionModel().select("Kategorie A-Z");
 		cbEinnahmenUebersichtSortierung.setItems(olSortierung);
-		
-		//Einnahmen Übersicht TableView füllen
-		showKategorien();
-		einnahmenKategorieCol.setCellValueFactory(new PropertyValueFactory<>("name"));
-//		einnahmenKategorieCol.setCellValueFactory(new PropertyValueFactory<>());			Summe aller Einträge übergeben
-//		einnahmenKategorieCol.setCellValueFactory(new PropertyValueFactory<>());			Buttons
-		tvEinnahmenUebersichtKategorien.setItems(olEinnahmenKategorien);
 		
 		dpEinnahmenFavoritenDatum.setValue(LocalDate.now());
 		cbEinnahmenFavoritenBenutzer.setItems(olBenutzer);
@@ -316,12 +284,13 @@ public class MainController {
 //		set Favoriten on disable wenn keine Favoriten vorhanden
 		
 		//Statistik
+		setCbBenutzerStatistik();
 //		cbHaushalt.setDefaultButton(true)
 //		bUebersicht.setDefaultButton(true);
 		
 	}
 	
-	//Einnahmen Einträge speichern
+	//Einnahmen Einträge speichern		//Ev. nutzbar für Einnahemn und Ausgaben?
 	@FXML public void bEinnahmenEintragSpeichern(ActionEvent event) {
 //		if(cbEinnahmenFavoritenIntervall.getValue().toString().equals("keine")) {
 //			try {
@@ -367,26 +336,27 @@ public class MainController {
 		}	
 	}
 	
-	//Kategorien aus Datenbank auslesen und ObservableList hinzufügen
-	public void showKategorien() {
-		try {
-			ArrayList<Kategorie> alKategorien = Datenbank.readKategorie();
-			olEinnahmenKategorien.clear();
-			olAusgabenKategorien.clear();
-			for(Kategorie eineKategorie : alKategorien)
-				if(eineKategorie.isEinnahmeOderAusgabe())
-					olEinnahmenKategorien.add(new KategorieFX(eineKategorie));					
-				else
-					olAusgabenKategorien.add(new KategorieFX(eineKategorie));
-		} catch (SQLException e) {
-			new Alert(AlertType.ERROR, e.toString());
-		}	
-	}
+//	//Kategorien aus Datenbank auslesen und ObservableList hinzufügen
+//	public void showKategorien() {
+//		try {
+//			ArrayList<Kategorie> alKategorien = Datenbank.readKategorie();
+//			olEinnahmenKategorien.clear();
+//			olAusgabenKategorien.clear();
+//			for(Kategorie eineKategorie : alKategorien)
+//				if(eineKategorie.isEinnahmeOderAusgabe())
+//					olEinnahmenKategorien.add(new KategorieFX(eineKategorie));					
+//				else
+//					olAusgabenKategorien.add(new KategorieFX(eineKategorie));
+//		} catch (SQLException e) {
+//			new Alert(AlertType.ERROR, e.toString());
+//		}	
+//	}
 	
-	//Wechseln der Stacks in Einnahmen per klick auf Button(Übersicht, Favoriten, Dauereintraege)
+	//Wechseln der Stacks in Einnahmen per klick auf Button(Übersicht, Favoriten, Dauereintraege)		//Ev. nutzbar für Einnahemn und Ausgaben?
 	@FXML public void showStackEinnahmenUebersicht(ActionEvent event) {
 		apEinnahmen.getChildren().remove(spEinnahmenUebersicht);
 		apEinnahmen.getChildren().add(spEinnahmenUebersicht);
+		getTableViewUebersicht();
 	}
 	@FXML public void showStackEinnahmenFavoriten(ActionEvent event) {
 		apEinnahmen.getChildren().remove(spEinnahmenFavoriten);
@@ -395,12 +365,14 @@ public class MainController {
 	@FXML public void showStackEinnahmenDauereintraege(ActionEvent event) {
 		apEinnahmen.getChildren().remove(spEinnahmenDauereintraege);
 		apEinnahmen.getChildren().add(spEinnahmenDauereintraege);
+		getTableViewDauereintraege();
 	}
 	
 	//Wechseln der Stacks in Ausgaben per klick auf Button(Übersicht, Favoriten, Dauereintraege)
 	@FXML public void showStackAusgabenUebersicht(ActionEvent event) {
 		apAusgaben.getChildren().remove(spAusgabenUebersicht);
 		apAusgaben.getChildren().add(spAusgabenUebersicht);
+		getTableViewUebersicht();
 	}
 	@FXML public void showStackAusgabenFavoriten(ActionEvent event) {
 		apAusgaben.getChildren().remove(spAusgabenFavoriten);
@@ -409,6 +381,33 @@ public class MainController {
 	@FXML public void showStackAusgabenDauereintraege(ActionEvent event) {
 		apAusgaben.getChildren().remove(spAusgabenDauereintraege);
 		apAusgaben.getChildren().add(spAusgabenDauereintraege);
+		getTableViewDauereintraege();
+	}
+	
+	//Add CheckBoxes to vbStatistikBenutzer
+	ArrayList<CheckBox> checkBoxesBenutzer = new ArrayList<>();
+	public void setCbBenutzerStatistik(){
+		try {
+			//Erstelle neue CheckBox
+			for(Benutzer einBenutzer : Datenbank.readBenutzer()) {
+				CheckBox checkBox = new CheckBox(einBenutzer.getName());
+			    checkBoxesBenutzer.add(checkBox);
+			}
+			//Füge CheckBoxen der VBox hinzu
+			vbStatistikBenutzer.getChildren().addAll(checkBoxesBenutzer);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+		
+	//Set CheckBoxes on Action															
+	public void handleCheckBoxActionBenutzerStatistik(CheckBox checkBox) {
+		List<BenutzerFX> lBenutzerFX = olBenutzer.stream().collect(Collectors.toList());
+		int index = checkBoxesBenutzer.indexOf(checkBox);
+	    BenutzerFX benutzerFX = lBenutzerFX.get(index);
+	    if (checkBox.isSelected()) {
+//	        benutzerFX.doSomething();												// perform action when CheckBox is not selected - Methode hinterlegen
+	    } 
 	}
 	
 	//Öffnen des BenutzerDialog
@@ -437,7 +436,7 @@ public class MainController {
 		}
 	}
 	
-	//öffnen des KategorieDialog
+	//Öffnen des KategorieDialog
 	@FXML public void kategorieAnlegen(ActionEvent event) throws SQLException {
 		try {
 			FXMLLoader fxmlLoaderKategorie = new FXMLLoader();
@@ -456,7 +455,121 @@ public class MainController {
 			e.printStackTrace();
 		}
 	}
-	
 
+	//Erstellen der TableView Übersicht
+	public void getTableViewUebersicht() {
+		//Daten aus der Datenbank auslesen und in ObservableList eintragen
+		ObservableList<KategorieFX> olKategorien = FXCollections.observableArrayList();
+		try {
+			ArrayList<Kategorie> alKategorien = Datenbank.readKategorie(tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText());
+			olKategorien.clear();
+			for(Kategorie eineKategorie : alKategorien)
+				olKategorien.add(new KategorieFX(eineKategorie));	
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		//TableView erstellen
+		TableColumn<KategorieFX, String> kategorieCol = new TableColumn<>();
+		kategorieCol.setCellValueFactory(new PropertyValueFactory<>("name"));
+		kategorieCol.setPrefWidth(200);
+		TableColumn<KategorieFX, Double> summeCol = new TableColumn<>();
+		kategorieCol.setCellValueFactory(new PropertyValueFactory<>("eintraege"));				//Summe aller eintraege
+		summeCol.setPrefWidth(200);
+																								//Buttons hinzufügen
+				
+		TableView<KategorieFX> tvKategorien= new TableView<>(olKategorien);
+		tvKategorien.getColumns().addAll(kategorieCol, summeCol);
+		tvKategorien.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+		//TableView der AnchorPane hinzufügen
+		if(tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText() == "Einnahmen")
+			apEinnahmenUebersicht.getChildren().add(tvKategorien);
+		else 
+			apAusgabenUebersicht.getChildren().add(tvKategorien);
+	}
+	
+	//Add Tabs to tabAusgabenFavoriten und erstellen der TableView
+	ArrayList<Kategorie> alFavoritenKategorie = new ArrayList<>();
+	public void setTabsFavoritenAusgaben() throws SQLException {
+		ArrayList<Tab> alTabsFavoriten = new ArrayList<>();
+		for(Kategorie eineFavoritenKategorie : alFavoritenKategorie) {
+			//Neuen Tab erstellen
+			Tab tab = new Tab(eineFavoritenKategorie.getName());
+			alTabsFavoriten.add(tab);
+			//Daten aus der Datenbank auslesen und in ObservableList eintragen
+			ArrayList<Eintrag> alEintraege = Datenbank.readEintraege(cbBenutzer.getSelectionModel().getSelectedItem().getBenutzerId(), tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText(), eineFavoritenKategorie.getName());
+			ObservableList<EintragFX> olEintraege = FXCollections.observableArrayList();
+			olEintraege.clear();
+			for(Eintrag einEintrag : alEintraege)
+				olEintraege.add(new EintragFX(einEintrag));
+			//TableView erstellen
+			TableColumn<EintragFX, LocalDate> datumCol = new TableColumn<>();
+			datumCol.setCellValueFactory(new PropertyValueFactory<>("datum"));
+			datumCol.setPrefWidth(187.34);
+			TableColumn<EintragFX, String> titelCol = new TableColumn<>();
+			titelCol.setCellValueFactory(new PropertyValueFactory<>("titel"));
+			titelCol.setPrefWidth(231.37);
+			TableColumn<EintragFX, Double> betragCol = new TableColumn<>();
+			betragCol.setCellValueFactory(new PropertyValueFactory<>("betrag"));
+			betragCol.setPrefWidth(209.33);
+			TableColumn<EintragFX, Benutzer> benutzerCol = new TableColumn<>();
+			benutzerCol.setCellValueFactory(new PropertyValueFactory<>("benutzer"));
+			benutzerCol.setPrefWidth(212.66);
+																								//Buttons hinzufügen
+				
+			TableView<EintragFX> tvFavoriten= new TableView<>(olEintraege);
+			tvFavoriten.getColumns().addAll(datumCol, titelCol, betragCol, benutzerCol);
+			tvFavoriten.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+				
+			tab.setContent(tvFavoriten);
+		}
+		//Tabs der TabPane hinzufügen
+		if(tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText() == "Einnahmen")
+			tpEinnahmenFavoriten.getTabs().addAll(alTabsFavoriten);
+		else 
+			tpAusgabenFavoriten.getTabs().addAll(alTabsFavoriten);
+	}
+	
+	//Erstellen der TableView Dauereinträge
+	public void getTableViewDauereintraege() {
+		//Daten aus der Datenbank auslesen und in ObservableList eintragen
+		ObservableList<DauereintragFX> olDauereintraege = FXCollections.observableArrayList();
+		try {
+			ArrayList<Dauereintrag> alDauereintraege = Datenbank.readDauereintraege(cbBenutzer.getSelectionModel().getSelectedItem().getBenutzerId(), tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText());
+			olDauereintraege.clear();
+			for(Dauereintrag einDauereintrag : alDauereintraege)
+				olDauereintraege.add(new DauereintragFX(einDauereintrag));	
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		//TableView erstellen
+		TableColumn<DauereintragFX, LocalDate> datumCol = new TableColumn<>();
+		datumCol.setCellValueFactory(new PropertyValueFactory<>("datum"));
+		datumCol.setPrefWidth(187.34);
+		TableColumn<DauereintragFX, String> titelCol = new TableColumn<>();
+		titelCol.setCellValueFactory(new PropertyValueFactory<>("titel"));
+		titelCol.setPrefWidth(231.37);
+		TableColumn<DauereintragFX, Double> betragCol = new TableColumn<>();
+		betragCol.setCellValueFactory(new PropertyValueFactory<>("betrag"));
+		betragCol.setPrefWidth(209.33);
+		TableColumn<DauereintragFX, Benutzer> benutzerCol = new TableColumn<>();
+		benutzerCol.setCellValueFactory(new PropertyValueFactory<>("benutzer"));
+		benutzerCol.setPrefWidth(212.66);
+		TableColumn<DauereintragFX, Benutzer> dauereintragCol = new TableColumn<>();
+		benutzerCol.setCellValueFactory(new PropertyValueFactory<>("dauereintrag"));
+		benutzerCol.setPrefWidth(212.33);
+		TableColumn<DauereintragFX, Benutzer> dauereintragEndeCol = new TableColumn<>();
+		benutzerCol.setCellValueFactory(new PropertyValueFactory<>("dauereintragEnde"));
+		benutzerCol.setPrefWidth(248);
+																								//Buttons hinzufügen
+		
+		TableView<DauereintragFX> tvDauereintraege = new TableView<>(olDauereintraege);
+		tvDauereintraege.getColumns().addAll(datumCol, titelCol, betragCol, benutzerCol, dauereintragCol, dauereintragEndeCol);
+		tvDauereintraege.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+		//TableView der AnchorPane hinzufügen
+		if(tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText() == "Einnahmen")
+			apEinnahmenDauereintraege.getChildren().add(tvDauereintraege);
+		else
+			apAusgabenDauereintraege.getChildren().add(tvDauereintraege);
+	}
 
 }

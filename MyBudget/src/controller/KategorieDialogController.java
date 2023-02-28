@@ -22,8 +22,8 @@ import model.Kategorie;
 import model.KategorieFX;
 
 public class KategorieDialogController extends Dialog<ButtonType> {
-	ArrayList<Kategorie> alKategorien = new ArrayList<>();
-	ObservableList<KategorieFX> olKategorien = FXCollections.observableArrayList();
+	@FXML ArrayList<Kategorie> alKategorien = new ArrayList<>();
+	@FXML ObservableList<KategorieFX> olKategorien = FXCollections.observableArrayList();
 	
 	@FXML DialogPane kategorieDialog;
 	@FXML VBox vbKategorie;
@@ -39,9 +39,16 @@ public class KategorieDialogController extends Dialog<ButtonType> {
 	
 	//Methoden
 	@FXML public void initialize() {
+		setMainController(mainController);
 		kategorieCol.setCellValueFactory(new PropertyValueFactory<>("name"));
 		tvKategorie.setItems(olKategorien);
 		showKategorie();
+	}
+	
+	//MainController initialisieren
+	private MainController mainController;
+	public void setMainController(MainController mainController) {
+		this.mainController = mainController;
 	}
 	
 	//Methode für TextField
@@ -55,13 +62,22 @@ public class KategorieDialogController extends Dialog<ButtonType> {
 	        }
 	    }
 	    if (!exists) {
-	    	
-	        olKategorien.add(new KategorieFX(new Kategorie(false, tfNeueKategorie.getText(), false)));	//Überprüfen ob Einahmen oder Ausgabe
-	        try {
-				Datenbank.insertKategorie(new Kategorie(false, tfNeueKategorie.getText(), false));		//Überprüfen ob Einahmen oder Ausgabe
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
+	    	if(mainController.getTabPane().getSelectionModel().getSelectedItem() == mainController.tabEinnahmen) {	//Überprüfen ob Einahmen
+	    		olKategorien.add(new KategorieFX(new Kategorie(true, tfNeueKategorie.getText(), false)));	
+	    		try {
+	    			Datenbank.insertKategorie(new Kategorie(true, tfNeueKategorie.getText(), false));		
+	    		} catch (SQLException e) {
+	    			e.printStackTrace();
+	    		}
+	    	}
+	    	if(mainController.getTabPane().getSelectionModel().getSelectedItem() == mainController.tabAusgaben) {	//Überprüfen ob Ausgabe
+		    	olKategorien.add(new KategorieFX(new Kategorie(false, tfNeueKategorie.getText(), false)));	
+		    	try {
+		    		Datenbank.insertKategorie(new Kategorie(false, tfNeueKategorie.getText(), false));		
+		    	} catch (SQLException e) {
+		    		e.printStackTrace();
+		    	}
+	    	}
 	    }
 	}
 	

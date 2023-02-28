@@ -24,8 +24,8 @@ import model.BenutzerFX;
 import model.Datenbank;
 
 public class BenutzerDialogController extends Dialog<ButtonType> {
-	ArrayList<Benutzer> alBenutzer = new ArrayList<>();
-	ObservableList<BenutzerFX> olBenutzer = FXCollections.observableArrayList();
+	@FXML ArrayList<Benutzer> alBenutzer = new ArrayList<>();
+	@FXML ObservableList<BenutzerFX> olBenutzer = FXCollections.observableArrayList();
 	
 	@FXML DialogPane benutzerDialog;
 	@FXML VBox vbBenutzer;
@@ -100,6 +100,5 @@ public class BenutzerDialogController extends Dialog<ButtonType> {
 			new Alert(AlertType.ERROR, e.toString());
 		}	
 	}
-	
 	
 }
