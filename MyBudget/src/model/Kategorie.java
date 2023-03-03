@@ -8,8 +8,8 @@ public class Kategorie {
 	private boolean einnahmeOderAusgabe;
 	private String name;
 	private boolean favorite = false;
-	private ArrayList<Eintrag> eintraege;
-	private ArrayList<Dauereintrag> dauereintraege;
+	private ArrayList<Eintrag> eintraege = new ArrayList<>();
+	private ArrayList<Dauereintrag> dauereintraege = new ArrayList<>();
 	
 	public Kategorie(int kategorieId, boolean einnahmeOderAusgabe, String name, boolean favorite,
 			ArrayList<Eintrag> eintraege, ArrayList<Dauereintrag> dauereintraege) {
@@ -35,6 +35,14 @@ public class Kategorie {
 		this.favorite = favorite;
 	}
 	public Kategorie() {}
+	
+	public double getSummeEintraege() {
+		double summe = 0;
+		for(Eintrag einEintrag : eintraege)
+			summe += einEintrag.getBetrag();
+		return summe;
+	}
+	
 	public int getKategorieId() {
 		return kategorieId;
 	}

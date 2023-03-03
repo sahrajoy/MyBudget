@@ -39,10 +39,8 @@ public class KategorieDialogController extends Dialog<ButtonType> {
 	
 	//Methoden
 	@FXML public void initialize() {
-		setMainController(mainController);
 		kategorieCol.setCellValueFactory(new PropertyValueFactory<>("name"));
 		tvKategorie.setItems(olKategorien);
-		showKategorie();
 	}
 	
 	//MainController initialisieren

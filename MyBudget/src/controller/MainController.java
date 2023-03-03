@@ -59,12 +59,6 @@ public class MainController {
 	@FXML ObservableList<BenutzerFX> olBenutzer = FXCollections.observableArrayList();		//Liste Benutzernamen hinterlegen
 	@FXML ObservableList<String> olSortierung = FXCollections.observableArrayList("Kategorie A-Z", "Kategorie Z-A", "Betrag aufsteigend","Betrag absteigend", "Datum aufsteigend", "Datum absteigend");
 	
-	//KategorieDialogController initialisieren
-//	@FXML private KategorieDialogController kategorieDialogController = new KategorieDialogController();
-//	public void setKategorieDialogController(KategorieDialogController kategorieDialogController) {
-//		this.kategorieDialogController = kategorieDialogController;
-//	}
-	
 	//Benutzer
 	@FXML HBox hbBenutzer;
 	@FXML Button bBenutzerAnlegenEntfernen; 			
@@ -79,19 +73,8 @@ public class MainController {
 	@FXML Tab tabEinnahmen;
 	@FXML AnchorPane apEinnahmen;
 	@FXML Button bEinnahmenUebersicht;	
-	public void showKategorieEinnahmen() {
-		getTableViewUebersicht();
-	}
 	@FXML Button bEinnahmenFavoriten;			//Set on disable bis Favoriten hinzugefügt wurden, wenn Favoriten vorhanden und Button geklickt dann setTabsFavoritenAusgaben();
-	@FXML
-	public void showEintraegeEinnahmen() {
-//		tvEinnahmenFavoriten
-	}
 	@FXML Button bEinnahmenDauereintraege;
-	@FXML
-	public void showDauereintraegeEinnahmen() {
-//		tvEinnahmenDauereintraege
-	}
 	
 	//StackPane Einnahmen Übersicht
 	@FXML StackPane spEinnahmenUebersicht;
@@ -135,7 +118,7 @@ public class MainController {
 	@FXML ComboBox<Intervall> cbEinnahmenFavoritenIntervall;
 	@FXML Label lblEinnahmenFavoritenEndeDauereintrag;
 	@FXML DatePicker dpEinnahmenFavoritenEndeDauereintrag;
-	@FXML Button bEinnahmenFavoritenSpeichern;					//Prüfungen auf vollständigkeit der eingegebenen Daten hinterlegen
+	@FXML Button bEinnahmenFavoritenSpeichern;					//Prüfungen auf vollständigkeit der eingegebenen Daten hinterlegen und speichern in DB
 
 	//StackPane Einnahmen Dauereinträge
 	@FXML StackPane spEinnahmenDauereintraege;
@@ -250,8 +233,8 @@ public class MainController {
 		
 		//Benutzer auslesen und der ObserverList hinzufügen
 		showBenutzer();
-//		cbBenutzer.setValue("HAUSHALT");
 		cbBenutzer.setItems(olBenutzer);
+		cbBenutzer.getSelectionModel().select(olBenutzer.stream().filter(b -> b.getName().equals("HAUSHALT")).findFirst().orElse(null));
 		
 		//Einnahmen 
 		cbEinnahmenUebersichtSortierung.getSelectionModel().select("Kategorie A-Z");
@@ -358,9 +341,10 @@ public class MainController {
 		apEinnahmen.getChildren().add(spEinnahmenUebersicht);
 		getTableViewUebersicht();
 	}
-	@FXML public void showStackEinnahmenFavoriten(ActionEvent event) {
+	@FXML public void showStackEinnahmenFavoriten(ActionEvent event) throws SQLException {
 		apEinnahmen.getChildren().remove(spEinnahmenFavoriten);
 		apEinnahmen.getChildren().add(spEinnahmenFavoriten);
+		setTabsFavoritenAusgaben();
 	}
 	@FXML public void showStackEinnahmenDauereintraege(ActionEvent event) {
 		apEinnahmen.getChildren().remove(spEinnahmenDauereintraege);
@@ -374,9 +358,10 @@ public class MainController {
 		apAusgaben.getChildren().add(spAusgabenUebersicht);
 		getTableViewUebersicht();
 	}
-	@FXML public void showStackAusgabenFavoriten(ActionEvent event) {
+	@FXML public void showStackAusgabenFavoriten(ActionEvent event) throws SQLException {
 		apAusgaben.getChildren().remove(spAusgabenFavoriten);
 		apAusgaben.getChildren().add(spAusgabenFavoriten);
+		setTabsFavoritenAusgaben();
 	}
 	@FXML public void showStackAusgabenDauereintraege(ActionEvent event) {
 		apAusgaben.getChildren().remove(spAusgabenDauereintraege);
@@ -444,7 +429,9 @@ public class MainController {
 			DialogPane kategorieDialog = fxmlLoaderKategorie.load();
 			
 			//Holen der KategorieDialogController-Instanzen
-			KategorieDialogController bdc = fxmlLoaderKategorie.getController();		
+			KategorieDialogController bdc = fxmlLoaderKategorie.getController();	
+			bdc.setMainController(this);
+			bdc.showKategorie();
 						
 			Dialog<ButtonType> dialogKategorie = new Dialog<>();
 			dialogKategorie.setDialogPane(kategorieDialog);
@@ -459,32 +446,33 @@ public class MainController {
 	//Erstellen der TableView Übersicht
 	public void getTableViewUebersicht() {
 		//Daten aus der Datenbank auslesen und in ObservableList eintragen
-		ObservableList<KategorieFX> olKategorien = FXCollections.observableArrayList();
-		try {
-			ArrayList<Kategorie> alKategorien = Datenbank.readKategorie(tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText());
-			olKategorien.clear();
-			for(Kategorie eineKategorie : alKategorien)
-				olKategorien.add(new KategorieFX(eineKategorie));	
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		//TableView erstellen
-		TableColumn<KategorieFX, String> kategorieCol = new TableColumn<>();
-		kategorieCol.setCellValueFactory(new PropertyValueFactory<>("name"));
-		kategorieCol.setPrefWidth(200);
-		TableColumn<KategorieFX, Double> summeCol = new TableColumn<>();
-		kategorieCol.setCellValueFactory(new PropertyValueFactory<>("eintraege"));				//Summe aller eintraege
-		summeCol.setPrefWidth(200);
-																								//Buttons hinzufügen
-				
-		TableView<KategorieFX> tvKategorien= new TableView<>(olKategorien);
-		tvKategorien.getColumns().addAll(kategorieCol, summeCol);
-		tvKategorien.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-		//TableView der AnchorPane hinzufügen
-		if(tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText() == "Einnahmen")
-			apEinnahmenUebersicht.getChildren().add(tvKategorien);
-		else 
-			apAusgabenUebersicht.getChildren().add(tvKategorien);
+//		ObservableList<EintragFX> olKategorien = FXCollections.observableArrayList();
+//		ArrayList<Eintrag> alEinträgeNachKategorien;
+//		try {
+//			alEinträgeNachKategorien = Datenbank.readKategorieByUserAndEinnahmenAusgaben(cbBenutzer.getSelectionModel().getSelectedItem().getBenutzerId(), tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText());
+//			olKategorien.clear();
+//			for(Kategorie eineKategorie : alEinträgeNachKategorien)
+//				olKategorien.add(new KategorieFX(eineKategorie));
+//		} catch (SQLException e) {
+//			e.printStackTrace();
+//		}
+//		//TableView erstellen
+//		TableColumn<EintragFX, String> kategorieCol = new TableColumn<>();
+//		kategorieCol.setCellValueFactory(new PropertyValueFactory<>("name"));
+//		kategorieCol.setPrefWidth(200);
+//		TableColumn<EintragFX, Double> summeCol = new TableColumn<>();
+//		kategorieCol.setCellValueFactory(new PropertyValueFactory<>("summeEintraege"));				
+//		summeCol.setPrefWidth(200);
+//																								//Buttons hinzufügen
+//				
+//		TableView<KategorieFX> tvKategorien= new TableView<>(olKategorien);
+//		tvKategorien.getColumns().addAll(kategorieCol, summeCol);
+//		tvKategorien.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+//		//TableView der AnchorPane hinzufügen
+//		if(tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText() == "Einnahmen")
+//			apEinnahmenUebersicht.getChildren().add(tvKategorien);
+//		else 
+//			apAusgabenUebersicht.getChildren().add(tvKategorien);
 	}
 	
 	//Add Tabs to tabAusgabenFavoriten und erstellen der TableView
@@ -543,7 +531,7 @@ public class MainController {
 		}
 		//TableView erstellen
 		TableColumn<DauereintragFX, LocalDate> datumCol = new TableColumn<>();
-		datumCol.setCellValueFactory(new PropertyValueFactory<>("datum"));
+		datumCol.setCellValueFactory(new PropertyValueFactory<>("naechsteFaelligkeit"));
 		datumCol.setPrefWidth(187.34);
 		TableColumn<DauereintragFX, String> titelCol = new TableColumn<>();
 		titelCol.setCellValueFactory(new PropertyValueFactory<>("titel"));
@@ -554,10 +542,10 @@ public class MainController {
 		TableColumn<DauereintragFX, Benutzer> benutzerCol = new TableColumn<>();
 		benutzerCol.setCellValueFactory(new PropertyValueFactory<>("benutzer"));
 		benutzerCol.setPrefWidth(212.66);
-		TableColumn<DauereintragFX, Benutzer> dauereintragCol = new TableColumn<>();
-		benutzerCol.setCellValueFactory(new PropertyValueFactory<>("dauereintrag"));
+		TableColumn<DauereintragFX, Intervall> dauereintragCol = new TableColumn<>();
+		benutzerCol.setCellValueFactory(new PropertyValueFactory<>("intervall"));
 		benutzerCol.setPrefWidth(212.33);
-		TableColumn<DauereintragFX, Benutzer> dauereintragEndeCol = new TableColumn<>();
+		TableColumn<DauereintragFX, LocalDate> dauereintragEndeCol = new TableColumn<>();
 		benutzerCol.setCellValueFactory(new PropertyValueFactory<>("dauereintragEnde"));
 		benutzerCol.setPrefWidth(248);
 																								//Buttons hinzufügen

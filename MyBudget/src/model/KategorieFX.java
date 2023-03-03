@@ -1,6 +1,7 @@
 package model;
 
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 
@@ -11,6 +12,7 @@ public class KategorieFX {
 	private SimpleIntegerProperty kategorieId;
 	private SimpleStringProperty name;
 	private SimpleBooleanProperty favorite;
+	private SimpleDoubleProperty summeEintraege;
 	
 	public KategorieFX(Kategorie modellKategorie) {
 		super();
@@ -19,6 +21,7 @@ public class KategorieFX {
 		kategorieId = new SimpleIntegerProperty(modellKategorie.getKategorieId());
 		name = new SimpleStringProperty(modellKategorie.getName());
 		favorite = new SimpleBooleanProperty(modellKategorie.isFavorite());
+		summeEintraege = new SimpleDoubleProperty(modellKategorie.getSummeEintraege());
 	}
 
 	public final SimpleBooleanProperty einnahmeOderAusgabeProperty() {
@@ -61,6 +64,16 @@ public class KategorieFX {
 		this.favoriteProperty().set(favorite);
 	}
 
+	public final SimpleDoubleProperty summeEintraegeProperty() {
+		return this.summeEintraege;
+	}
+	public final double getSummeEintraege() {
+		return this.summeEintraegeProperty().get();
+	}
+	public final void setSummeEintraege(final double summeEintraege) {
+		this.summeEintraegeProperty().set(summeEintraege);
+	}
+	
 	@Override
 	public String toString() {
 		return name.get();
