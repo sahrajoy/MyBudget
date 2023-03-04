@@ -1,7 +1,6 @@
 package controller;
 
 import java.io.IOException;
-import java.net.URL;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -9,7 +8,6 @@ import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 import javafx.collections.FXCollections;
@@ -17,7 +15,7 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -55,21 +53,41 @@ import model.Kategorie;
 import model.KategorieFX;
 
 public class MainController {
-	
+	@FXML ObservableList<DauereintragFX> olDauereintraege = FXCollections.observableArrayList();
+	@FXML ObservableList<EintragFX> olEintraege = FXCollections.observableArrayList();
+	@FXML ObservableList<KategorieFX> olFavoriten = FXCollections.observableArrayList();
+	@FXML ObservableList<KategorieFX> olKategorie = FXCollections.observableArrayList();
 	@FXML ObservableList<BenutzerFX> olBenutzer = FXCollections.observableArrayList();		//Liste Benutzernamen hinterlegen
 	@FXML ObservableList<String> olSortierung = FXCollections.observableArrayList("Kategorie A-Z", "Kategorie Z-A", "Betrag aufsteigend","Betrag absteigend", "Datum aufsteigend", "Datum absteigend");
+	
+	//TabPanes
+	@FXML TabPane tpEinnahmenAusgabenStatistik;
+	public TabPane getTabPane() {
+		return tpEinnahmenAusgabenStatistik;
+	}
 	
 	//Benutzer
 	@FXML HBox hbBenutzer;
 	@FXML Button bBenutzerAnlegenEntfernen; 			
-	@FXML ComboBox<BenutzerFX> cbBenutzer; 
-
-	@FXML TabPane tpEinnahmenAusgabenStatistik;
-	public TabPane getTabPane() {
-	        return tpEinnahmenAusgabenStatistik;
-	    }
+	@FXML ComboBox<BenutzerFX> cbBenutzer;
+	@FXML public void datenAktualisieren(){	
+		if(spEinnahmenUebersicht.isVisible()) {
+			getObservableListKategorien();
+			tableColumnsUebersicht();
+		}
+		else if(spEinnahmenFavoriten.isVisible())
+			try {
+				setTabsFavoritenAusgaben();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		else if(spEinnahmenDauereintraege.isVisible()) {
+			getObservableListDauereintraege();
+			tableColumnsDauereintraege();
+		}
+	}
 	
-	//Einahmen
+	//TAB EINNAHMEN
 	@FXML Tab tabEinnahmen;
 	@FXML AnchorPane apEinnahmen;
 	@FXML Button bEinnahmenUebersicht;	
@@ -92,6 +110,11 @@ public class MainController {
 	@FXML AnchorPane apEinnahmenUebersicht;
 	Button bFavoritEinnahmen;									//funktion hinterlegen - wenn gedrückt kategorie alFavoritenKategorie hinzufügen 
 
+	//TableView Einnahmen Übersicht
+	@FXML TableView<KategorieFX> tvEinnahmenUebersicht;
+	@FXML TableColumn<KategorieFX, String> kategorieCol;
+	@FXML TableColumn<KategorieFX, Double> summeCol;
+	
 	//StackPane Einnahmen Favoriten
 	@FXML StackPane spEinnahmenFavoriten;		
 	@FXML HBox hbEinnahmenFavoritenButtonsZeitraum;
@@ -106,6 +129,8 @@ public class MainController {
 	@FXML TabPane tpEinnahmenFavoriten;
 	
 	@FXML HBox hbEinnahmenFavoritenEingabezeile;
+	@FXML Label lblEinnahmenFavoritenKategorie;
+	@FXML ComboBox<KategorieFX> cbEinnahmenFavoritenKategorie;
 	@FXML Label lblEinnahmenFavoritenDatum;
 	@FXML DatePicker dpEinnahmenFavoritenDatum;
 	@FXML Label lblEinnahmenFavoritenTitel;
@@ -118,6 +143,12 @@ public class MainController {
 	@FXML ComboBox<Intervall> cbEinnahmenFavoritenIntervall;
 	@FXML Label lblEinnahmenFavoritenEndeDauereintrag;
 	@FXML DatePicker dpEinnahmenFavoritenEndeDauereintrag;
+	@FXML public void setDatePickerEndeDauereintragOnAble() {
+		if(cbEinnahmenFavoritenIntervall.getSelectionModel().getSelectedItem() == Intervall.KEINE)
+			dpEinnahmenFavoritenEndeDauereintrag.setDisable(true);
+		else
+			dpEinnahmenFavoritenEndeDauereintrag.setDisable(false);
+	}
 	@FXML Button bEinnahmenFavoritenSpeichern;					//Prüfungen auf vollständigkeit der eingegebenen Daten hinterlegen und speichern in DB
 
 	//StackPane Einnahmen Dauereinträge
@@ -130,7 +161,16 @@ public class MainController {
 	@FXML ComboBox<String> cbEinnahmenDauereintraegeSortierung;
 	@FXML AnchorPane apEinnahmenDauereintraege;
 	
-	//Ausgaben
+	//TableView Einnahmen Dauereinträge
+	@FXML TableView<DauereintragFX> tvEinnahmenDauereintraege;
+	@FXML TableColumn<DauereintragFX, LocalDate> naechsteFaelligkeitCol;
+	@FXML TableColumn<DauereintragFX, String> titelCol;
+	@FXML TableColumn<DauereintragFX, Double> betragCol;
+	@FXML TableColumn<DauereintragFX, Benutzer> benutzerCol;
+	@FXML TableColumn<DauereintragFX, Intervall> intervallCol;
+	@FXML TableColumn<DauereintragFX, LocalDate> dauereintragEndeCol;
+	
+	//TAB AUSGABEN
 	@FXML Tab tabAusgaben;
 	@FXML AnchorPane apAusgaben;
 	@FXML Button bAusgabenUebersicht;
@@ -203,7 +243,7 @@ public class MainController {
 	@FXML ComboBox<String> cbAusgabenDauereintraegeSortierung;
 	@FXML AnchorPane apAusgabenDauereintraege;
 	
-	//Statistik
+	//TAB STATISTIK
 	@FXML Tab tabStatistik;
 	@FXML HBox hbStatistik;
 	@FXML VBox vbStatistikButtonsDiagramm;
@@ -224,48 +264,83 @@ public class MainController {
 	@FXML VBox vbStatistikBenutzer;
 	@FXML Pane pStatistik;
 	
-	//Methoden
+	//Statistik Methoden
+	
+	//Add CheckBoxes to vbStatistikBenutzer
+		ArrayList<CheckBox> checkBoxesBenutzer = new ArrayList<>();
+		public void setCbBenutzerStatistik(){
+			try {
+				//Erstelle neue CheckBox
+				for(Benutzer einBenutzer : Datenbank.readBenutzer()) {
+					CheckBox checkBox = new CheckBox(einBenutzer.getName());
+				    checkBoxesBenutzer.add(checkBox);
+				    if(einBenutzer.getName().equals("HAUSHALT"))
+				    	checkBox.setSelected(true);
+				}
+				//Füge CheckBoxen der VBox hinzu
+				vbStatistikBenutzer.getChildren().addAll(checkBoxesBenutzer);
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+			
+		//Set CheckBoxes on Action															
+		public void handleCheckBoxActionBenutzerStatistik(CheckBox checkBox) {
+			List<BenutzerFX> lBenutzerFX = olBenutzer.stream().collect(Collectors.toList());
+			int index = checkBoxesBenutzer.indexOf(checkBox);
+		    BenutzerFX benutzerFX = lBenutzerFX.get(index);
+		    if (checkBox.isSelected()) {
+//		        benutzerFX.doSomething();												// perform action when CheckBox is not selected - Methode hinterlegen
+		    } 
+		}
+	
+	//METHODEN ALLGEMEIN
 
 	@FXML
 	public void initialize() {
-//		setKategorieDialogController(kategorieDialogController);
-
-		
 		//Benutzer auslesen und der ObserverList hinzufügen
-		showBenutzer();
+		getObservableListBenutzer();
 		cbBenutzer.setItems(olBenutzer);
 		cbBenutzer.getSelectionModel().select(olBenutzer.stream().filter(b -> b.getName().equals("HAUSHALT")).findFirst().orElse(null));
-		
-		//Einnahmen 
+		//Einnahmen Übersicht
+		getObservableListKategorien();
+		tableColumnsUebersicht();
 		cbEinnahmenUebersichtSortierung.getSelectionModel().select("Kategorie A-Z");
 		cbEinnahmenUebersichtSortierung.setItems(olSortierung);
-		
+		getObservableListKategorien();
+		tvEinnahmenUebersicht.setItems(olKategorie);
+		tvEinnahmenUebersicht.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+		//Einnahmen Favoriten
 		dpEinnahmenFavoritenDatum.setValue(LocalDate.now());
+		cbEinnahmenFavoritenKategorie.setItems(olKategorie);
+		cbEinnahmenFavoritenKategorie.setPromptText("Kategorie wählen");
 		cbEinnahmenFavoritenBenutzer.setItems(olBenutzer);
+		cbEinnahmenFavoritenBenutzer.getSelectionModel().select(olBenutzer.stream().filter(b -> b.getName().equals("HAUSHALT")).findFirst().orElse(null));
 		cbEinnahmenFavoritenIntervall.getItems().setAll(Intervall.values());
-		dpEinnahmenFavoritenEndeDauereintrag.setValue(LocalDate.now());
-		
+		cbEinnahmenFavoritenIntervall.setValue(Intervall.KEINE);
+		dpEinnahmenFavoritenEndeDauereintrag.setDisable(true);
+		//Einnahmen Dauereintrag
 		lblEinnahmenDauereintraegeDatum.setText(LocalDate.now().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)));
 		cbEinnahmenDauereintraegeSortierung.getSelectionModel().select("Datum aufsteigend");
 		cbEinnahmenDauereintraegeSortierung.setItems(olSortierung);
+		getObservableListDauereintraege();
+		tvEinnahmenDauereintraege.setItems(olDauereintraege);
+		tvEinnahmenDauereintraege.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 		
 //		set Favoriten on disable wenn keine Favoriten vorhanden
-		
-		//Ausgaben
+		//Ausgaben Übersicht
 		cbAusgabenUebersichtSortierung.getSelectionModel().select("Kategorie A-Z");
 		cbAusgabenUebersichtSortierung.setItems(olSortierung);
-		
+		//Ausgaben Favoriten
 		dpAusgabenFavoritenDatum.setValue(LocalDate.now());
 		cbAusgabenFavoritenBenutzer.setItems(olBenutzer);
 		cbAusgabenFavoritenIntervall.getItems().setAll(Intervall.values());
 		dpAusgabenFavoritenEndeDauereintrag.setValue(LocalDate.now());
-		
+		//Ausgaben Dauereintrag
 		lblAusgabenDauereintraegeDatum.setText(LocalDate.now().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)));
 		cbAusgabenDauereintraegeSortierung.getSelectionModel().select("Datum aufsteigend");
 		cbAusgabenDauereintraegeSortierung.setItems(olSortierung);
-		
 //		set Favoriten on disable wenn keine Favoriten vorhanden
-		
 		//Statistik
 		setCbBenutzerStatistik();
 //		cbHaushalt.setDefaultButton(true)
@@ -273,42 +348,40 @@ public class MainController {
 		
 	}
 	
-	//Einnahmen Einträge speichern		//Ev. nutzbar für Einnahemn und Ausgaben?
+	//Einnahmen Einträge/Dauereinträge speichern												
 	@FXML public void bEinnahmenEintragSpeichern(ActionEvent event) {
-//		if(cbEinnahmenFavoritenIntervall.getValue().toString().equals("keine")) {
-//			try {
-//				Datenbank.insertEintrag(new Eintrag(
-//						true,		//true für Einnahme
-//						dpEinnahmenFavoritenDatum.getValue(),
-//						txtEinnahmenFavoritenTitel.getText(),
-//						Double.parseDouble(txtEinnahmenFavoritenBetrag.getText()),
-//						cbEinnahmenFavoritenBenutzer.getSelectionModel().getSelectedItem()
-////					,tabEinnahmenFavoriten.getText()			//Kategorie objekt vom Tab holen und im Kategorie Konstruktor adaptieren
-//						));
-//			} catch (NumberFormatException | SQLException e) {
-//				e.printStackTrace();
-//			}
-//		}
-//		else {
-//			try {
-//				Datenbank.insertDauereintrag(new Dauereintrag(
-//						true,		//true für Einnahme
-//						dpEinnahmenFavoritenDatum.getValue(),
-//						txtEinnahmenFavoritenTitel.getText(),
-//						Double.parseDouble(txtEinnahmenFavoritenBetrag.getText()),
-//						cbEinnahmenFavoritenBenutzer.getSelectionModel().getSelectedItem(),
-//						cbEinnahmenFavoritenIntervall.getSelectionModel().getSelectedItem(),
-//						dpEinnahmenFavoritenEndeDauereintrag.getValue()
-////					,tabEinnahmenFavoriten.getText()			//Kategorie objekt vom Tab holen und im Kategorie Konstruktor adaptieren
-//						));
-//			} catch (NumberFormatException | SQLException e) {
-//				e.printStackTrace();
-//			}
-//		}
+		if(cbEinnahmenFavoritenIntervall.getValue().toString().equals("keine")) {
+			try {
+				Datenbank.insertEintrag(new Eintrag(
+					dpEinnahmenFavoritenDatum.getValue(),
+					txtEinnahmenFavoritenTitel.getText(),
+					Double.parseDouble(txtEinnahmenFavoritenBetrag.getText()),
+					cbEinnahmenFavoritenBenutzer.getSelectionModel().getSelectedItem().getModellBenutzer(),
+					cbEinnahmenFavoritenKategorie.getSelectionModel().getSelectedItem().getModellKategorie()
+						));
+			} catch (NumberFormatException | SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		else {
+			try {
+				Datenbank.insertDauereintrag(new Dauereintrag(
+					dpEinnahmenFavoritenDatum.getValue(),
+					txtEinnahmenFavoritenTitel.getText(),
+					Double.parseDouble(txtEinnahmenFavoritenBetrag.getText()),
+					cbEinnahmenFavoritenBenutzer.getSelectionModel().getSelectedItem().getModellBenutzer(),
+					cbEinnahmenFavoritenIntervall.getSelectionModel().getSelectedItem(),
+					dpEinnahmenFavoritenEndeDauereintrag.getValue(),
+					cbEinnahmenFavoritenKategorie.getSelectionModel().getSelectedItem().getModellKategorie()
+						));
+			} catch (NumberFormatException | SQLException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	//Benutzer aus Datenbank auslesen und ObservableList hinzufügen
-	public void showBenutzer() {
+	public void getObservableListBenutzer() {
 		try {
 			ArrayList<Benutzer> alBenutzer = Datenbank.readBenutzer();
 			olBenutzer.clear();
@@ -319,27 +392,62 @@ public class MainController {
 		}	
 	}
 	
-//	//Kategorien aus Datenbank auslesen und ObservableList hinzufügen
-//	public void showKategorien() {
-//		try {
-//			ArrayList<Kategorie> alKategorien = Datenbank.readKategorie();
-//			olEinnahmenKategorien.clear();
-//			olAusgabenKategorien.clear();
-//			for(Kategorie eineKategorie : alKategorien)
-//				if(eineKategorie.isEinnahmeOderAusgabe())
-//					olEinnahmenKategorien.add(new KategorieFX(eineKategorie));					
-//				else
-//					olAusgabenKategorien.add(new KategorieFX(eineKategorie));
-//		} catch (SQLException e) {
-//			new Alert(AlertType.ERROR, e.toString());
-//		}	
-//	}
+	//Kategorien aus Datenbank auslesen und ObservableList hinzufügen
+	public void getObservableListKategorien() {
+		try {
+			ArrayList<Kategorie> alKategorien = Datenbank.readKategorie();
+			olKategorie.clear();
+			for(Kategorie eineKategorie : alKategorien)
+				olKategorie.add(new KategorieFX(eineKategorie));					
+		} catch (SQLException e) {
+			new Alert(AlertType.ERROR, e.toString());
+		}	
+	}
+	
+	//Kategorien aus Datenbank auslesen und ObservableList hinzufügen
+	public void getObservableListFavoritenKategorien() {
+		try {
+			ArrayList<Kategorie> alKategorien = Datenbank.readKategorie();
+			olFavoriten.clear();
+			for(Kategorie eineKategorie : alKategorien)
+				if(eineKategorie.isFavorite())
+					olFavoriten.add(new KategorieFX(eineKategorie));					
+		} catch (SQLException e) {
+			new Alert(AlertType.ERROR, e.toString());
+		}	
+	}
+	
+	//Dauereinträge nach Benutzer und Einnahmen/Ausgaben und ObservableList hinzufügen
+	@FXML public void getObservableListDauereintraege() {
+		try {
+			ArrayList<Dauereintrag> alDauereintraege = Datenbank.readDauereintraege(cbBenutzer.getSelectionModel().getSelectedItem().getBenutzerId(), tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText());
+			olDauereintraege.clear();
+			for(Dauereintrag einDauereintrag : alDauereintraege)
+				olDauereintraege.add(new DauereintragFX(einDauereintrag));	
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	//Einträge aus der Datenbank auslesen und in ObservableList eintragen
+	@FXML public void getObservableListEintraege() {
+		try {
+			ArrayList<Eintrag> alEintraege = Datenbank.readEintraege(cbBenutzer.getSelectionModel().getSelectedItem().getBenutzerId(), tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText());
+			olEintraege.clear();
+			for(Eintrag einEintrag : alEintraege)
+				olEintraege.add(new EintragFX(einEintrag));
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
 	
 	//Wechseln der Stacks in Einnahmen per klick auf Button(Übersicht, Favoriten, Dauereintraege)		//Ev. nutzbar für Einnahemn und Ausgaben?
 	@FXML public void showStackEinnahmenUebersicht(ActionEvent event) {
 		apEinnahmen.getChildren().remove(spEinnahmenUebersicht);
 		apEinnahmen.getChildren().add(spEinnahmenUebersicht);
-		getTableViewUebersicht();
+		getObservableListKategorien();
+		tableColumnsUebersicht();
+		
 	}
 	@FXML public void showStackEinnahmenFavoriten(ActionEvent event) throws SQLException {
 		apEinnahmen.getChildren().remove(spEinnahmenFavoriten);
@@ -349,14 +457,15 @@ public class MainController {
 	@FXML public void showStackEinnahmenDauereintraege(ActionEvent event) {
 		apEinnahmen.getChildren().remove(spEinnahmenDauereintraege);
 		apEinnahmen.getChildren().add(spEinnahmenDauereintraege);
-		getTableViewDauereintraege();
+		getObservableListDauereintraege();
+		tableColumnsDauereintraege();
 	}
 	
 	//Wechseln der Stacks in Ausgaben per klick auf Button(Übersicht, Favoriten, Dauereintraege)
 	@FXML public void showStackAusgabenUebersicht(ActionEvent event) {
 		apAusgaben.getChildren().remove(spAusgabenUebersicht);
 		apAusgaben.getChildren().add(spAusgabenUebersicht);
-		getTableViewUebersicht();
+		getObservableListEintraege();
 	}
 	@FXML public void showStackAusgabenFavoriten(ActionEvent event) throws SQLException {
 		apAusgaben.getChildren().remove(spAusgabenFavoriten);
@@ -366,33 +475,7 @@ public class MainController {
 	@FXML public void showStackAusgabenDauereintraege(ActionEvent event) {
 		apAusgaben.getChildren().remove(spAusgabenDauereintraege);
 		apAusgaben.getChildren().add(spAusgabenDauereintraege);
-		getTableViewDauereintraege();
-	}
-	
-	//Add CheckBoxes to vbStatistikBenutzer
-	ArrayList<CheckBox> checkBoxesBenutzer = new ArrayList<>();
-	public void setCbBenutzerStatistik(){
-		try {
-			//Erstelle neue CheckBox
-			for(Benutzer einBenutzer : Datenbank.readBenutzer()) {
-				CheckBox checkBox = new CheckBox(einBenutzer.getName());
-			    checkBoxesBenutzer.add(checkBox);
-			}
-			//Füge CheckBoxen der VBox hinzu
-			vbStatistikBenutzer.getChildren().addAll(checkBoxesBenutzer);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
-		
-	//Set CheckBoxes on Action															
-	public void handleCheckBoxActionBenutzerStatistik(CheckBox checkBox) {
-		List<BenutzerFX> lBenutzerFX = olBenutzer.stream().collect(Collectors.toList());
-		int index = checkBoxesBenutzer.indexOf(checkBox);
-	    BenutzerFX benutzerFX = lBenutzerFX.get(index);
-	    if (checkBox.isSelected()) {
-//	        benutzerFX.doSomething();												// perform action when CheckBox is not selected - Methode hinterlegen
-	    } 
+		getObservableListDauereintraege();
 	}
 	
 	//Öffnen des BenutzerDialog
@@ -411,7 +494,7 @@ public class MainController {
 
 			Optional<ButtonType> clickedButton = dialogBenutzer.showAndWait();			
 			if(clickedButton.get() == ButtonType.OK ) {		
-				showBenutzer();
+				getObservableListBenutzer();
 				cbBenutzer.setItems(olBenutzer);
 				}
 			else 
@@ -442,73 +525,19 @@ public class MainController {
 			e.printStackTrace();
 		}
 	}
-
-	//Erstellen der TableView Übersicht
-	public void getTableViewUebersicht() {
-		//Daten aus der Datenbank auslesen und in ObservableList eintragen
-//		ObservableList<EintragFX> olKategorien = FXCollections.observableArrayList();
-//		ArrayList<Eintrag> alEinträgeNachKategorien;
-//		try {
-//			alEinträgeNachKategorien = Datenbank.readKategorieByUserAndEinnahmenAusgaben(cbBenutzer.getSelectionModel().getSelectedItem().getBenutzerId(), tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText());
-//			olKategorien.clear();
-//			for(Kategorie eineKategorie : alEinträgeNachKategorien)
-//				olKategorien.add(new KategorieFX(eineKategorie));
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//		}
-//		//TableView erstellen
-//		TableColumn<EintragFX, String> kategorieCol = new TableColumn<>();
-//		kategorieCol.setCellValueFactory(new PropertyValueFactory<>("name"));
-//		kategorieCol.setPrefWidth(200);
-//		TableColumn<EintragFX, Double> summeCol = new TableColumn<>();
-//		kategorieCol.setCellValueFactory(new PropertyValueFactory<>("summeEintraege"));				
-//		summeCol.setPrefWidth(200);
-//																								//Buttons hinzufügen
-//				
-//		TableView<KategorieFX> tvKategorien= new TableView<>(olKategorien);
-//		tvKategorien.getColumns().addAll(kategorieCol, summeCol);
-//		tvKategorien.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-//		//TableView der AnchorPane hinzufügen
-//		if(tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText() == "Einnahmen")
-//			apEinnahmenUebersicht.getChildren().add(tvKategorien);
-//		else 
-//			apAusgabenUebersicht.getChildren().add(tvKategorien);
-	}
 	
-	//Add Tabs to tabAusgabenFavoriten und erstellen der TableView
-	ArrayList<Kategorie> alFavoritenKategorie = new ArrayList<>();
+	//Favoriten Tabs erstellen und tabAusgabenFavoriten hinzufügen
+	ArrayList<Tab> alTabsFavoriten = new ArrayList<>();
+	String eineFavoritenKategorieName = null;
 	public void setTabsFavoritenAusgaben() throws SQLException {
-		ArrayList<Tab> alTabsFavoriten = new ArrayList<>();
+		ArrayList<Kategorie> alFavoritenKategorie = Datenbank.readFavoriten(cbBenutzer.getSelectionModel().getSelectedItem().getBenutzerId(), tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText());
 		for(Kategorie eineFavoritenKategorie : alFavoritenKategorie) {
 			//Neuen Tab erstellen
-			Tab tab = new Tab(eineFavoritenKategorie.getName());
-			alTabsFavoriten.add(tab);
-			//Daten aus der Datenbank auslesen und in ObservableList eintragen
-			ArrayList<Eintrag> alEintraege = Datenbank.readEintraege(cbBenutzer.getSelectionModel().getSelectedItem().getBenutzerId(), tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText(), eineFavoritenKategorie.getName());
-			ObservableList<EintragFX> olEintraege = FXCollections.observableArrayList();
-			olEintraege.clear();
-			for(Eintrag einEintrag : alEintraege)
-				olEintraege.add(new EintragFX(einEintrag));
-			//TableView erstellen
-			TableColumn<EintragFX, LocalDate> datumCol = new TableColumn<>();
-			datumCol.setCellValueFactory(new PropertyValueFactory<>("datum"));
-			datumCol.setPrefWidth(187.34);
-			TableColumn<EintragFX, String> titelCol = new TableColumn<>();
-			titelCol.setCellValueFactory(new PropertyValueFactory<>("titel"));
-			titelCol.setPrefWidth(231.37);
-			TableColumn<EintragFX, Double> betragCol = new TableColumn<>();
-			betragCol.setCellValueFactory(new PropertyValueFactory<>("betrag"));
-			betragCol.setPrefWidth(209.33);
-			TableColumn<EintragFX, Benutzer> benutzerCol = new TableColumn<>();
-			benutzerCol.setCellValueFactory(new PropertyValueFactory<>("benutzer"));
-			benutzerCol.setPrefWidth(212.66);
-																								//Buttons hinzufügen
-				
-			TableView<EintragFX> tvFavoriten= new TableView<>(olEintraege);
-			tvFavoriten.getColumns().addAll(datumCol, titelCol, betragCol, benutzerCol);
-			tvFavoriten.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-				
-			tab.setContent(tvFavoriten);
+			Tab einTabFavoritenKategorie = new Tab(eineFavoritenKategorie.getName());
+			einTabFavoritenKategorie.setContent(getObservableListEintraegeNachKategorie());
+			alTabsFavoriten.add(einTabFavoritenKategorie);
+			eineFavoritenKategorieName = eineFavoritenKategorie.getName();
+			
 		}
 		//Tabs der TabPane hinzufügen
 		if(tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText() == "Einnahmen")
@@ -517,47 +546,51 @@ public class MainController {
 			tpAusgabenFavoriten.getTabs().addAll(alTabsFavoriten);
 	}
 	
-	//Erstellen der TableView Dauereinträge
-	public void getTableViewDauereintraege() {
-		//Daten aus der Datenbank auslesen und in ObservableList eintragen
-		ObservableList<DauereintragFX> olDauereintraege = FXCollections.observableArrayList();
+	//Einträge nach Kategorie aus der Datenbank auslesen und in ObservableList eintragen und TableView erstellen
+	TableView<EintragFX> tvFavoriten= new TableView<>(olEintraege);
+	@FXML public Node getObservableListEintraegeNachKategorie() {
 		try {
-			ArrayList<Dauereintrag> alDauereintraege = Datenbank.readDauereintraege(cbBenutzer.getSelectionModel().getSelectedItem().getBenutzerId(), tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText());
-			olDauereintraege.clear();
-			for(Dauereintrag einDauereintrag : alDauereintraege)
-				olDauereintraege.add(new DauereintragFX(einDauereintrag));	
+			ArrayList<Eintrag> alEintraege = Datenbank.readEintraegeNachKategorie(cbBenutzer.getSelectionModel().getSelectedItem().getBenutzerId(), tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText(), eineFavoritenKategorieName);
+			olEintraege.clear();
+			for(Eintrag einEintrag : alEintraege)
+				olEintraege.add(new EintragFX(einEintrag));
 		} catch (SQLException e) {
 			e.printStackTrace();
-		}
 		//TableView erstellen
-		TableColumn<DauereintragFX, LocalDate> datumCol = new TableColumn<>();
-		datumCol.setCellValueFactory(new PropertyValueFactory<>("naechsteFaelligkeit"));
+		TableColumn<EintragFX, LocalDate> datumCol = new TableColumn<>();
+		datumCol.setCellValueFactory(new PropertyValueFactory<>("datum"));
 		datumCol.setPrefWidth(187.34);
-		TableColumn<DauereintragFX, String> titelCol = new TableColumn<>();
+		TableColumn<EintragFX, String> titelCol = new TableColumn<>();
 		titelCol.setCellValueFactory(new PropertyValueFactory<>("titel"));
 		titelCol.setPrefWidth(231.37);
-		TableColumn<DauereintragFX, Double> betragCol = new TableColumn<>();
+		TableColumn<EintragFX, Double> betragCol = new TableColumn<>();
 		betragCol.setCellValueFactory(new PropertyValueFactory<>("betrag"));
 		betragCol.setPrefWidth(209.33);
-		TableColumn<DauereintragFX, Benutzer> benutzerCol = new TableColumn<>();
+		TableColumn<EintragFX, Benutzer> benutzerCol = new TableColumn<>();
 		benutzerCol.setCellValueFactory(new PropertyValueFactory<>("benutzer"));
 		benutzerCol.setPrefWidth(212.66);
-		TableColumn<DauereintragFX, Intervall> dauereintragCol = new TableColumn<>();
-		benutzerCol.setCellValueFactory(new PropertyValueFactory<>("intervall"));
-		benutzerCol.setPrefWidth(212.33);
-		TableColumn<DauereintragFX, LocalDate> dauereintragEndeCol = new TableColumn<>();
-		benutzerCol.setCellValueFactory(new PropertyValueFactory<>("dauereintragEnde"));
-		benutzerCol.setPrefWidth(248);
-																								//Buttons hinzufügen
-		
-		TableView<DauereintragFX> tvDauereintraege = new TableView<>(olDauereintraege);
-		tvDauereintraege.getColumns().addAll(datumCol, titelCol, betragCol, benutzerCol, dauereintragCol, dauereintragEndeCol);
-		tvDauereintraege.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-		//TableView der AnchorPane hinzufügen
-		if(tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText() == "Einnahmen")
-			apEinnahmenDauereintraege.getChildren().add(tvDauereintraege);
-		else
-			apAusgabenDauereintraege.getChildren().add(tvDauereintraege);
+																									//Buttons hinzufügen
+		tvFavoriten.getColumns().addAll(datumCol, titelCol, betragCol, benutzerCol);
+		tvFavoriten.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);	
+		}
+		return tvFavoriten;
 	}
-
+	
+	//TableColumns zuordnen Dauereintraege
+	public void tableColumnsDauereintraege() {
+		naechsteFaelligkeitCol.setCellValueFactory(new PropertyValueFactory<>("naechsteFaelligkeit"));
+		titelCol.setCellValueFactory(new PropertyValueFactory<>("titel"));
+		betragCol.setCellValueFactory(new PropertyValueFactory<>("betrag"));
+		benutzerCol.setCellValueFactory(new PropertyValueFactory<>("benutzer"));
+		intervallCol.setCellValueFactory(new PropertyValueFactory<>("intervall"));
+		dauereintragEndeCol.setCellValueFactory(new PropertyValueFactory<>("dauereintragEnde"));
+																								//Butttons hinzufügen
+	}
+	//TableColumns zuordnen Übersicht
+	public void tableColumnsUebersicht() {
+		kategorieCol.setCellValueFactory(new PropertyValueFactory<>("name"));
+		summeCol.setCellValueFactory(new PropertyValueFactory<>("summeEintraege"));				
+																								//Butttons hinzufügen
+	}
+	
 }

@@ -24,6 +24,10 @@ public class KategorieFX {
 		summeEintraege = new SimpleDoubleProperty(modellKategorie.getSummeEintraege());
 	}
 
+	public Kategorie getModellKategorie() {
+		return modellKategorie;
+	}
+
 	public final SimpleBooleanProperty einnahmeOderAusgabeProperty() {
 		return this.einnahmeOderAusgabe;
 	}

@@ -25,6 +25,10 @@ public class Benutzer {
 		super();
 		this.name = name;
 	}
+	public Benutzer(int benutzerId) {
+		super();
+		this.benutzerId = benutzerId;
+	}
 	public Benutzer() {}
 
 	public int getBenutzerId() {

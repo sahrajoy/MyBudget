@@ -8,6 +8,8 @@
 <?import javafx.scene.control.RadioButton?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
@@ -30,7 +32,7 @@
          </BorderPane.margin>
          <children>
             <Button fx:id="bBenutzerAnlegenEntfernen" mnemonicParsing="false" onAction="#benutzerAnlegen" text="+ / -" />
-            <ComboBox fx:id="cbBenutzer" minWidth="-Infinity" prefHeight="25.0" prefWidth="121.0" />
+            <ComboBox fx:id="cbBenutzer" minWidth="-Infinity" onAction="#datenAktualisieren" prefHeight="25.0" prefWidth="121.0" />
          </children>
       </HBox>
    </top>
@@ -53,6 +55,58 @@
                                     <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                                  </padding>
                               </HBox>
+                              <StackPane fx:id="spEinnahmenFavoriten" style="-fx-background-color: gainsboro;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="46.0">
+                                 <children>
+                                    <AnchorPane>
+                                       <children>
+                                          <HBox fx:id="hbEinnahmenFavoritenButtonsZeitraum" alignment="CENTER" layoutX="488.0" layoutY="32.0" spacing="10.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                             <padding>
+                                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                             </padding>
+                                             <children>
+                                                <Button fx:id="bEinnahmenFavoritenTag" mnemonicParsing="false" prefHeight="25.0" prefWidth="70.0" text="Tag" />
+                                                <Button fx:id="bEinnahmenFavoritenWoche" mnemonicParsing="false" prefHeight="25.0" prefWidth="70.0" text="Woche" />
+                                                <Button fx:id="bEinnahmenFavoritenMonat" mnemonicParsing="false" prefHeight="25.0" prefWidth="70.0" text="Monat" />
+                                                <Button fx:id="bEinnahmenFavoritenJahr" mnemonicParsing="false" prefHeight="25.0" prefWidth="70.0" text="Jahr" />
+                                             </children>
+                                          </HBox>
+                                          <HBox fx:id="hbEinnahmenFavoritenZeitraum" alignment="CENTER" layoutX="549.0" layoutY="3.0" spacing="10.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="35.0">
+                                             <children>
+                                                <Button fx:id="bEinnahmenFavoritenPfeilZurueck" mnemonicParsing="false" text="&lt;" />
+                                                <Label fx:id="lblEinnahmenFavoritenZeitraum" alignment="CENTER" contentDisplay="CENTER" minHeight="-Infinity" prefHeight="25.0" prefWidth="48.0" text="Zeitraum" />
+                                                <Button fx:id="bEinnahmenFavoritenPfeilVorwaerts" mnemonicParsing="false" text="&gt;" />
+                                             </children>
+                                             <padding>
+                                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                             </padding>
+                                          </HBox>
+                                          <HBox fx:id="hbEinnahmenFavoritenEingabezeile" alignment="CENTER" minHeight="25.0" spacing="5.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="80.0">
+                                             <children>
+                                                <Label fx:id="lblEinnahmenFavoritenKategorie" minHeight="25.0" minWidth="53.0" prefHeight="25.0" prefWidth="53.0" text="Kategorie" />
+                                                <ComboBox fx:id="cbEinnahmenFavoritenKategorie" prefHeight="25.0" prefWidth="145.0" />
+                                                <Label fx:id="lblEinnahmenFavoritenDatum" alignment="CENTER_RIGHT" minHeight="25.0" minWidth="39.0" prefHeight="25.0" prefWidth="39.0" text="Datum" />
+                                                <DatePicker fx:id="dpEinnahmenFavoritenDatum" minHeight="25.0" minWidth="96.0" prefHeight="25.0" prefWidth="96.0" />
+                                                <Label fx:id="lblEinnahmenFavoritenTitel" alignment="CENTER_RIGHT" minHeight="25.0" minWidth="25.0" prefHeight="25.0" prefWidth="25.0" text="Titel" />
+                                                <TextField fx:id="txtEinnahmenFavoritenTitel" minHeight="25.0" minWidth="146.0" prefHeight="25.0" prefWidth="161.0" />
+                                                <Label fx:id="lblEinnahmenFavoritenBetrag" alignment="CENTER_RIGHT" minHeight="25.0" minWidth="36.0" prefHeight="25.0" prefWidth="36.0" text="Betrag" />
+                                                <TextField fx:id="txtEinnahmenFavoritenBetrag" minHeight="25.0" minWidth="107.0" prefHeight="25.0" prefWidth="107.0" />
+                                                <Label fx:id="lblEinnahmenFavoritenBenutzer" alignment="CENTER_RIGHT" minHeight="25.0" minWidth="48.0" prefHeight="25.0" prefWidth="48.0" text="Benutzer" />
+                                                <ComboBox fx:id="cbEinnahmenFavoritenBenutzer" minHeight="25.0" minWidth="133.0" prefHeight="25.0" prefWidth="133.0" />
+                                                <Label fx:id="lblEinnahmenFavoritenDauereintrag" alignment="CENTER_RIGHT" minHeight="25.0" minWidth="72.0" prefHeight="25.0" prefWidth="72.0" text="Dauereintrag" />
+                                                <ComboBox fx:id="cbEinnahmenFavoritenIntervall" minHeight="25.0" minWidth="115.0" onAction="#setDatePickerEndeDauereintragOnAble" prefHeight="25.0" prefWidth="115.0" />
+                                                <Label fx:id="lblEinnahmenFavoritenEndeDauereintrag" alignment="CENTER_RIGHT" minHeight="25.0" minWidth="100.0" prefHeight="25.0" prefWidth="100.0" text="Ende Dauereintrag" />
+                                                <DatePicker fx:id="dpEinnahmenFavoritenEndeDauereintrag" minHeight="25.0" minWidth="96.0" prefHeight="25.0" prefWidth="96.0" />
+                                                <Button fx:id="bEinnahmenFavoritenSpeichern" contentDisplay="CENTER" mnemonicParsing="false" onAction="#bEinnahmenEintragSpeichern" prefHeight="25.0" prefWidth="90.0" text="Speichern" />
+                                             </children>
+                                             <padding>
+                                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                             </padding>
+                                          </HBox>
+                                          <TabPane fx:id="tpEinnahmenFavoriten" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="115.0" />
+                                       </children>
+                                    </AnchorPane>
+                                 </children>
+                              </StackPane>
                               <StackPane fx:id="spEinnahmenDauereintraege" style="-fx-background-color: gainsboro;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="46.0">
                                  <children>
                                     <AnchorPane>
@@ -82,57 +136,19 @@
                                                 <ComboBox fx:id="cbEinnahmenDauereintraegeSortierung" minHeight="25.0" minWidth="150.0" prefHeight="25.0" prefWidth="150.0" />
                                              </children>
                                           </HBox>
-                                          <AnchorPane fx:id="apEinnahmenDauereintraege" layoutY="105.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="80.0" />
-                                       </children>
-                                    </AnchorPane>
-                                 </children>
-                              </StackPane>
-                              <StackPane fx:id="spEinnahmenFavoriten" style="-fx-background-color: gainsboro;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="46.0">
-                                 <children>
-                                    <AnchorPane>
-                                       <children>
-                                          <HBox fx:id="hbEinnahmenFavoritenButtonsZeitraum" alignment="CENTER" layoutX="488.0" layoutY="32.0" spacing="10.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                             <padding>
-                                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                                             </padding>
+                                          <AnchorPane fx:id="apEinnahmenDauereintraege" layoutY="105.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="80.0">
                                              <children>
-                                                <Button fx:id="bEinnahmenFavoritenTag" mnemonicParsing="false" prefHeight="25.0" prefWidth="70.0" text="Tag" />
-                                                <Button fx:id="bEinnahmenFavoritenWoche" mnemonicParsing="false" prefHeight="25.0" prefWidth="70.0" text="Woche" />
-                                                <Button fx:id="bEinnahmenFavoritenMonat" mnemonicParsing="false" prefHeight="25.0" prefWidth="70.0" text="Monat" />
-                                                <Button fx:id="bEinnahmenFavoritenJahr" mnemonicParsing="false" prefHeight="25.0" prefWidth="70.0" text="Jahr" />
-                                             </children>
-                                          </HBox>
-                                          <HBox fx:id="hbEinnahmenFavoritenZeitraum" alignment="CENTER" layoutX="549.0" layoutY="3.0" spacing="10.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="35.0">
-                                             <children>
-                                                <Button fx:id="bEinnahmenFavoritenPfeilZurueck" mnemonicParsing="false" text="&lt;" />
-                                                <Label fx:id="lblEinnahmenFavoritenZeitraum" alignment="CENTER" contentDisplay="CENTER" minHeight="-Infinity" prefHeight="25.0" prefWidth="48.0" text="Zeitraum" />
-                                                <Button fx:id="bEinnahmenFavoritenPfeilVorwaerts" mnemonicParsing="false" text="&gt;" />
-                                             </children>
-                                             <padding>
-                                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                                             </padding>
-                                          </HBox>
-                                          <HBox fx:id="hbEinnahmenFavoritenEingabezeile" alignment="CENTER" minHeight="25.0" spacing="5.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="80.0">
-                                             <children>
-                                                <Label fx:id="lblEinnahmenFavoritenDatum" alignment="CENTER_RIGHT" minHeight="25.0" minWidth="39.0" prefHeight="25.0" prefWidth="39.0" text="Datum" />
-                                                <DatePicker fx:id="dpEinnahmenFavoritenDatum" minHeight="25.0" minWidth="138.0" prefHeight="25.0" prefWidth="138.0" />
-                                                <Label fx:id="lblEinnahmenFavoritenTitel" alignment="CENTER_RIGHT" minHeight="25.0" minWidth="25.0" prefHeight="25.0" prefWidth="25.0" text="Titel" />
-                                                <TextField fx:id="txtEinnahmenFavoritenTitel" minHeight="25.0" minWidth="200.0" prefHeight="25.0" prefWidth="200.0" />
-                                                <Label fx:id="lblEinnahmenFavoritenBetrag" alignment="CENTER_RIGHT" minHeight="25.0" minWidth="36.0" prefHeight="25.0" prefWidth="36.0" text="Betrag" />
-                                                <TextField fx:id="txtEinnahmenFavoritenBetrag" minHeight="25.0" minWidth="163.0" prefHeight="25.0" prefWidth="163.0" />
-                                                <Label fx:id="lblEinnahmenFavoritenBenutzer" alignment="CENTER_RIGHT" minHeight="25.0" minWidth="48.0" prefHeight="25.0" prefWidth="48.0" text="Benutzer" />
-                                                <ComboBox fx:id="cbEinnahmenFavoritenBenutzer" minHeight="25.0" minWidth="155.0" prefHeight="25.0" prefWidth="155.0" />
-                                                <Label fx:id="lblEinnahmenFavoritenDauereintrag" alignment="CENTER_RIGHT" minHeight="25.0" minWidth="72.0" prefHeight="25.0" prefWidth="72.0" text="Dauereintrag" />
-                                                <ComboBox fx:id="cbEinnahmenFavoritenIntervall" minHeight="25.0" minWidth="130.0" prefHeight="25.0" prefWidth="130.0" />
-                                                <Label fx:id="lblEinnahmenFavoritenEndeDauereintrag" alignment="CENTER_RIGHT" minHeight="25.0" minWidth="100.0" prefHeight="25.0" prefWidth="100.0" text="Ende Dauereintrag" />
-                                                <DatePicker fx:id="dpEinnahmenFavoritenEndeDauereintrag" minHeight="25.0" minWidth="138.0" prefHeight="25.0" prefWidth="138.0" />
-                                                <Button fx:id="bEinnahmenFavoritenSpeichern" contentDisplay="CENTER" mnemonicParsing="false" onAction="#bEinnahmenEintragSpeichern" prefHeight="25.0" prefWidth="90.0" text="Speichern" />
-                                             </children>
-                                             <padding>
-                                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                                             </padding>
-                                          </HBox>
-                                          <TabPane fx:id="tpEinnahmenFavoriten" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="115.0" />
+                                                <TableView fx:id="tvEinnahmenDauereintraege" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                  <columns>
+                                                      <TableColumn fx:id="naechsteFaelligkeitCol" minWidth="148.0" prefWidth="148.0" text="Nächste Fälligkeit" />
+                                                      <TableColumn fx:id="titelCol" minWidth="135.0" prefWidth="297.0" text="Titel" />
+                                                    <TableColumn fx:id="betragCol" minWidth="55.0" prefWidth="158.0" text="Betrag" />
+                                                    <TableColumn fx:id="benutzerCol" minWidth="20.0" prefWidth="175.0" text="Benutzer" />
+                                                      <TableColumn fx:id="intervallCol" minWidth="0.0" prefWidth="155.0" text="Intervall" />
+                                                      <TableColumn fx:id="dauereintragEndeCol" minWidth="4.0" prefWidth="158.0" text="Ende Dauereintrag" />
+                                                  </columns>
+                                                </TableView>
+                                             </children></AnchorPane>
                                        </children>
                                     </AnchorPane>
                                  </children>
@@ -185,7 +201,15 @@
                                                 <Button fx:id="bEinnahmenPlus" alignment="CENTER" contentDisplay="CENTER" minHeight="25.0" minWidth="25.0" mnemonicParsing="false" onAction="#kategorieAnlegen" prefHeight="25.0" prefWidth="25.0" text="+" />
                                              </children>
                                           </GridPane>
-                                          <AnchorPane fx:id="apEinnahmenUebersicht" layoutY="105.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="105.0" />
+                                          <AnchorPane fx:id="apEinnahmenUebersicht" layoutY="105.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="105.0">
+                                             <children>
+                                                <TableView fx:id="tvEinnahmenUebersicht" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                  <columns>
+                                                    <TableColumn fx:id="kategorieCol" prefWidth="371.0" text="Kategorie" />
+                                                    <TableColumn fx:id="summeCol" minWidth="0.0" prefWidth="580.0" text="Summe " />
+                                                  </columns>
+                                                </TableView>
+                                             </children></AnchorPane>
                                        </children>
                                     </AnchorPane>
                                  </children>
