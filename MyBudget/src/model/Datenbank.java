@@ -27,6 +27,8 @@ public class Datenbank {
 	private static final String KATEGORIE_EINNAHMEODERAUSGABE = "KategorieEinnahmeOderAusgabe";
 	private static final String KATEGORIE_NAME = "KategorieName";
 	private static final String KATEGORIE_FAVORITE = "KategorieFavorite";
+	//Kategorie berechnete Werte
+	private static final String KATEGORIE_SUMMEEINTRAEGE = "KategorieSummeEintraege";
 	
 	//Eintrag Tabelle
 	private static final String EINTRAG_TABLE = "Eintrag";
@@ -255,7 +257,11 @@ public class Datenbank {
 				stmt.setString(1, kategorieName);
 			rs = stmt.executeQuery();
 			while(rs.next())
-				alKategorien.add(new Kategorie(rs.getInt(KATEGORIE_ID), rs.getBoolean(KATEGORIE_EINNAHMEODERAUSGABE), rs.getString(KATEGORIE_NAME), rs.getBoolean(KATEGORIE_FAVORITE)));
+				alKategorien.add(new Kategorie(
+						rs.getInt(KATEGORIE_ID), 
+						rs.getBoolean(KATEGORIE_EINNAHMEODERAUSGABE), 
+						rs.getString(KATEGORIE_NAME), 
+						rs.getBoolean(KATEGORIE_FAVORITE)));
 			rs.close();
 		}
 		catch(SQLException e) {
@@ -275,7 +281,6 @@ public class Datenbank {
 		return alKategorien;
 	}
 	
-	//Einnahmen-/Ausgaben-Einträge für einen bestimmten Benutzer auslesen
 	public static ArrayList<Eintrag> readEintraege(int benutzerId, String einnahmeOderAusgabe) throws SQLException {
 		Connection conn = null;
 		PreparedStatement stmt = null;
@@ -339,35 +344,77 @@ public class Datenbank {
 		return alEintraege;
 	}
 	
+	//Kategorie Summe aller Eintrage auslesen
+	public static double readKategorieSummeEintraege(String kategorieName) throws SQLException{  		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		double summeEintraege = 0;
+		String select =  "SELECT SUM(" + EINTRAG_TABLE + "." + EINTRAG_BETRAG + ") AS " + KATEGORIE_SUMMEEINTRAEGE + " FROM " + EINTRAG_TABLE 
+				+ " INNER JOIN " + KATEGORIE_TABLE 
+				+ " ON " + 	EINTRAG_TABLE + "." + EINTRAG_KATEGORIEID + "=" + 
+							KATEGORIE_TABLE + "." + KATEGORIE_ID;
+		if(kategorieName != null)
+			select += " WHERE " + KATEGORIE_NAME + "=?";
+		try {
+			conn = DriverManager.getConnection(CONNECTION_URL);
+			stmt = conn.prepareStatement(select);
+			if(kategorieName != null)
+				stmt.setString(1, kategorieName);
+			rs = stmt.executeQuery();
+			while(rs.next())
+				summeEintraege = rs.getDouble(KATEGORIE_SUMMEEINTRAEGE);
+			rs.close();
+		}
+		catch(SQLException e) {
+			throw e;
+		}
+		finally {
+			try {
+				if(stmt != null) 
+					stmt.close();
+				if(conn != null)
+					conn.close();
+			}
+			catch(SQLException e) {
+				throw e;
+			}
+		}
+		return summeEintraege;
+	}
+	
 	//Einnahmen-/Ausgaben-Einträge für eine bestimmte Kategorie und einen bestimmten Benutzer auslesen				//Filter auf Kategorie
-	public static ArrayList<Eintrag> readEintraegeNachKategorie(int benutzerId, String einnahmeOderAusgabe, String kategorie) throws SQLException{
+	public static ArrayList<Eintrag> readEintraegeNachKategorie(int benutzerId, String einnahmeOderAusgabe, int kategorieId) throws SQLException{
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 		ArrayList<Eintrag> alEintraege = new ArrayList<>();
+		//INNER JOIN Kategorie-Tabelle mit WHERE Bedingung auf KATEGORIE_EINNAHMEODERAUSGABE, damit nur Dauereinträge ausgegeben werden, welche eine Ausgabe oder Einnahme sind
 		boolean isEinnahmenParameter = einnahmeOderAusgabe.equals("Einnahmen");
-		// Join mit Tabelle KATEGORIE_TABLE um Column KATEGORIE_EINNAHMEODERAUSGABE abfragen zu können 
 		String select = "SELECT * FROM " + EINTRAG_TABLE 
 				+ " INNER JOIN " + KATEGORIE_TABLE 
-				+ " ON " + EINTRAG_TABLE + "." + EINTRAG_KATEGORIEID + "=" + KATEGORIE_TABLE + "." + KATEGORIE_ID;
+				+ " ON " + 	EINTRAG_TABLE + "." + EINTRAG_KATEGORIEID + "=" + 
+							KATEGORIE_TABLE + "." + KATEGORIE_ID;
 		
 		if(benutzerId != getHaushaltId())
-			select += " WHERE " + EINTRAG_BENUTZERID + "=? AND " + KATEGORIE_EINNAHMEODERAUSGABE + "=?";
+			select += " WHERE " + 	EINTRAG_BENUTZERID + "=" + benutzerId + " AND " + 
+									EINTRAG_KATEGORIEID  + "=" + kategorieId + " AND " + 
+									KATEGORIE_EINNAHMEODERAUSGABE + "=" + isEinnahmenParameter;
 		else
-			select += " WHERE " + KATEGORIE_EINNAHMEODERAUSGABE + "=?";
+			select += " WHERE " + 	EINTRAG_KATEGORIEID  + "=" + kategorieId + " AND " + 
+									KATEGORIE_EINNAHMEODERAUSGABE + "=" + isEinnahmenParameter;
 		try {
 			conn = DriverManager.getConnection(CONNECTION_URL);
 			stmt = conn.prepareStatement(select);
 			// Wenn BenutzerId != "HAUSHALT", dann 2 Parameter definieren, sonst nur einen
-			if(benutzerId != getHaushaltId())
-			{
-				stmt.setInt(1, benutzerId);
-				stmt.setBoolean(2, isEinnahmenParameter);
-			}
-			else
-			{
-				stmt.setBoolean(1, isEinnahmenParameter);
-			}
+//			if(benutzerId != getHaushaltId()) {
+//				stmt.setInt(1, benutzerId);
+//				stmt.setInt(2, kategorieId);;
+//				stmt.setBoolean(3, isEinnahmenParameter);
+//			}
+//			else {
+//				stmt.setBoolean(1, isEinnahmenParameter);
+//			}
 			rs = stmt.executeQuery();
 			while(rs.next()) {			
 				alEintraege.add(
@@ -409,20 +456,15 @@ public class Datenbank {
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 		ArrayList<Dauereintrag> alDauereintraege = new ArrayList<>();
-		// Select auf Dauereintarg-Tabelle
-		// Join Kategorie-Tabelle mit Where Bedingung auf KATEGORIE_EINNAHMEODERAUSGABE, 
-		// damit nur Dauereinträge ausgegeben werden, welche eine Ausgabe oder Einnahme sind
-		
-		// select * 
-		// from DAUEREINTRAG_TABLE
-		// join KATEGORIE_TABLE 
-		// on DAUEREINTRAG_TABLE.KATEGORIE_ID = KATEGORIE_TABLE.KATEGORIE_ID
-		// where KATEGORIE_TABLE.KATEGORIE_EINNAHMEODERAUSGABE = 0
+		//INNER JOIN Kategorie-Tabelle mit WHERE Bedingung auf KATEGORIE_EINNAHMEODERAUSGABE, damit nur Dauereinträge ausgegeben werden, welche eine Ausgabe oder Einnahme sind
 		boolean isEinnahmenParameter = einnahmeOderAusgabe.equals("Einnahmen");
-		// Join mit Tabelle KATEGORIE_TABLE um Column KATEGORIE_EINNAHMEODERAUSGABE abfragen zu können 
 		String select = "SELECT * FROM " + DAUEREINTRAG_TABLE 
-				+ " INNER JOIN " + KATEGORIE_TABLE 
-				+ " ON " + DAUEREINTRAG_TABLE + "." + DAUEREINTRAG_KATEGORIEID + "=" + KATEGORIE_TABLE + "." + KATEGORIE_ID;
+				+ " INNER JOIN " + KATEGORIE_TABLE  				
+				+ " ON " + 	DAUEREINTRAG_TABLE + "." + DAUEREINTRAG_KATEGORIEID + "=" + 
+							KATEGORIE_TABLE + "." + KATEGORIE_ID 
+				+ " INNER JOIN " + BENUTZER_TABLE  				
+				+ " ON " + 	DAUEREINTRAG_TABLE + "." + DAUEREINTRAG_BENUTZERID + "=" + 
+							BENUTZER_TABLE + "." + BENUTZER_ID;
 		
 		if(benutzerId != getHaushaltId())
 			select += " WHERE " + DAUEREINTRAG_BENUTZERID + "=? AND " + KATEGORIE_EINNAHMEODERAUSGABE + "=?";
@@ -432,13 +474,11 @@ public class Datenbank {
 			conn = DriverManager.getConnection(CONNECTION_URL);
 			stmt = conn.prepareStatement(select);
 			// Wenn BenutzerId != "HAUSHALT", dann 2 Parameter definieren, sonst nur einen
-			if(benutzerId != getHaushaltId())
-			{
+			if(benutzerId != getHaushaltId()) {
 				stmt.setInt(1, benutzerId);
 				stmt.setBoolean(2, isEinnahmenParameter);
 			}
-			else
-			{
+			else {
 				stmt.setBoolean(1, isEinnahmenParameter);
 			}
 			
@@ -451,8 +491,9 @@ public class Datenbank {
 								rs.getString(DAUEREINTRAG_TITEL), 
 								rs.getDouble(DAUEREINTRAG_BETRAG), 
 								new Benutzer(
-										rs.getInt(DAUEREINTRAG_BENUTZERID)), 
-								Intervall.valueOf(rs.getString(DAUEREINTRAG_INTERVALL).toUpperCase()), 
+										rs.getInt(BENUTZER_ID),
+										rs.getString(BENUTZER_NAME)), 
+								Enum.valueOf(Intervall.class, rs.getString(DAUEREINTRAG_INTERVALL).toUpperCase()), 
 								rs.getDate(DAUEREINTRAG_ENDEDATUM).toLocalDate(), 
 								new Kategorie(
 										rs.getInt(KATEGORIE_ID), 
@@ -516,69 +557,54 @@ public class Datenbank {
 	}
 	
 	//Favorisierte Einnahmen-/Ausgaben Kategorien für einen bestimmten Benutzer auslesen
-	public static ArrayList<Kategorie> readFavoriten(int benutzerId, String einnahmeOderAusgabe) throws SQLException{ 		//Funktion hinterlegen
-//		Connection conn = null;
-//		PreparedStatement stmt = null;
-//		ResultSet rs = null;
-//		ArrayList<Eintrag> alEintraege = new ArrayList<>();
-//		boolean isEinnahmenParameter = einnahmeOderAusgabe.equals("Einnahmen");
-//		// Join mit Tabelle BENUTZER_TABLE um Column BENUTZER_ID abfragen zu können 
-//		String select = "SELECT * FROM " + KATEGORIE_TABLE 
-//				+ " INNER JOIN " + BENUTZER_TABLE 
-//				+ " ON " + KATEGORIE_TABLE + "." + KATEGORIE_ID + "=" + BENUTZER_TABLE + "." + BENUTZER_ID;
-//		if(benutzerId != getHaushaltId())
-//			select += " WHERE " + EINTRAG_BENUTZERID + "=? AND " + KATEGORIE_EINNAHMEODERAUSGABE + "=?";
-//		else
-//			select += " WHERE " + KATEGORIE_EINNAHMEODERAUSGABE + "=?";
-//		try {
-//			conn = DriverManager.getConnection(CONNECTION_URL);
-//			stmt = conn.prepareStatement(select);
-//			// Wenn BenutzerId != "HAUSHALT", dann 2 Parameter definieren, sonst nur einen
-//			if(benutzerId != getHaushaltId())
-//			{
-//				stmt.setInt(1, benutzerId);
-//				stmt.setBoolean(2, isEinnahmenParameter);
-//			}
-//			else
-//			{
-//				stmt.setBoolean(1, isEinnahmenParameter);
-//			}
-//			rs = stmt.executeQuery();
-//			while(rs.next()) {			
-//				alEintraege.add(
-//						new Eintrag(
-//								rs.getInt(EINTRAG_ID), 
-//								rs.getDate(EINTRAG_DATUM).toLocalDate(), 
-//								rs.getString(EINTRAG_TITEL), 
-//								rs.getDouble(EINTRAG_BETRAG), 
-//								new Benutzer(
-//										rs.getInt(EINTRAG_BENUTZERID)),  
-//								new Kategorie(
-//										rs.getInt(KATEGORIE_ID), 
-//										rs.getBoolean(KATEGORIE_EINNAHMEODERAUSGABE), 
-//										rs.getString(KATEGORIE_NAME), 
-//										rs.getBoolean(KATEGORIE_FAVORITE))));
-//			}
-//			rs.close();
-//			}
-//		catch(SQLException e) {
-//			throw e;
-//		}
-//		finally {
-//			try {
-//				if(stmt != null) 
-//					stmt.close();
-//				if(conn != null)
-//					conn.close();
-//			}
-//			catch(SQLException e) {
-//				throw e;
-//			}
-//		}
-//		return alEintraege;
-//	}
-		return null;
+	public static ArrayList<Kategorie> readFavoritenKategorien(int benutzerId, String einnahmeOderAusgabe) throws SQLException{ 		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		ArrayList<Kategorie> alFavoritenKategorien = new ArrayList<>();
+		//INNER JOIN Kategorie-Tabelle mit WHERE Bedingung auf KATEGORIE_EINNAHMEODERAUSGABE, damit nur Dauereinträge ausgegeben werden, welche eine Ausgabe oder Einnahme sind
+		boolean isEinnahmenParameter = einnahmeOderAusgabe.equals("Einnahmen");
+		String select = "SELECT * FROM " + EINTRAG_TABLE 
+				+ " INNER JOIN " + KATEGORIE_TABLE 
+				+ " ON " + 	EINTRAG_TABLE + "." + EINTRAG_KATEGORIEID + "=" + 
+							KATEGORIE_TABLE + "." + KATEGORIE_ID;
+		
+		if(benutzerId != getHaushaltId())
+			select += " WHERE " + 	EINTRAG_BENUTZERID + "=" + benutzerId + " AND " + 
+									KATEGORIE_EINNAHMEODERAUSGABE + "=" + isEinnahmenParameter + " AND " +
+									KATEGORIE_FAVORITE + "=true";
+		else
+			select += " WHERE " + 	KATEGORIE_EINNAHMEODERAUSGABE + "=" + isEinnahmenParameter + " AND " +
+									KATEGORIE_FAVORITE + "=true";
+		try {
+			conn = DriverManager.getConnection(CONNECTION_URL);
+			stmt = conn.prepareStatement(select);
+			rs = stmt.executeQuery();
+			while(rs.next())
+				alFavoritenKategorien.add(new Kategorie(
+						rs.getInt(KATEGORIE_ID), 
+						rs.getBoolean(KATEGORIE_EINNAHMEODERAUSGABE), 
+						rs.getString(KATEGORIE_NAME), 
+						rs.getBoolean(KATEGORIE_FAVORITE)));
+			rs.close();
+		}
+		catch(SQLException e) {
+			throw e;
+		}
+		finally {
+			try {
+				if(stmt != null) 
+					stmt.close();
+				if(conn != null)
+					conn.close();
+			}
+			catch(SQLException e) {
+				throw e;
+			}
+		}
+		return alFavoritenKategorien;
 	}
+	
 	
 	//Daten adaptieren
 	public static void insertBenutzer(Benutzer benutzer) throws SQLException{
@@ -697,9 +723,9 @@ public class Datenbank {
 			stmt.setString(2, dauereintrag.getDeTitel());	
 			stmt.setDouble(3, dauereintrag.getDeBetrag());
 			stmt.setInt(4, dauereintrag.getDeBenutzer().getBenutzerId());
+			stmt.setString(5, dauereintrag.getIntervall().getIName()); 		
 			LocalDateTime ldt2 = LocalDateTime.of(dauereintrag.getEnddatum(), LocalTime.of(0, 0, 0));
 			java.sql.Date endedatum = new java.sql.Date(ldt2.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()); //in altes Date Objekt für JDBC umwandeln - ldt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-			stmt.setString(5, dauereintrag.getIntervall().getIName()); 		
 			stmt.setDate(6, endedatum);
 			stmt.setInt(7, dauereintrag.getDeKategorie().getKategorieId());
 			stmt.executeUpdate();		
@@ -725,6 +751,7 @@ public class Datenbank {
 		
 	}
 	public static void updateKategorie(Kategorie kategorie) throws SQLException{
+		Connection conn = null;
 		
 	}
 	public static void updateEintrag(Eintrag eintrag) throws SQLException{
@@ -732,6 +759,33 @@ public class Datenbank {
 	}
 	public static void updateDauereintrag(Dauereintrag dauereintrag) throws SQLException{
 		
+	}
+	public static void setKategorieFavorit(int kategorieId, Boolean isFavorit) throws SQLException {
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		try {
+			conn = DriverManager.getConnection(CONNECTION_URL);
+			String update = "UPDATE " + KATEGORIE_TABLE + " SET " +
+					KATEGORIE_FAVORITE + "=? WHERE " + KATEGORIE_ID + "=?";
+			stmt = conn.prepareStatement(update);
+			stmt.setBoolean(1, isFavorit);
+			stmt.setInt(2, kategorieId);
+			stmt.executeUpdate();
+		}
+		catch (SQLException e) {
+			throw e;
+		}
+		finally {
+			try {
+				if(stmt != null) 
+					stmt.close();
+				if(conn != null)
+					conn.close();
+			}
+			catch(SQLException e) {
+				throw e;
+			}
+		}
 	}
 	
 	//Daten löschen

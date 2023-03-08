@@ -1,25 +1,21 @@
 package model;
 
-import java.util.ArrayList;
-
 public class Kategorie {
 
 	private int kategorieId;
 	private boolean einnahmeOderAusgabe;
 	private String name;
 	private boolean favorite = false;
-	private ArrayList<Eintrag> eintraege = new ArrayList<>();
-	private ArrayList<Dauereintrag> dauereintraege = new ArrayList<>();
+	private double summeEintraege;
 	
 	public Kategorie(int kategorieId, boolean einnahmeOderAusgabe, String name, boolean favorite,
-			ArrayList<Eintrag> eintraege, ArrayList<Dauereintrag> dauereintraege) {
+			double summeEintraege) {
 		super();
 		this.kategorieId = kategorieId;
 		this.einnahmeOderAusgabe = einnahmeOderAusgabe;
 		this.name = name;
 		this.favorite = favorite;
-		this.eintraege = eintraege;
-		this.dauereintraege = dauereintraege;
+		this.summeEintraege = summeEintraege;
 	}
 	public Kategorie(int kategorieId, boolean einnahmeOderAusgabe, String name, boolean favorite) {
 		super();
@@ -35,13 +31,6 @@ public class Kategorie {
 		this.favorite = favorite;
 	}
 	public Kategorie() {}
-	
-	public double getSummeEintraege() {
-		double summe = 0;
-		for(Eintrag einEintrag : eintraege)
-			summe += einEintrag.getBetrag();
-		return summe;
-	}
 	
 	public int getKategorieId() {
 		return kategorieId;
@@ -67,23 +56,15 @@ public class Kategorie {
 	public void setFavorite(boolean favorite) {
 		this.favorite = favorite;
 	}
-	public ArrayList<Eintrag> getEintraege() {
-		return eintraege;
+	public double getSummeEintraege() {
+		return summeEintraege;
 	}
-	public void setEintraege(ArrayList<Eintrag> eintraege) {
-		this.eintraege = eintraege;
+	public void setSummeEintraege(double summeEintraege) {
+		this.summeEintraege = summeEintraege;
 	}
-	public ArrayList<Dauereintrag> getDauereintraege() {
-		return dauereintraege;
-	}
-	public void setDauereintraege(ArrayList<Dauereintrag> dauereintraege) {
-		this.dauereintraege = dauereintraege;
-	}
-	@Override
-	public String toString() {
-		return "Kategorie [kategorieId=" + kategorieId + ", einnahmeOderAusgabe=" + einnahmeOderAusgabe + ", name="
-				+ name + ", favorite=" + favorite + ", eintraege=" + eintraege + ", dauereintraege=" + dauereintraege
-				+ "]";
-	}
+
+
+
+
 	
 }

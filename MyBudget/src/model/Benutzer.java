@@ -62,11 +62,10 @@ public class Benutzer {
 	public void setWiederholungen(ArrayList<Dauereintrag> dauereintraege) {
 		this.dauereintraege = dauereintraege;
 	}
+	
 	@Override
 	public String toString() {
 		return name;
 	}
-
-
 
 }

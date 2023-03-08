@@ -29,6 +29,7 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -41,6 +42,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.util.Callback;
 import model.Benutzer;
 import model.BenutzerFX;
 import model.Datenbank;
@@ -166,7 +168,7 @@ public class MainController {
 	@FXML TableColumn<DauereintragFX, LocalDate> naechsteFaelligkeitCol;
 	@FXML TableColumn<DauereintragFX, String> titelCol;
 	@FXML TableColumn<DauereintragFX, Double> betragCol;
-	@FXML TableColumn<DauereintragFX, Benutzer> benutzerCol;
+	@FXML TableColumn<DauereintragFX, String> benutzerCol;
 	@FXML TableColumn<DauereintragFX, Intervall> intervallCol;
 	@FXML TableColumn<DauereintragFX, LocalDate> dauereintragEndeCol;
 	
@@ -303,11 +305,12 @@ public class MainController {
 		cbBenutzer.setItems(olBenutzer);
 		cbBenutzer.getSelectionModel().select(olBenutzer.stream().filter(b -> b.getName().equals("HAUSHALT")).findFirst().orElse(null));
 		//Einnahmen Übersicht
+		setSummeKategorien();
 		getObservableListKategorien();
 		tableColumnsUebersicht();
+		addButtonToUebersichtTable();
 		cbEinnahmenUebersichtSortierung.getSelectionModel().select("Kategorie A-Z");
 		cbEinnahmenUebersichtSortierung.setItems(olSortierung);
-		getObservableListKategorien();
 		tvEinnahmenUebersicht.setItems(olKategorie);
 		tvEinnahmenUebersicht.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 		//Einnahmen Favoriten
@@ -324,6 +327,7 @@ public class MainController {
 		cbEinnahmenDauereintraegeSortierung.getSelectionModel().select("Datum aufsteigend");
 		cbEinnahmenDauereintraegeSortierung.setItems(olSortierung);
 		getObservableListDauereintraege();
+		addButtonToDauereintraegeTable();
 		tvEinnahmenDauereintraege.setItems(olDauereintraege);
 		tvEinnahmenDauereintraege.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 		
@@ -397,21 +401,22 @@ public class MainController {
 		try {
 			ArrayList<Kategorie> alKategorien = Datenbank.readKategorie();
 			olKategorie.clear();
-			for(Kategorie eineKategorie : alKategorien)
-				olKategorie.add(new KategorieFX(eineKategorie));					
+			for(Kategorie eineKategorie : alKategorien) {
+				eineKategorie.setSummeEintraege(Datenbank.readKategorieSummeEintraege(eineKategorie.getName()));
+				olKategorie.add(new KategorieFX(eineKategorie));									
+			}
 		} catch (SQLException e) {
 			new Alert(AlertType.ERROR, e.toString());
 		}	
 	}
 	
-	//Kategorien aus Datenbank auslesen und ObservableList hinzufügen
+	//Favorisierte Kategorien aus Datenbank auslesen und ObservableList hinzufügen
 	public void getObservableListFavoritenKategorien() {
 		try {
-			ArrayList<Kategorie> alKategorien = Datenbank.readKategorie();
+			ArrayList<Kategorie> alFavoriten = Datenbank.readFavoritenKategorien(cbBenutzer.getSelectionModel().getSelectedItem().getBenutzerId(), tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText());
 			olFavoriten.clear();
-			for(Kategorie eineKategorie : alKategorien)
-				if(eineKategorie.isFavorite())
-					olFavoriten.add(new KategorieFX(eineKategorie));					
+			for(Kategorie eineKategorie : alFavoriten)
+				olFavoriten.add(new KategorieFX(eineKategorie));
 		} catch (SQLException e) {
 			new Alert(AlertType.ERROR, e.toString());
 		}	
@@ -445,7 +450,7 @@ public class MainController {
 	@FXML public void showStackEinnahmenUebersicht(ActionEvent event) {
 		apEinnahmen.getChildren().remove(spEinnahmenUebersicht);
 		apEinnahmen.getChildren().add(spEinnahmenUebersicht);
-		getObservableListKategorien();
+		setSummeKategorien();
 		tableColumnsUebersicht();
 		
 	}
@@ -457,7 +462,6 @@ public class MainController {
 	@FXML public void showStackEinnahmenDauereintraege(ActionEvent event) {
 		apEinnahmen.getChildren().remove(spEinnahmenDauereintraege);
 		apEinnahmen.getChildren().add(spEinnahmenDauereintraege);
-		getObservableListDauereintraege();
 		tableColumnsDauereintraege();
 	}
 	
@@ -478,7 +482,7 @@ public class MainController {
 		getObservableListDauereintraege();
 	}
 	
-	//Öffnen des BenutzerDialog
+	//Öffnen des BenutzerDialog durch drücken des bBenutzerAnlegenEntfernen Buttons
 	@FXML public void benutzerAnlegen(ActionEvent event) throws SQLException{
 		try {
 			FXMLLoader fxmlLoaderBenutzer = new FXMLLoader();
@@ -496,6 +500,7 @@ public class MainController {
 			if(clickedButton.get() == ButtonType.OK ) {		
 				getObservableListBenutzer();
 				cbBenutzer.setItems(olBenutzer);
+				cbBenutzer.getSelectionModel().select(olBenutzer.stream().filter(b -> b.getName().equals("HAUSHALT")).findFirst().orElse(null));
 				}
 			else 
 				return;			
@@ -504,7 +509,7 @@ public class MainController {
 		}
 	}
 	
-	//Öffnen des KategorieDialog
+	//Öffnen des KategorieDialog durch drücken des bAusgabenPlus Buttons
 	@FXML public void kategorieAnlegen(ActionEvent event) throws SQLException {
 		try {
 			FXMLLoader fxmlLoaderKategorie = new FXMLLoader();
@@ -526,18 +531,20 @@ public class MainController {
 		}
 	}
 	
+	//Öffnen des BearbeitenDialogControllers 
+		
+	
 	//Favoriten Tabs erstellen und tabAusgabenFavoriten hinzufügen
 	ArrayList<Tab> alTabsFavoriten = new ArrayList<>();
-	String eineFavoritenKategorieName = null;
+	int eineFavoritenKategorieId = 0;
 	public void setTabsFavoritenAusgaben() throws SQLException {
-		ArrayList<Kategorie> alFavoritenKategorie = Datenbank.readFavoriten(cbBenutzer.getSelectionModel().getSelectedItem().getBenutzerId(), tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText());
-		for(Kategorie eineFavoritenKategorie : alFavoritenKategorie) {
+		getObservableListFavoritenKategorien();
+		for(KategorieFX eineFavoritenKategorieFX : olFavoriten) {
 			//Neuen Tab erstellen
-			Tab einTabFavoritenKategorie = new Tab(eineFavoritenKategorie.getName());
+			Tab einTabFavoritenKategorie = new Tab(eineFavoritenKategorieFX.getName());
 			einTabFavoritenKategorie.setContent(getObservableListEintraegeNachKategorie());
 			alTabsFavoriten.add(einTabFavoritenKategorie);
-			eineFavoritenKategorieName = eineFavoritenKategorie.getName();
-			
+			eineFavoritenKategorieId = eineFavoritenKategorieFX.getKategorieId();
 		}
 		//Tabs der TabPane hinzufügen
 		if(tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText() == "Einnahmen")
@@ -550,7 +557,7 @@ public class MainController {
 	TableView<EintragFX> tvFavoriten= new TableView<>(olEintraege);
 	@FXML public Node getObservableListEintraegeNachKategorie() {
 		try {
-			ArrayList<Eintrag> alEintraege = Datenbank.readEintraegeNachKategorie(cbBenutzer.getSelectionModel().getSelectedItem().getBenutzerId(), tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText(), eineFavoritenKategorieName);
+			ArrayList<Eintrag> alEintraege = Datenbank.readEintraegeNachKategorie(cbBenutzer.getSelectionModel().getSelectedItem().getBenutzerId(), tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText(), eineFavoritenKategorieId);
 			olEintraege.clear();
 			for(Eintrag einEintrag : alEintraege)
 				olEintraege.add(new EintragFX(einEintrag));
@@ -578,19 +585,137 @@ public class MainController {
 	
 	//TableColumns zuordnen Dauereintraege
 	public void tableColumnsDauereintraege() {
+		getObservableListDauereintraege();
 		naechsteFaelligkeitCol.setCellValueFactory(new PropertyValueFactory<>("naechsteFaelligkeit"));
 		titelCol.setCellValueFactory(new PropertyValueFactory<>("titel"));
 		betragCol.setCellValueFactory(new PropertyValueFactory<>("betrag"));
-		benutzerCol.setCellValueFactory(new PropertyValueFactory<>("benutzer"));
+		benutzerCol.setCellValueFactory(new PropertyValueFactory<>("benutzerName"));
 		intervallCol.setCellValueFactory(new PropertyValueFactory<>("intervall"));
 		dauereintragEndeCol.setCellValueFactory(new PropertyValueFactory<>("dauereintragEnde"));
 																								//Butttons hinzufügen
 	}
-	//TableColumns zuordnen Übersicht
+	//TableColumns zuordnen TableView Übersicht
 	public void tableColumnsUebersicht() {
+		getObservableListKategorien();
 		kategorieCol.setCellValueFactory(new PropertyValueFactory<>("name"));
 		summeCol.setCellValueFactory(new PropertyValueFactory<>("summeEintraege"));				
-																								//Butttons hinzufügen
 	}
 	
+	//TableColumn mit Buttons erstellen und TableView Übersicht zuordnen
+	private void addButtonToUebersichtTable() {
+        TableColumn<KategorieFX, Void> buttonCol = new TableColumn();
+        Callback<TableColumn<KategorieFX, Void>, TableCell<KategorieFX, Void>> cellFactory = new Callback<TableColumn<KategorieFX, Void>, TableCell<KategorieFX, Void>>() {
+            @Override
+            public TableCell<KategorieFX, Void> call(final TableColumn<KategorieFX, Void> param) {
+                final TableCell<KategorieFX, Void> cell = new TableCell<KategorieFX, Void>() {
+                    private final Button bFavorite = new Button("Favorite");
+                    private final Button bBearbeiten = new Button("Bearbeiten");
+                    private final Button bLöschen = new Button("Löschen");
+                    HBox hbButtons = new HBox(10, bFavorite, bBearbeiten, bLöschen);
+                    {
+                    	//ActionEvents für Buttons
+                    	bFavorite.setOnAction((ActionEvent event) -> {
+                    		KategorieFX kategorieFX  = getTableView().getItems().get(getIndex());
+//                            KategorieFX kategorieFX = tvEinnahmenUebersicht.getSelectionModel().getSelectedItem();
+                            kategorieFX.setFavorite(true);
+                        });
+                    	
+                    	bBearbeiten.setOnAction((ActionEvent event) -> {
+//                            Data data = getTableView().getItems().get(getIndex());
+//                            System.out.println("selectedData: " + data);
+                        });
+                    	bLöschen.setOnAction((ActionEvent event) -> {
+//                            Data data = getTableView().getItems().get(getIndex());
+//                            System.out.println("selectedData: " + data);
+                        });
+                    }
+                    //Button nur anzeigen wenn Text in der Zeile gezeigt wird
+                    @Override
+                    public void updateItem(Void item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (empty) {
+                            setGraphic(null);
+                        } else {
+                            setGraphic(hbButtons);
+                        }
+                    }
+                };
+                return cell;
+            }
+        };
+        buttonCol.setCellFactory(cellFactory);
+        buttonCol.setPrefWidth(200);
+        tvEinnahmenUebersicht.getColumns().add(buttonCol);
+        														//tv Ausgaben hinzufügen
+	}
+	
+	//TableColumn mit Buttons erstellen und TableView Übersicht zuordnen
+	private void addButtonToDauereintraegeTable() {
+        TableColumn<DauereintragFX, Void> buttonCol = new TableColumn();
+        Callback<TableColumn<DauereintragFX, Void>, TableCell<DauereintragFX, Void>> cellFactory = new Callback<TableColumn<DauereintragFX, Void>, TableCell<DauereintragFX, Void>>() {
+            @Override
+            public TableCell<DauereintragFX, Void> call(final TableColumn<DauereintragFX, Void> param) {
+                final TableCell<DauereintragFX, Void> cell = new TableCell<DauereintragFX, Void>() {
+                    private final Button bBearbeiten = new Button("Bearbeiten");
+                    private final Button bLöschen = new Button("Löschen");
+                    HBox hbButtons = new HBox(10, bBearbeiten, bLöschen);
+                    {
+                    	//ActionEvents für Buttons//                    	
+                    	bBearbeiten.setOnAction((ActionEvent event) -> {
+//                            Data data = getTableView().getItems().get(getIndex());
+//                            System.out.println("selectedData: " + data);
+                        });
+                    	bLöschen.setOnAction((ActionEvent event) -> {
+//                            Data data = getTableView().getItems().get(getIndex());
+//                            System.out.println("selectedData: " + data);
+                        });
+                    }
+                    //Button nur anzeigen wenn Text in der Zeile gezeigt wird
+                    @Override
+                    public void updateItem(Void item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (empty) {
+                            setGraphic(null);
+                        } else {
+                            setGraphic(hbButtons);
+                        }
+                    }
+                };
+                return cell;
+            }
+        };
+        buttonCol.setCellFactory(cellFactory);
+        tvEinnahmenDauereintraege.getColumns().add(buttonCol);
+        														//tv Ausgaben hinzufügen
+	}
+	
+	//Einträge nach Kategorie auslesen und summieren
+	public void setSummeKategorien() {
+		double setSummeEintraege = 0;
+		try {
+			ArrayList<Kategorie> alKategorien = Datenbank.readKategorie();
+			for(Kategorie eineKategorie : alKategorien) {
+				setSummeEintraege = Datenbank.readKategorieSummeEintraege(eineKategorie.getName());
+				eineKategorie.setSummeEintraege(setSummeEintraege);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}				
+	}
+	
+	@FXML Button bEinnahmenUebersichtBearbeiten;
+	@FXML public void kategorieBearbeiten() {
+		
+	}
+	@FXML Button bEinnahmenUebersichtFavorite;
+	@FXML public void setKategorieFavorite() {
+		try {
+			if(!tvEinnahmenUebersicht.getSelectionModel().getSelectedItem().isFavorite())
+				Datenbank.setKategorieFavorit(tvEinnahmenUebersicht.getSelectionModel().getSelectedItem().getKategorieId(), true);
+			else
+				Datenbank.setKategorieFavorit(tvEinnahmenUebersicht.getSelectionModel().getSelectedItem().getKategorieId(), false);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
 }

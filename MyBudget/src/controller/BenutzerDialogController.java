@@ -59,10 +59,11 @@ public class BenutzerDialogController extends Dialog<ButtonType> {
 	        }
 	    }
 	    if (!exists) {
-	        olBenutzer.add(new BenutzerFX(new Benutzer(tfNeuerBenutzer.getText())));	
+	        olBenutzer.add(new BenutzerFX(new Benutzer(tfNeuerBenutzer.getText())));
 	        try {
 				Datenbank.insertBenutzer(new Benutzer(tfNeuerBenutzer.getText()));
-			} catch (SQLException e) {
+				showBenutzer();
+	        } catch (SQLException e) {
 				e.printStackTrace();
 			}
 	    }

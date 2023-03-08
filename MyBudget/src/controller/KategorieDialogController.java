@@ -60,7 +60,7 @@ public class KategorieDialogController extends Dialog<ButtonType> {
 	        }
 	    }
 	    if (!exists) {
-	    	if(mainController.getTabPane().getSelectionModel().getSelectedItem() == mainController.tabEinnahmen) {	//Überprüfen ob Einahmen
+	    	if(mainController.getTabPane().getSelectionModel().getSelectedItem() == mainController.tabEinnahmen) {	
 	    		olKategorien.add(new KategorieFX(new Kategorie(true, tfNeueKategorie.getText(), false)));	
 	    		try {
 	    			Datenbank.insertKategorie(new Kategorie(true, tfNeueKategorie.getText(), false));		
@@ -68,7 +68,7 @@ public class KategorieDialogController extends Dialog<ButtonType> {
 	    			e.printStackTrace();
 	    		}
 	    	}
-	    	if(mainController.getTabPane().getSelectionModel().getSelectedItem() == mainController.tabAusgaben) {	//Überprüfen ob Ausgabe
+	    	if(mainController.getTabPane().getSelectionModel().getSelectedItem() == mainController.tabAusgaben) {	
 		    	olKategorien.add(new KategorieFX(new Kategorie(false, tfNeueKategorie.getText(), false)));	
 		    	try {
 		    		Datenbank.insertKategorie(new Kategorie(false, tfNeueKategorie.getText(), false));		

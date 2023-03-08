@@ -13,6 +13,7 @@ public class DauereintragFX {
 	private SimpleStringProperty titel;
 	private SimpleDoubleProperty betrag;
 	private SimpleObjectProperty<Benutzer> benutzer;	
+	private SimpleStringProperty benutzerName;
 	private SimpleObjectProperty<Intervall> intervall;				
 	private SimpleObjectProperty<LocalDate> dauereintragEnde;
 	
@@ -23,6 +24,7 @@ public class DauereintragFX {
 		titel = new SimpleStringProperty(modellDauereintrag.getDeTitel());
 		betrag = new SimpleDoubleProperty(modellDauereintrag.getDeBetrag());
 		benutzer = new SimpleObjectProperty<>(modellDauereintrag.getDeBenutzer());
+		benutzerName = new SimpleStringProperty(modellDauereintrag.getDeBenutzer().getName());
 		intervall = new SimpleObjectProperty<>(modellDauereintrag.getIntervall());
 		dauereintragEnde = new SimpleObjectProperty<>(modellDauereintrag.getEnddatum());
 	}
@@ -87,11 +89,16 @@ public class DauereintragFX {
 		this.dauereintragEndeProperty().set(dauereintragEnde);
 	}
 
-	@Override
-	public String toString() {
-		return "DauereintragFX [modellDauereintrag=" + modellDauereintrag + ", naechsteFaelligkeit="
-				+ naechsteFaelligkeit + ", titel=" + titel + ", betrag=" + betrag + ", benutzer=" + benutzer
-				+ ", intervall=" + intervall + ", dauereintragEnde=" + dauereintragEnde + "]";
+	public final SimpleStringProperty benutzerNameProperty() {
+		return this.benutzerName;
 	}
+	public final String getBenutzerName() {
+		return this.benutzerNameProperty().get();
+	}
+	public final void setBenutzerName(final String benutzerName) {
+		this.benutzerNameProperty().set(benutzerName);
+	}
+	
+
 
 }
