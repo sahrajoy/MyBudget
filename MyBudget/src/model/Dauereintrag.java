@@ -92,5 +92,7 @@ public class Dauereintrag {
 				+ ", deTitel=" + deTitel + ", deBetrag=" + deBetrag + ", deBenutzer=" + deBenutzer + ", intervall="
 				+ intervall + ", enddatum=" + enddatum + ", deKategorie=" + deKategorie + "]";
 	}
+
+
 	
 }

@@ -2,11 +2,11 @@ package model;
 
 public enum Intervall {
 	KEINE("keine"),
-	TAEGLICH("täglich"),
-	WOECHENTLICH("wöchentlich"),
+	TAEGLICH("taeglich"),
+	WOECHENTLICH("woechentlich"),
 	MONATLICH("monatlich"),
 	QUARTAL("quartalsweise"),
-	JAEHRLICH("jährlich");
+	JAEHRLICH("jaehrlich");
 
 	private String iName;
 
@@ -25,7 +25,8 @@ public enum Intervall {
 	
 	@Override
 	public String toString() {
-		return iName; 
+		return iName.replace("ae", "ä")
+					.replace("oe", "ö");
 	}
 
 }

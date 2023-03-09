@@ -10,6 +10,8 @@ public class DauereintragFX {
 
 	private Dauereintrag modellDauereintrag;
 	private SimpleObjectProperty<LocalDate> naechsteFaelligkeit;
+	private SimpleObjectProperty<Kategorie> kategorie;	
+	private SimpleStringProperty kategorieName;	
 	private SimpleStringProperty titel;
 	private SimpleDoubleProperty betrag;
 	private SimpleObjectProperty<Benutzer> benutzer;	
@@ -21,6 +23,8 @@ public class DauereintragFX {
 		super();
 		this.modellDauereintrag = modellDauereintrag;
 		naechsteFaelligkeit = new SimpleObjectProperty<>(modellDauereintrag.getNaechsteFaelligkeit());
+		kategorie = new SimpleObjectProperty<>(modellDauereintrag.getDeKategorie());
+		kategorieName = new SimpleStringProperty(modellDauereintrag.getDeKategorie().getName());
 		titel = new SimpleStringProperty(modellDauereintrag.getDeTitel());
 		betrag = new SimpleDoubleProperty(modellDauereintrag.getDeBetrag());
 		benutzer = new SimpleObjectProperty<>(modellDauereintrag.getDeBenutzer());
@@ -98,7 +102,25 @@ public class DauereintragFX {
 	public final void setBenutzerName(final String benutzerName) {
 		this.benutzerNameProperty().set(benutzerName);
 	}
+
+	public final SimpleObjectProperty<Kategorie> kategorieProperty() {
+		return this.kategorie;
+	}
+	public final Kategorie getKategorie() {
+		return this.kategorieProperty().get();
+	}
+	public final void setKategorie(final Kategorie kategorie) {
+		this.kategorieProperty().set(kategorie);
+	}
 	
-
-
+	public final SimpleStringProperty kategorieNameProperty() {
+		return this.kategorieName;
+	}
+	public final String getKategorieName() {
+		return this.kategorieNameProperty().get();
+	}
+	public final void setKategorieName(final String kategorieName) {
+		this.kategorieNameProperty().set(kategorieName);
+	}
+	
 }
