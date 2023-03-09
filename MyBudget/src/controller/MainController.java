@@ -85,20 +85,20 @@ public class MainController {
 	@FXML ComboBox<BenutzerFX> cbBenutzer;
 	//ActionEvent cbBenutzer
 	@FXML public void datenAktualisieren(){	
-		if(spUebersicht.isVisible()) {
-			getObservableListKategorien();
-			tableColumnsUebersicht();
-		}
-		else if(spFavoriten.isVisible())
-			try {
-				setTabsFavoriten();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		else if(spDauereintraege.isVisible()) {
-			getObservableListDauereintraege();
-			tableColumnsDauereintraege();
-		}
+//		if(spUebersicht.isVisible()) {
+//			getObservableListKategorien();
+//			tableColumnsUebersicht();
+//		}
+//		else if(spFavoriten.isVisible())
+//			try {
+//				setTabsFavoriten();
+//			} catch (SQLException e) {
+//				e.printStackTrace();
+//			}
+//		else if(spDauereintraege.isVisible()) {
+//			getObservableListDauereintraege();
+//			tableColumnsDauereintraege();
+//		}
 	}
 	
 	//TAB AUSGABEN
@@ -297,7 +297,7 @@ public class MainController {
 		addButtonToUebersichtTable();
 	}
 	//Inhalt für Übersicht laden
-	public void ladeUebersicht() {
+	@FXML public void ladeUebersicht() {
 		setSummeKategorien();
 		tableColumnsUebersicht();
 		cbUebersichtSortierung.getSelectionModel().select("Kategorie A-Z");
@@ -391,6 +391,76 @@ public class MainController {
 		ladeDauereintraege();
 	}
 	
+	//Öffnen des BenutzerDialog durch drücken des bBenutzerAnlegenEntfernen Buttons
+	@FXML public void benutzerAnlegen(ActionEvent event) throws SQLException{
+		try {
+			FXMLLoader fxmlLoaderBenutzer = new FXMLLoader();
+			fxmlLoaderBenutzer.setLocation(getClass().getResource("/view/BenutzerDialog.fxml"));
+			DialogPane benutzerDialog = fxmlLoaderBenutzer.load();
+				
+			//Holen der BenutzerDialogController-Instanzen
+			BenutzerDialogController bdc = fxmlLoaderBenutzer.getController();		
+							
+			Dialog<ButtonType> dialogBenutzer = new Dialog<>();
+			dialogBenutzer.setDialogPane(benutzerDialog);
+			dialogBenutzer.setTitle("Benutzer verwalten");
+
+			Optional<ButtonType> clickedButton = dialogBenutzer.showAndWait();			
+			if(clickedButton.get() == ButtonType.OK ) {		
+				getObservableListBenutzer();
+				cbBenutzer.setItems(olBenutzer);
+				cbBenutzer.getSelectionModel().select(olBenutzer.stream().filter(b -> b.getName().equals("HAUSHALT")).findFirst().orElse(null));
+				}
+			else 
+				return;			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+		
+//	//Öffnen des KategorieDialog durch drücken des bAusgabenPlus Buttons
+//	@FXML public void kategorieAnlegen(ActionEvent event) throws SQLException {
+//		try {
+//			FXMLLoader fxmlLoaderKategorie = new FXMLLoader();
+//			fxmlLoaderKategorie.setLocation(getClass().getResource("/view/KategorieDialog.fxml"));
+//			DialogPane kategorieDialog = fxmlLoaderKategorie.load();
+//				
+//			//Holen der KategorieDialogController-Instanzen
+//			KategorieDialogController kdc = fxmlLoaderKategorie.getController();	
+//			kdc.setMainController(this);
+//			kdc.showKategorie();
+//							
+//			Dialog<ButtonType> dialogKategorie = new Dialog<>();
+//			dialogKategorie.setDialogPane(kategorieDialog);
+//			dialogKategorie.setTitle("Kategorien verwalten");
+//
+//			Optional<ButtonType> clickedButton = dialogKategorie.showAndWait();					
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+//	}
+	
+	//Öffnen des BearbeitenDialogControllers 
+	@FXML public void bearbeitenDialog(ActionEvent event) throws SQLException {
+		try {
+			FXMLLoader fxmlLoaderBearbeiten = new FXMLLoader();
+			fxmlLoaderBearbeiten.setLocation(getClass().getResource("/view/BearbeitenDialog.fxml"));
+			DialogPane bearbeitenDialog = fxmlLoaderBearbeiten.load();
+			
+			//Holen der KategorieDialogController-Instanzen
+			BearbeitenDialogController bdc = fxmlLoaderBearbeiten.getController();	
+			bdc.setMainController(this);
+			
+			Dialog<ButtonType> dialogBearbeiten = new Dialog<>();
+			dialogBearbeiten.setDialogPane(bearbeitenDialog);
+			dialogBearbeiten.setTitle("Bearbeiten");
+			
+			Optional<ButtonType> clickedButton = dialogBearbeiten.showAndWait();					
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	//Einnahmen Einträge/Dauereinträge speichern												
 	@FXML public void btnEintragSpeichern(ActionEvent event) {
 		if(cbFavoritenIntervall.getValue().toString().equals("keine")) {
@@ -438,7 +508,7 @@ public class MainController {
 	//Kategorien aus Datenbank auslesen und ObservableList hinzufügen
 	public void getObservableListKategorien() {
 		try {
-			ArrayList<Kategorie> alKategorien = Datenbank.readKategorie();
+			ArrayList<Kategorie> alKategorien = Datenbank.readKategorie(tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText());
 			olKategorie.clear();
 			for(Kategorie eineKategorie : alKategorien) {
 				eineKategorie.setSummeEintraege(Datenbank.readKategorieSummeEintraege(eineKategorie.getName()));
@@ -485,58 +555,6 @@ public class MainController {
 		}
 	}
 	
-	//Öffnen des BenutzerDialog durch drücken des bBenutzerAnlegenEntfernen Buttons
-	@FXML public void benutzerAnlegen(ActionEvent event) throws SQLException{
-		try {
-			FXMLLoader fxmlLoaderBenutzer = new FXMLLoader();
-			fxmlLoaderBenutzer.setLocation(getClass().getResource("/view/BenutzerDialog.fxml"));
-			DialogPane benutzerDialog = fxmlLoaderBenutzer.load();
-			
-			//Holen der BenutzerDialogController-Instanzen
-			BenutzerDialogController bdc = fxmlLoaderBenutzer.getController();		
-						
-			Dialog<ButtonType> dialogBenutzer = new Dialog<>();
-			dialogBenutzer.setDialogPane(benutzerDialog);
-			dialogBenutzer.setTitle("Benutzer verwalten");
-
-			Optional<ButtonType> clickedButton = dialogBenutzer.showAndWait();			
-			if(clickedButton.get() == ButtonType.OK ) {		
-				getObservableListBenutzer();
-				cbBenutzer.setItems(olBenutzer);
-				cbBenutzer.getSelectionModel().select(olBenutzer.stream().filter(b -> b.getName().equals("HAUSHALT")).findFirst().orElse(null));
-				}
-			else 
-				return;			
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	//Öffnen des KategorieDialog durch drücken des bAusgabenPlus Buttons
-	@FXML public void kategorieAnlegen(ActionEvent event) throws SQLException {
-		try {
-			FXMLLoader fxmlLoaderKategorie = new FXMLLoader();
-			fxmlLoaderKategorie.setLocation(getClass().getResource("/view/KategorieDialog.fxml"));
-			DialogPane kategorieDialog = fxmlLoaderKategorie.load();
-			
-			//Holen der KategorieDialogController-Instanzen
-			KategorieDialogController bdc = fxmlLoaderKategorie.getController();	
-			bdc.setMainController(this);
-			bdc.showKategorie();
-						
-			Dialog<ButtonType> dialogKategorie = new Dialog<>();
-			dialogKategorie.setDialogPane(kategorieDialog);
-			dialogKategorie.setTitle("Kategorien verwalten");
-
-			Optional<ButtonType> clickedButton = dialogKategorie.showAndWait();					
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	//Öffnen des BearbeitenDialogControllers 
-		
-	
 	//Favoriten Tabs erstellen und tabAusgabenFavoriten hinzufügen
 	ArrayList<Tab> alTabsFavoriten = new ArrayList<>();
 	int eineFavoritenKategorieId = 0;
@@ -554,8 +572,8 @@ public class MainController {
 	}
 	
 	//Einträge nach Kategorie aus der Datenbank auslesen und in ObservableList eintragen und TableView erstellen
-	TableView<EintragFX> tvFavoriten= new TableView<>(olEintraege);
 	@FXML public Node getObservableListEintraegeNachKategorie() {
+		TableView<EintragFX> tvFavoriten = new TableView<>(olEintraege);
 		try {
 			ArrayList<Eintrag> alEintraege = Datenbank.readEintraegeNachKategorie(cbBenutzer.getSelectionModel().getSelectedItem().getBenutzerId(), tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText(), eineFavoritenKategorieId);
 			olEintraege.clear();
@@ -576,8 +594,11 @@ public class MainController {
 		TableColumn<EintragFX, Benutzer> benutzerCol = new TableColumn<>();
 		benutzerCol.setCellValueFactory(new PropertyValueFactory<>("benutzer"));
 		benutzerCol.setPrefWidth(212.66);
+		TableColumn<EintragFX, String> dauereintragCol = new TableColumn<>();
+		benutzerCol.setCellValueFactory(new PropertyValueFactory<>("dauereintrag"));
+		benutzerCol.setPrefWidth(212.66);
 																									//Buttons hinzufügen
-		tvFavoriten.getColumns().addAll(datumCol, titelCol, betragCol, benutzerCol);
+		tvFavoriten.getColumns().addAll(datumCol, titelCol, betragCol, benutzerCol, dauereintragCol);
 		tvFavoriten.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);	
 		}
 		return tvFavoriten;
@@ -654,6 +675,9 @@ public class MainController {
             public TableCell<KategorieFX, Void> call(final TableColumn<KategorieFX, Void> param) {
                 final TableCell<KategorieFX, Void> cell = new TableCell<KategorieFX, Void>() {
                     private final Button bFavorite = new Button("Favorite");
+//                    if() {
+//                    	bFavorite.setStyle("-fx-background-color:  lightblue;");
+//                    }
                     private final Button bBearbeiten = new Button("Bearbeiten");
                     private final Button bLöschen = new Button("Löschen");
                     HBox hbButtons = new HBox(10, bFavorite, bBearbeiten, bLöschen);
@@ -662,22 +686,37 @@ public class MainController {
                     	bFavorite.setOnAction((ActionEvent event) -> {
                     		KategorieFX kategorieFX  = getTableView().getItems().get(getIndex());
                     		try {
-                    			if(kategorieFX.isFavorite())
+                    			if(kategorieFX.isFavorite() == false) {
                     				Datenbank.setKategorieFavorit(kategorieFX.getKategorieId(), true);
-                    			else
+                    				bFavorite.setStyle("-fx-background-color:  lightblue;");
+                    			}
+                    			else {
                     				Datenbank.setKategorieFavorit(kategorieFX.getKategorieId(), false);
+                    				bFavorite.setStyle("");
+                    			}
                     		} catch (SQLException e) {
                     			e.printStackTrace();
                     		}
                         });
                     	
                     	bBearbeiten.setOnAction((ActionEvent event) -> {
-//                            Data data = getTableView().getItems().get(getIndex());
+//                            KategorieFX kategorieFX  = getTableView().getItems().get(getIndex());
 //                            System.out.println("selectedData: " + data);
                         });
                     	bLöschen.setOnAction((ActionEvent event) -> {
-//                            Data data = getTableView().getItems().get(getIndex());
-//                            System.out.println("selectedData: " + data);
+                    		KategorieFX kategorieFX  = getTableView().getItems().get(getIndex());
+                    		Alert confirmationDialog = new Alert(Alert.AlertType.CONFIRMATION);
+                    	    confirmationDialog.setTitle("Kategorie löschen");
+                    	    confirmationDialog.setContentText("Soll die Kategorie wirklich gelöscht werden, Änderungen können nicht rückgängig gemacht werden!");
+                    	    Optional<ButtonType> clickedButton = confirmationDialog.showAndWait();
+                    	    if (clickedButton.isPresent() && clickedButton.get() == ButtonType.OK) {
+                    	    	try {
+                    	    		Datenbank.deleteKategorie(kategorieFX.getKategorieId());
+                    	    		tableColumnsUebersicht();
+                    	    	} catch (SQLException e) {
+                    	    		e.printStackTrace();
+                    	    	}
+                    	    }
                         });
                     }
                     //Button nur anzeigen wenn Text in der Zeile gezeigt wird
@@ -713,12 +752,23 @@ public class MainController {
                     {
                     	//ActionEvents für Buttons//                    	
                     	bBearbeiten.setOnAction((ActionEvent event) -> {
-//                            Data data = getTableView().getItems().get(getIndex());
+                            DauereintragFX dauereintragFX  = getTableView().getItems().get(getIndex());
 //                            System.out.println("selectedData: " + data);
                         });
                     	bLöschen.setOnAction((ActionEvent event) -> {
-//                            Data data = getTableView().getItems().get(getIndex());
-//                            System.out.println("selectedData: " + data);
+                            DauereintragFX dauereintragFX = getTableView().getItems().get(getIndex());
+                            Alert confirmationDialog = new Alert(Alert.AlertType.CONFIRMATION);
+                    	    confirmationDialog.setTitle("Dauereintrag löschen");
+                    	    confirmationDialog.setContentText("Soll der Dauereintrag wirklich gelöscht werden, Änderungen können nicht rückgängig gemacht werden!");
+                    	    Optional<ButtonType> clickedButton = confirmationDialog.showAndWait();
+                    	    if (clickedButton.isPresent() && clickedButton.get() == ButtonType.OK) {
+                    	    	try {
+                    	    		Datenbank.deleteDauereintrag(dauereintragFX.getDauereintragId());
+                    	    		tableColumnsDauereintraege();
+                    	    	} catch (SQLException e) {
+                    	    		e.printStackTrace();
+                    	    	}
+                    	    }
                         });
                     }
                     //Button nur anzeigen wenn Text in der Zeile gezeigt wird
@@ -745,7 +795,7 @@ public class MainController {
 	public void setSummeKategorien() {
 		double setSummeEintraege = 0;
 		try {
-			ArrayList<Kategorie> alKategorien = Datenbank.readKategorie();
+			ArrayList<Kategorie> alKategorien = Datenbank.readKategorie(tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText());
 			for(Kategorie eineKategorie : alKategorien) {
 				setSummeEintraege = Datenbank.readKategorieSummeEintraege(eineKategorie.getName());
 				eineKategorie.setSummeEintraege(setSummeEintraege);
@@ -756,7 +806,7 @@ public class MainController {
 	}
 	
 	//Sortierung der Kategorien in der Übersicht
-	@FXML public void sortierungEinnahmenUebersicht() {
+	@FXML public void sortierungUebersicht(ActionEvent event) {
 		
 	}
 }

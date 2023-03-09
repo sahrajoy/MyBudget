@@ -3,12 +3,14 @@ package model;
 import java.time.LocalDate;
 
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 
 public class DauereintragFX {
 
 	private Dauereintrag modellDauereintrag;
+	private SimpleIntegerProperty dauereintragId;
 	private SimpleObjectProperty<LocalDate> naechsteFaelligkeit;
 	private SimpleObjectProperty<Kategorie> kategorie;	
 	private SimpleStringProperty kategorieName;	
@@ -22,6 +24,7 @@ public class DauereintragFX {
 	public DauereintragFX(Dauereintrag modellDauereintrag) {
 		super();
 		this.modellDauereintrag = modellDauereintrag;
+		dauereintragId = new SimpleIntegerProperty(modellDauereintrag.getDauereintragId());
 		naechsteFaelligkeit = new SimpleObjectProperty<>(modellDauereintrag.getNaechsteFaelligkeit());
 		kategorie = new SimpleObjectProperty<>(modellDauereintrag.getDeKategorie());
 		kategorieName = new SimpleStringProperty(modellDauereintrag.getDeKategorie().getName());
@@ -32,7 +35,17 @@ public class DauereintragFX {
 		intervall = new SimpleObjectProperty<>(modellDauereintrag.getIntervall());
 		dauereintragEnde = new SimpleObjectProperty<>(modellDauereintrag.getEnddatum());
 	}
-
+	
+	public final SimpleIntegerProperty dauereintragIdProperty() {
+		return this.dauereintragId;
+	}
+	public final int getDauereintragId() {
+		return this.dauereintragIdProperty().get();
+	}
+	public final void setDauereintragId(final int dauereintragId) {
+		this.dauereintragIdProperty().set(dauereintragId);
+	}
+	
 	public final SimpleObjectProperty<LocalDate> naechsteFaelligkeitProperty() {
 		return this.naechsteFaelligkeit;
 	}
@@ -122,5 +135,6 @@ public class DauereintragFX {
 	public final void setKategorieName(final String kategorieName) {
 		this.kategorieNameProperty().set(kategorieName);
 	}
+	
 	
 }

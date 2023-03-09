@@ -239,22 +239,29 @@ public class Datenbank {
 	}
 	
 	//Kategorien auslesen
-	public static ArrayList<Kategorie> readKategorie() throws SQLException {
-		return readKategorie(null);
+	public static ArrayList<Kategorie> readKategorie(String einnahmeOderAusgabe) throws SQLException {
+		return readKategorie(null, einnahmeOderAusgabe);
 	}
-	public static ArrayList<Kategorie> readKategorie(String kategorieName) throws SQLException{  	
+	public static ArrayList<Kategorie> readKategorie(String kategorieName, String einnahmeOderAusgabe) throws SQLException{  	
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 		ArrayList<Kategorie> alKategorien = new ArrayList<>();
+		boolean isEinnahmenParameter = einnahmeOderAusgabe.equals("Einnahmen");
 		String select = "SELECT * FROM " + KATEGORIE_TABLE;
 		if(kategorieName != null)
-			select += " WHERE " + KATEGORIE_NAME + "=?";
+			select += " WHERE " + KATEGORIE_NAME + "=?" + KATEGORIE_EINNAHMEODERAUSGABE + "=?";
+		else
+			select += " WHERE " + KATEGORIE_EINNAHMEODERAUSGABE + "=?";
 		try {
 			conn = DriverManager.getConnection(CONNECTION_URL);
 			stmt = conn.prepareStatement(select);
-			if(kategorieName != null)
+			if(kategorieName != null) {
 				stmt.setString(1, kategorieName);
+				stmt.setBoolean(2, isEinnahmenParameter);
+			}
+			else
+				stmt.setBoolean(1, isEinnahmenParameter);
 			rs = stmt.executeQuery();
 			while(rs.next())
 				alKategorien.add(new Kategorie(
@@ -564,21 +571,33 @@ public class Datenbank {
 		ArrayList<Kategorie> alFavoritenKategorien = new ArrayList<>();
 		//INNER JOIN Kategorie-Tabelle mit WHERE Bedingung auf KATEGORIE_EINNAHMEODERAUSGABE, damit nur Dauereinträge ausgegeben werden, welche eine Ausgabe oder Einnahme sind
 		boolean isEinnahmenParameter = einnahmeOderAusgabe.equals("Einnahmen");
-		String select = "SELECT * FROM " + EINTRAG_TABLE 
-				+ " INNER JOIN " + KATEGORIE_TABLE 
-				+ " ON " + 	EINTRAG_TABLE + "." + EINTRAG_KATEGORIEID + "=" + 
-							KATEGORIE_TABLE + "." + KATEGORIE_ID;
-		
+		String select = "SELECT DISTINCT " + 	KATEGORIE_ID + ", " + 
+												KATEGORIE_EINNAHMEODERAUSGABE + ", " +
+												KATEGORIE_NAME + ", " +
+												KATEGORIE_FAVORITE +
+						" FROM " + KATEGORIE_TABLE 
+						+ " INNER JOIN " + EINTRAG_TABLE 
+						+ " ON " + 	EINTRAG_TABLE + "." + EINTRAG_KATEGORIEID + "=" + 
+									KATEGORIE_TABLE + "." + KATEGORIE_ID;
 		if(benutzerId != getHaushaltId())
-			select += " WHERE " + 	EINTRAG_BENUTZERID + "=" + benutzerId + " AND " + 
-									KATEGORIE_EINNAHMEODERAUSGABE + "=" + isEinnahmenParameter + " AND " +
-									KATEGORIE_FAVORITE + "=true";
+			select += " WHERE " + 	EINTRAG_BENUTZERID + "=? AND " + 
+									KATEGORIE_EINNAHMEODERAUSGABE + "=? AND " +
+									KATEGORIE_FAVORITE + "=?";
 		else
-			select += " WHERE " + 	KATEGORIE_EINNAHMEODERAUSGABE + "=" + isEinnahmenParameter + " AND " +
-									KATEGORIE_FAVORITE + "=true";
+			select += " WHERE " + 	KATEGORIE_EINNAHMEODERAUSGABE + "=? AND " +
+									KATEGORIE_FAVORITE + "=?";
 		try {
 			conn = DriverManager.getConnection(CONNECTION_URL);
 			stmt = conn.prepareStatement(select);
+			if(benutzerId != getHaushaltId()) {
+				stmt.setInt(1, benutzerId);
+				stmt.setBoolean(2, isEinnahmenParameter);
+				stmt.setBoolean(3, true);
+			}
+			else {
+				stmt.setBoolean(1, isEinnahmenParameter);
+				stmt.setBoolean(2, true);
+			}
 			rs = stmt.executeQuery();
 			while(rs.next())
 				alFavoritenKategorien.add(new Kategorie(
@@ -814,7 +833,7 @@ public class Datenbank {
 			}
 		}
 	} 
-	public static void deleteKategorie(int kategorieId) throws SQLException{
+	public static void deleteKategorie(int kategorieId) throws SQLException{			//Einträge auch löschen oder auf Kategorie null setzen?
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		try {

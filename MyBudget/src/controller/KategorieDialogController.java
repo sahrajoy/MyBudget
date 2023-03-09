@@ -82,7 +82,7 @@ public class KategorieDialogController extends Dialog<ButtonType> {
 	//Kategorien auslesen und der ObserverList hinzufügen
 	@FXML public void showKategorie() {
 		try {
-		alKategorien = Datenbank.readKategorie();
+		alKategorien = Datenbank.readKategorie(mainController.getTabPane().getSelectionModel().getSelectedItem().getText());
 		olKategorien.clear();
 		for(Kategorie einKategorie : alKategorien)
 			olKategorien.add(new KategorieFX(einKategorie));	

@@ -13,47 +13,46 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<DialogPane fx:id="benutzerDialog" minHeight="320.0" minWidth="328.0" prefHeight="320.0" prefWidth="328.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.BenutzerDialogController">
+<DialogPane fx:id="benutzerDialog" minHeight="320.0" minWidth="328.0" prefWidth="328.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.BenutzerDialogController">
    <buttonTypes>
       <ButtonType fx:constant="OK" />
    </buttonTypes>
    <graphic>
-      <AnchorPane>
+      <AnchorPane />
+   </graphic>
+   <content>
+      <VBox fx:id="vbBenutzer">
          <children>
-            <VBox fx:id="vbBenutzer" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <HBox fx:id="hbNeuerBenutzer" alignment="CENTER_RIGHT" spacing="10.0">
                <children>
-                  <HBox fx:id="hbNeuerBenutzer" alignment="CENTER_RIGHT" spacing="10.0">
+                  <VBox alignment="CENTER_LEFT">
                      <children>
-                        <VBox alignment="CENTER_LEFT">
-                           <children>
-                              <Label fx:id="lblNeuerBenutzer" text="Neuen Benutzer eingeben " />
-                              <Label text="(und mit Eingabetaste bestätigen)" textFill="#000000a7">
-                                 <font>
-                                    <Font size="10.0" />
-                                 </font>
-                              </Label>
-                           </children>
-                        </VBox>
-                        <TextField fx:id="tfNeuerBenutzer" onAction="#insertBenutzerToList" />
-                     </children>
-                     <padding>
-                        <Insets bottom="10.0" />
-                     </padding>
-                  </HBox>
-                  <VBox fx:id="vbBestehendeBenutzer" spacing="5.0">
-                     <children>
-                        <Label fx:id="lblBestehendeBenutzer" text="Bestehende Benutzer" />
-                        <TableView fx:id="tvBenutzer" prefHeight="160.0" prefWidth="299.0">
-                          <columns>
-                            <TableColumn fx:id="benutzerCol" maxWidth="-1.0" minWidth="200.0" prefWidth="-1.0" />
-                          </columns>
-                        </TableView>
-                        <Button fx:id="bBenutzerLoeschen" mnemonicParsing="false" onAction="#loescheBenutzer" text="Benutzer löschen" />
+                        <Label fx:id="lblNeuerBenutzer" text="Neuen Benutzer eingeben " />
+                        <Label text="(und mit Eingabetaste bestätigen)" textFill="#000000a7">
+                           <font>
+                              <Font size="10.0" />
+                           </font>
+                        </Label>
                      </children>
                   </VBox>
+                  <TextField fx:id="tfNeuerBenutzer" onAction="#insertBenutzerToList" />
+               </children>
+               <padding>
+                  <Insets bottom="5.0" />
+               </padding>
+            </HBox>
+            <VBox fx:id="vbBestehendeBenutzer" spacing="5.0">
+               <children>
+                  <Label fx:id="lblBestehendeBenutzer" text="Bestehende Benutzer" />
+                  <TableView fx:id="tvBenutzer" prefHeight="160.0" prefWidth="299.0">
+                    <columns>
+                      <TableColumn fx:id="benutzerCol" maxWidth="-1.0" minWidth="200.0" prefWidth="-1.0" />
+                    </columns>
+                  </TableView>
+                  <Button fx:id="bBenutzerLoeschen" mnemonicParsing="false" onAction="#loescheBenutzer" text="Benutzer löschen" />
                </children>
             </VBox>
          </children>
-      </AnchorPane>
-   </graphic>
+      </VBox>
+   </content>
 </DialogPane>

@@ -10,6 +10,7 @@ public class Eintrag {
 	private double betrag;
 	private Benutzer benutzer;
 	private Kategorie kategorie;
+	private String dauereintrag;			//wenn dauereintrag angelegt wird, wird hier das Intervall hinterlegt
 	
 	public Eintrag(int eintragId, LocalDate datum, String titel, double betrag,
 			Benutzer benutzer, Kategorie kategorie) {
@@ -67,10 +68,12 @@ public class Eintrag {
 	public void setKategorie(Kategorie kategorie) {
 		this.kategorie = kategorie;
 	}
-	@Override
-	public String toString() {
-		return "Eintrag [eintragId=" + eintragId + ", datum=" + datum + ", titel=" + titel + ", betrag=" + betrag
-				+ ", benutzer=" + benutzer + ", kategorie=" + kategorie + "]";
+	public String getDauereintrag() {
+		return dauereintrag;
 	}
+	public void setDauereintrag(String dauereintrag) {
+		this.dauereintrag = dauereintrag;
+	}
+	
 	
 }

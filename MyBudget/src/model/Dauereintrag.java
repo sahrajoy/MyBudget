@@ -86,13 +86,5 @@ public class Dauereintrag {
 	public void setDeKategorie(Kategorie deKategorie) {
 		this.deKategorie = deKategorie;
 	}
-	@Override
-	public String toString() {
-		return "Dauereintrag [dauereintragId=" + dauereintragId + ", naechsteFaelligkeit=" + naechsteFaelligkeit
-				+ ", deTitel=" + deTitel + ", deBetrag=" + deBetrag + ", deBenutzer=" + deBenutzer + ", intervall="
-				+ intervall + ", enddatum=" + enddatum + ", deKategorie=" + deKategorie + "]";
-	}
-
-
 	
 }

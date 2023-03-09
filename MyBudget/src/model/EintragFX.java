@@ -13,6 +13,7 @@ public class EintragFX {
 	private SimpleDoubleProperty betrag;
 	private SimpleObjectProperty<Benutzer> benutzer;
 	private SimpleObjectProperty<Kategorie> kategorie;
+	private SimpleStringProperty dauereintrag = null;
 
 	public EintragFX(Eintrag modellEintrag) {
 		super();
@@ -22,6 +23,7 @@ public class EintragFX {
 		betrag = new SimpleDoubleProperty(modellEintrag.getBetrag());
 		benutzer = new SimpleObjectProperty<>(modellEintrag.getBenutzer());
 		kategorie = new SimpleObjectProperty<>(modellEintrag.getKategorie());
+		dauereintrag = new SimpleStringProperty(modellEintrag.getDauereintrag());
 	}
 
 	public final SimpleObjectProperty<LocalDate> datumProperty() {
@@ -73,11 +75,15 @@ public class EintragFX {
 	public final void setKategorie(final Kategorie kategorie) {
 		this.kategorieProperty().set(kategorie);
 	}
-	
-	@Override
-	public String toString() {
-		return "EintragFX [modellEintrag=" + modellEintrag + ", datum=" + datum + ", titel=" + titel + ", betrag="
-				+ betrag + ", benutzer=" + benutzer + ", kategorie=" + kategorie + "]";
+
+	public final SimpleStringProperty dauereintragProperty() {
+		return this.dauereintrag;
+	}
+	public final String getDauereintrag() {
+		return this.dauereintragProperty().get();
+	}
+	public final void setDauereintrag(final String dauereintrag) {
+		this.dauereintragProperty().set(dauereintrag);
 	}
 
 }
