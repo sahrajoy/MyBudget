@@ -85,120 +85,129 @@ public class MainController {
 	@FXML ComboBox<BenutzerFX> cbBenutzer;
 	//ActionEvent cbBenutzer
 	@FXML public void datenAktualisieren(){	
-		if(spEinnahmenUebersicht.isVisible()) {
+		if(spUebersicht.isVisible()) {
 			getObservableListKategorien();
 			tableColumnsUebersicht();
 		}
-		else if(spEinnahmenFavoriten.isVisible())
+		else if(spFavoriten.isVisible())
 			try {
-				setTabsFavoritenAusgaben();
+				setTabsFavoriten();
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
-		else if(spEinnahmenDauereintraege.isVisible()) {
+		else if(spDauereintraege.isVisible()) {
 			getObservableListDauereintraege();
 			tableColumnsDauereintraege();
 		}
 	}
 	
+	//TAB AUSGABEN
+	@FXML Tab tabAusgaben;
+	@FXML AnchorPane apAusgaben;
+	@FXML Button btnAusgabenUebersicht;
+	@FXML Button btnAusgabenFavoriten;							//Set on disable bis Favoriten hinzugefügt wurden, wenn Favoriten vorhanden und Button geklickt dann setTabsFavoritenAusgaben();
+	@FXML Button btnAusgabenDauereintraege;
+	
 	//TAB EINNAHMEN
 	@FXML Tab tabEinnahmen;
 	@FXML AnchorPane apEinnahmen;
-	@FXML Button bEinnahmenUebersicht;	
-	@FXML Button bEinnahmenFavoriten;			//Set on disable bis Favoriten hinzugefügt wurden, wenn Favoriten vorhanden und Button geklickt dann setTabsFavoritenAusgaben();
-	@FXML Button bEinnahmenDauereintraege;
+	@FXML Button btnEinnahmenUebersicht;	
+	@FXML Button btnEinnahmenFavoriten;			//Set on disable bis Favoriten hinzugefügt wurden, wenn Favoriten vorhanden und Button geklickt dann setTabsFavoritenAusgaben();
+	@FXML Button btnEinnahmenDauereintraege;
 	
-	//StackPane Einnahmen Übersicht
-	@FXML StackPane spEinnahmenUebersicht;
-	@FXML HBox hbEinnahmenUebersichtButtonsZeitraum;
-	@FXML Button bEinnahmenUebersichtMonat;
-	@FXML Button bEinnahmenUebersichtJahr;
-	@FXML HBox hbEinnahmenUebersichtZeitraum;
-	@FXML Button bEinnahmenUebersichtPfeilZurueck;
-	@FXML Label lblEinnahmenUebersichtZeitraum;
-	@FXML Button bEinnahmenUebersichtPfeilVorwaerts;
-	@FXML GridPane gpEinnahmenUebersichtPlusUndSortieren;
-	@FXML Button bEinnahmenPlus;
-	@FXML Label lblEinnahmenUebersichtSortierung;
-	@FXML ComboBox<String> cbEinnahmenUebersichtSortierung;
-	@FXML AnchorPane apEinnahmenUebersicht;
+	//StackPane Übersicht
+	@FXML StackPane spUebersicht;
 	
-	//TableView Einnahmen Übersicht
-	@FXML TableView<KategorieFX> tvEinnahmenUebersicht;
+	@FXML HBox hbUebersichtButtonsZeitraum;
+	@FXML Button btnUebersichtMonat;
+	@FXML Button btnUebersichtJahr;
+	
+	@FXML HBox hbUebersichtZeitraum;
+	@FXML Button btnUebersichtPfeilZurueck;
+	@FXML Label lblUebersichtZeitraum;
+	@FXML Button btnUebersichtPfeilVorwaerts;
+	
+	@FXML GridPane gpUebersichtPlusUndSortieren;
+	@FXML Button btnPlus;
+	@FXML Label lblUebersichtSortierung;
+	@FXML ComboBox<String> cbUebersichtSortierung;
+	
+	@FXML AnchorPane apUebersicht;
+	
+	//TableView Übersicht
+	@FXML TableView<KategorieFX> tvUebersicht;
 	@FXML TableColumn<KategorieFX, String> kategorieCol;
 	@FXML TableColumn<KategorieFX, Double> summeCol;
 	
-	//StackPane Einnahmen Favoriten
-	@FXML StackPane spEinnahmenFavoriten;		
-	@FXML HBox hbEinnahmenFavoritenButtonsZeitraum;
-	@FXML Button bEinnahmenFavoritenTag;
-	@FXML Button bEinnahmenFavoritenWoche;
-	@FXML Button bEinnahmenFavoritenMonat;
-	@FXML Button bEinnahmenFavoritenJahr;
-	@FXML HBox hbEinnahmenFavoritenZeitraum;
-	@FXML Button bEinnahmenFavoritenPfeilZurueck;
-	@FXML Label lblEinnahmenFavoritenZeitraum;
-	@FXML Button bEinnahmenFavoritenPfeilVorwaerts;
-	@FXML TabPane tpEinnahmenFavoriten;
+	//StackPane Favoriten
+	@FXML StackPane spFavoriten;		
+	@FXML HBox hbFavoritenButtonsZeitraum;
+	@FXML Button btnFavoritenTag;
+	@FXML Button btnFavoritenWoche;
+	@FXML Button btnFavoritenMonat;
+	@FXML Button btnFavoritenJahr;
 	
-	@FXML HBox hbEinnahmenFavoritenEingabezeile;
-	@FXML Label lblEinnahmenFavoritenKategorie;
-	@FXML ComboBox<KategorieFX> cbEinnahmenFavoritenKategorie;
-	@FXML Label lblEinnahmenFavoritenDatum;
-	@FXML DatePicker dpEinnahmenFavoritenDatum;
-	@FXML Label lblEinnahmenFavoritenTitel;
-	@FXML TextField txtEinnahmenFavoritenTitel;
-	@FXML Label lblEinnahmenFavoritenBetrag;
-	@FXML TextField txtEinnahmenFavoritenBetrag;
-	@FXML Label lblEinnahmenFavoritenBenutzer;
-	@FXML ComboBox<BenutzerFX> cbEinnahmenFavoritenBenutzer;
-	@FXML Label lblEinnahmenFavoritenDauereintrag;
-	@FXML ComboBox<Intervall> cbEinnahmenFavoritenIntervall;
-	@FXML Label lblEinnahmenFavoritenEndeDauereintrag;
-	@FXML DatePicker dpEinnahmenFavoritenEndeDauereintrag;
-	@FXML public void setDatePickerEndeDauereintragOnAble() {
-		if(cbEinnahmenFavoritenIntervall.getSelectionModel().getSelectedItem() == Intervall.KEINE)
-			dpEinnahmenFavoritenEndeDauereintrag.setDisable(true);
-		else
-			dpEinnahmenFavoritenEndeDauereintrag.setDisable(false);
-	}
-	@FXML Button bEinnahmenFavoritenSpeichern;					//Prüfungen auf vollständigkeit der eingegebenen Daten hinterlegen und speichern in DB
+	@FXML HBox hbFavoritenZeitraum;
+	@FXML Button btnFavoritenPfeilZurueck;
+	@FXML Label lblFavoritenZeitraum;
+	@FXML Button btnFavoritenPfeilVorwaerts;
+	
+	@FXML HBox hbFavoritenEingabezeile;
+	@FXML Label lblFavoritenKategorie;
+	@FXML ComboBox<KategorieFX> cbFavoritenKategorie;
+	@FXML Label lblFavoritenDatum;
+	@FXML DatePicker dpFavoritenDatum;
+	@FXML Label lblFavoritenTitel;
+	@FXML TextField txtFavoritenTitel;
+	@FXML Label lblFavoritenBetrag;
+	@FXML TextField txtFavoritenBetrag;
+	@FXML Label lblFavoritenBenutzer;
+	@FXML ComboBox<BenutzerFX> cbFavoritenBenutzer;
+	@FXML Label lblFavoritenDauereintrag;
+	@FXML ComboBox<Intervall> cbFavoritenIntervall;
+	@FXML Label lblFavoritenEndeDauereintrag;
+	@FXML DatePicker dpFavoritenEndeDauereintrag;
+	@FXML Button btnFavoritenSpeichern;					//Prüfungen auf vollständigkeit der eingegebenen Daten hinterlegen und speichern in DB
 
-	//StackPane Einnahmen Dauereinträge
-	@FXML StackPane spEinnahmenDauereintraege;
-	@FXML HBox hbEinnahmenDauereintraegeText;
-	@FXML Label lblEinnahmenDauereintraegeText;
-	@FXML Label lblEinnahmenDauereintraegeAktuellesDatum;
-	@FXML HBox hbEinnahmenDauereintraegeSortierung;
-	@FXML Label lblEinnahmenDauereintraegeSortierung;
-	@FXML ComboBox<String> cbEinnahmenDauereintraegeSortierung;
-	@FXML AnchorPane apEinnahmenDauereintraege;
+	@FXML TabPane tpFavoriten;
+
+	//StackPane Dauereinträge
+	@FXML StackPane spDauereintraege;
 	
-	@FXML HBox hbEinnahmenDauereintraege;
-	@FXML Label lblEinnahmenDauereintraegeKategorie;
-	@FXML ComboBox<KategorieFX> cbEinnahmenDauereintraegeKategorie;
-	@FXML Label lblEinnahmenDauereintraegeDatum;
-	@FXML DatePicker dpEinnahmenDauereintraegeDatum;
-	@FXML Label lblEinnahmenDauereintraegeTitel;
-	@FXML TextField txtEinnahmenDauereintraegeTitel;
-	@FXML Label lblEinnahmenDauereintraegeBetrag;
-	@FXML TextField txtEinnahmenDauereintraegeBetrag;
-	@FXML Label lblEinnahmenDauereintraegeBenutzer;
-	@FXML ComboBox<BenutzerFX> cbEinnahmenDauereintraegeBenutzer;
-	@FXML Label lblEinnahmenDauereintraegeDauereintrag;
-	@FXML ComboBox<Intervall> cbEinnahmenDauereintraegeIntervall;
-	@FXML Label lblEinnahmenDauereintraegeEndeDauereintrag;
-	@FXML DatePicker dpEinnahmenDauereintraegeEndeDauereintrag;
-	@FXML public void setDatePickerDauereintragEndeDauereintragOnAble() {
-		if(cbEinnahmenDauereintraegeIntervall.getSelectionModel().getSelectedItem() == Intervall.KEINE)
-			dpEinnahmenDauereintraegeEndeDauereintrag.setDisable(true);
-		else
-			dpEinnahmenDauereintraegeEndeDauereintrag.setDisable(false);
-	}
-	@FXML Button bEinnahmenDauereintraegeSpeichern;	
+	@FXML HBox hbDauereintraegeText;
+	@FXML Label lblDauereintraegeText;
+	@FXML Label lblDauereintraegeAktuellesDatum;
 	
-	//TableView Einnahmen Dauereinträge
-	@FXML TableView<DauereintragFX> tvEinnahmenDauereintraege;
+	@FXML HBox hbDauereintraege;
+	@FXML Label lblDauereintraegeKategorie;
+	@FXML ComboBox<KategorieFX> cbDauereintraegeKategorie;
+	@FXML Label lblDauereintraegeDatum;
+	@FXML DatePicker dpDauereintraegeDatum;
+	@FXML Label lblDauereintraegeTitel;
+	@FXML TextField txtDauereintraegeTitel;
+	@FXML Label lblDauereintraegeBetrag;
+	@FXML TextField txtDauereintraegeBetrag;
+	@FXML Label lblDauereintraegeBenutzer;
+	@FXML ComboBox<BenutzerFX> cbDauereintraegeBenutzer;
+	@FXML Label lblDauereintraegeDauereintrag;
+	@FXML ComboBox<Intervall> cbDauereintraegeIntervall;
+	@FXML Label lblDauereintraegeEndeDauereintrag;
+	@FXML DatePicker dpDauereintraegeEndeDauereintrag;
+//	@FXML public void setDatePickerDauereintragEndeDauereintragOnAble() {
+//		if(cbDauereintraegeIntervall.getSelectionModel().getSelectedItem() == Intervall.KEINE)
+//			dpEinnahmenDauereintraegeEndeDauereintrag.setDisable(true);
+//		else
+//			dpEinnahmenDauereintraegeEndeDauereintrag.setDisable(false);
+//	}
+	@FXML Button btnDauereintraegeSpeichern;	
+	
+	@FXML HBox hbDauereintraegeSortierung;
+	@FXML Label lblDauereintraegeSortierung;
+	@FXML ComboBox<String> cbDauereintraegeSortierung;
+	@FXML AnchorPane apDauereintraege;
+	
+	//TableView Dauereinträge
+	@FXML TableView<DauereintragFX> tvDauereintraege;
 	@FXML TableColumn<DauereintragFX, LocalDate> naechsteFaelligkeitCol;
 	@FXML TableColumn<DauereintragFX, String> kategorieNameCol;
 	@FXML TableColumn<DauereintragFX, String> titelCol;
@@ -207,81 +216,17 @@ public class MainController {
 	@FXML TableColumn<DauereintragFX, Intervall> intervallCol;
 	@FXML TableColumn<DauereintragFX, LocalDate> dauereintragEndeCol;
 	
-	//Einnahmen Methoden
-	
-	//TAB AUSGABEN
-	@FXML Tab tabAusgaben;
-	@FXML AnchorPane apAusgaben;
-	@FXML Button bAusgabenUebersicht;
-	@FXML
-	public void showKategorieAusgaben() {
-		
+	//Methoden
+	//Set DatePicker on able
+	@FXML public void setDatePickerEndeDauereintragOnAble() {
+		if(cbFavoritenIntervall.getSelectionModel().getSelectedItem() == Intervall.KEINE)
+			dpFavoritenEndeDauereintrag.setDisable(true);
+		else if(cbDauereintraegeIntervall.getSelectionModel().getSelectedItem() == Intervall.KEINE)
+			dpDauereintraegeEndeDauereintrag.setDisable(true);
+		else
+			dpFavoritenEndeDauereintrag.setDisable(false);
+		dpDauereintraegeEndeDauereintrag.setDisable(false);
 	}
-	@FXML Button bAusgabenFavoriten;							//Set on disable bis Favoriten hinzugefügt wurden, wenn Favoriten vorhanden und Button geklickt dann setTabsFavoritenAusgaben();
-	@FXML
-	public void showEintraegeAusgaben() {
-//		tvAusgabenFavoriten
-	}
-	@FXML Button bAusgabenDauereintraege;
-	@FXML
-	public void showDauereintraegeAusgaben() {
-//		tvAusgabenDauereintraege
-	}
-
-	//StackPane Ausgaben Übersicht
-	@FXML StackPane spAusgabenUebersicht;
-	@FXML HBox hbAusgabenUebersichtButtonsZeitraum;
-	@FXML Button bAusgabenUebersichtMonat;
-	@FXML Button bAusgabenUebersichtJahr;
-	@FXML HBox hbAusgabenUebersichtZeitraum;
-	@FXML Button bAusgabenUebersichtPfeilZurueck;
-	@FXML Label lblAusgabenUebersichtZeitraum;
-	@FXML Button bAusgabenUebersichtPfeilVorwaerts;
-	@FXML GridPane gpAusgabenUebersichtPlusUndSortieren;
-	@FXML Button bAusgabenPlus;
-	@FXML Label lblAusgabenUebersichtSortierung;
-	@FXML ComboBox<String> cbAusgabenUebersichtSortierung;
-	@FXML AnchorPane apAusgabenUebersicht;
-	
-	//StackPane Ausgaben Favoriten
-	@FXML StackPane spAusgabenFavoriten;
-	@FXML HBox hbAusgabenFavoritenButtonsZeitraum;
-	@FXML Button bAusgabenFavoritenTag;
-	@FXML Button bAusgabenFavoritenWoche;
-	@FXML Button bAusgabenFavoritenMonat;
-	@FXML Button bAusgabenFavoritenJahr;
-	@FXML HBox hbAusgabenFavoritenZeitraum;
-	@FXML Button bAusgabenFavoritenPfeilZurueck;
-	@FXML Label lblAusgabenFavoritenZeitraum;
-	@FXML Button bAusgabenFavoritenPfeilVorwaerts;
-	@FXML TabPane tpAusgabenFavoriten;
-	
-	@FXML HBox hbAusgabenFavoritenEingabezeile;
-	@FXML Label lblAusgabenFavoritenDatum;
-	@FXML DatePicker dpAusgabenFavoritenDatum;
-	@FXML Label lblAusgabenFavoritenTitel;
-	@FXML TextField txtAusgabenFavoritenTitel;
-	@FXML Label lblAusgabenFavoritenBetrag;
-	@FXML TextField txtAusgabenFavoritenBetrag;
-	@FXML Label lblAusgabenFavoritenBenutzer;
-	@FXML ComboBox<BenutzerFX> cbAusgabenFavoritenBenutzer;
-	@FXML Label lblAusgabenFavoritenDauereintrag;
-	@FXML ComboBox<Intervall> cbAusgabenFavoritenIntervall;
-	@FXML Label lblAusgabenFavoritenEndeDauereintrag;
-	@FXML DatePicker dpAusgabenFavoritenEndeDauereintrag;
-	@FXML Button bAusgabenFavoritenSpeichern;						//Prüfungen auf vollständigkeit der eingegebenen Daten hinterlegen
-
-	//StackPane Ausgaben Dauereintraege
-	@FXML StackPane spAusgabenDauereintraege;
-	@FXML HBox hbAusgabenDauereintraegeDatum;
-	@FXML Label lblAusgabenDauereintraegeText;
-	@FXML Label lblAusgabenDauereintraegeDatum;
-	@FXML HBox hbAusgabenDauereintraegeSortierung;
-	@FXML Label lblAusgabenDauereintraegeSortierung;
-	@FXML ComboBox<String> cbAusgabenDauereintraegeSortierung;
-	@FXML AnchorPane apAusgabenDauereintraege;
-	
-	//Ausgaben Methoden
 	
 	//TAB STATISTIK
 	@FXML Tab tabStatistik;
@@ -291,7 +236,7 @@ public class MainController {
 	@FXML ImageView ivTortendiagramm;
 	@FXML ImageView ivSaulendiagramm;
 	@FXML HBox hbRadioButtonsDiagramme;
-	@FXML RadioButton rbTortendiagramm;
+	@FXML RadioButton rbTortendiagramm; 
 	@FXML RadioButton rbSaeulendiagramm;
 	@FXML VBox vbStatistikZeitraum;
 	@FXML HBox hbStatistikButtonsZeitraum;
@@ -334,7 +279,6 @@ public class MainController {
 		}
 	
 	//METHODEN ALLGEMEIN
-
 	@FXML
 	public void initialize() {
 		//Benutzer auslesen und der ObserverList hinzufügen
@@ -346,62 +290,119 @@ public class MainController {
 		getObservableListKategorien();
 		tableColumnsUebersicht();
 		addButtonToUebersichtTable();
-		cbEinnahmenUebersichtSortierung.getSelectionModel().select("Kategorie A-Z");
-		cbEinnahmenUebersichtSortierung.setItems(olSortierung);
-		tvEinnahmenUebersicht.setItems(olKategorie);
-		tvEinnahmenUebersicht.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-		//Einnahmen Favoriten
-		dpEinnahmenFavoritenDatum.setValue(LocalDate.now());
-		cbEinnahmenFavoritenKategorie.setItems(olKategorie);
-		cbEinnahmenFavoritenKategorie.setPromptText("Kategorie wählen");
-		txtEinnahmenFavoritenTitel.setPromptText("Titel eingeben");
-		txtEinnahmenFavoritenBetrag.setPromptText("00.00");
-		txtEinnahmenFavoritenBetrag.setTextFormatter(new TextFormatter<>(converter));
-		cbEinnahmenFavoritenBenutzer.setItems(olBenutzer);
-		cbEinnahmenFavoritenBenutzer.getSelectionModel().select(olBenutzer.stream().filter(b -> b.getName().equals("HAUSHALT")).findFirst().orElse(null));
-		cbEinnahmenFavoritenIntervall.getItems().setAll(Intervall.values());
-		cbEinnahmenFavoritenIntervall.setValue(Intervall.KEINE);
-		dpEinnahmenFavoritenEndeDauereintrag.setDisable(true);
-		//Einnahmen Dauereintrag
-		lblEinnahmenDauereintraegeAktuellesDatum.setText(LocalDate.now().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)));
-		cbEinnahmenDauereintraegeSortierung.getSelectionModel().select("Datum aufsteigend");
-		cbEinnahmenDauereintraegeSortierung.setItems(olSortierung);
-		getObservableListDauereintraege();
+		cbUebersichtSortierung.getSelectionModel().select("Kategorie A-Z");
+		cbUebersichtSortierung.setItems(olSortierung);
+		tvUebersicht.setItems(olKategorie);
+		tvUebersicht.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+		
 		addButtonToDauereintraegeTable();
-		tvEinnahmenDauereintraege.setItems(olDauereintraege);
-		tvEinnahmenDauereintraege.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-		
-//		set Favoriten on disable wenn keine Favoriten vorhanden
-//		//Ausgaben Übersicht
-//		cbAusgabenUebersichtSortierung.getSelectionModel().select("Kategorie A-Z");
-//		cbAusgabenUebersichtSortierung.setItems(olSortierung);
-//		//Ausgaben Favoriten
-//		dpAusgabenFavoritenDatum.setValue(LocalDate.now());
-//		cbAusgabenFavoritenBenutzer.setItems(olBenutzer);
-//		cbAusgabenFavoritenIntervall.getItems().setAll(Intervall.values());
-//		dpAusgabenFavoritenEndeDauereintrag.setValue(LocalDate.now());
-//		//Ausgaben Dauereintrag
-//		lblAusgabenDauereintraegeDatum.setText(LocalDate.now().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)));
-//		cbAusgabenDauereintraegeSortierung.getSelectionModel().select("Datum aufsteigend");
-//		cbAusgabenDauereintraegeSortierung.setItems(olSortierung);
-////		set Favoriten on disable wenn keine Favoriten vorhanden
-		//Statistik
+		addButtonToUebersichtTable();
+	}
+	//Inhalt für Übersicht laden
+	public void ladeUebersicht() {
+		setSummeKategorien();
+		tableColumnsUebersicht();
+		cbUebersichtSortierung.getSelectionModel().select("Kategorie A-Z");
+		cbUebersichtSortierung.setItems(olSortierung);
+		tvUebersicht.setItems(olKategorie);
+		tvUebersicht.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+	}
+	//Inhalt für Favoriten laden
+	public void ladeFavoriten() {
+		//Default setzen und Listen laden für Eingabezeile
+		dpFavoritenDatum.setValue(LocalDate.now());
+		cbFavoritenKategorie.setItems(olKategorie);
+		cbFavoritenKategorie.setPromptText("Kategorie wählen");
+		txtFavoritenTitel.setPromptText("Titel eingeben");
+		txtFavoritenBetrag.setPromptText("00.00");
+		txtFavoritenBetrag.setTextFormatter(new TextFormatter<>(converter));
+		cbFavoritenBenutzer.setItems(olBenutzer);
+		cbFavoritenBenutzer.getSelectionModel().select(olBenutzer.stream().filter(b -> b.getName().equals("HAUSHALT")).findFirst().orElse(null));
+		cbFavoritenIntervall.getItems().setAll(Intervall.values());
+		cbFavoritenIntervall.setValue(Intervall.KEINE);
+		dpFavoritenEndeDauereintrag.setDisable(true);
+		//Tabs und TableView laden
+		try {
+			setTabsFavoriten();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	//Inhalt für Dauereintrag laden
+	public void ladeDauereintraege() {
+		lblDauereintraegeAktuellesDatum.setText(LocalDate.now().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)));
+		//Default setzen und Listen laden für Eingabezeile
+		dpDauereintraegeDatum.setValue(LocalDate.now());
+		cbDauereintraegeKategorie.setItems(olKategorie);
+		cbDauereintraegeKategorie.setPromptText("Kategorie wählen");
+		txtDauereintraegeTitel.setPromptText("Titel eingeben");
+		txtDauereintraegeBetrag.setPromptText("00.00");
+		txtDauereintraegeBetrag.setTextFormatter(new TextFormatter<>(converter));
+		cbDauereintraegeBenutzer.setItems(olBenutzer);
+		cbDauereintraegeBenutzer.getSelectionModel().select(olBenutzer.stream().filter(b -> b.getName().equals("HAUSHALT")).findFirst().orElse(null));
+		cbDauereintraegeIntervall.getItems().setAll(Intervall.values());
+		cbDauereintraegeIntervall.setValue(Intervall.KEINE);
+		dpDauereintraegeEndeDauereintrag.setDisable(true);
+		//Sortierung
+		cbDauereintraegeSortierung.getSelectionModel().select("Datum aufsteigend");
+		cbDauereintraegeSortierung.setItems(olSortierung);
+		//TableView
+		tvDauereintraege.setItems(olDauereintraege);
+		tableColumnsDauereintraege();
+		tvDauereintraege.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+	}
+	
+	//Inhalt für Statistik laden
+	public void ladeStatistik() {
 		setCbBenutzerStatistik();
-//		cbHaushalt.setDefaultButton(true)
 //		bUebersicht.setDefaultButton(true);
-		
+	}
+	
+	//Wechseln der Stacks in Einnahmen per klick auf Button(Übersicht, Favoriten, Dauereintraege)		
+	@FXML public void showStackEinnahmenUebersicht(ActionEvent event) {
+		apEinnahmen.getChildren().remove(spUebersicht);
+		apEinnahmen.getChildren().add(spUebersicht);
+		ladeUebersicht();
+	}
+	@FXML public void showStackEinnahmenFavoriten(ActionEvent event) throws SQLException {
+		apEinnahmen.getChildren().remove(spFavoriten);
+		apEinnahmen.getChildren().add(spFavoriten);
+		ladeFavoriten();
+	}
+	@FXML public void showStackEinnahmenDauereintraege(ActionEvent event) {
+		apEinnahmen.getChildren().remove(spDauereintraege);
+		apEinnahmen.getChildren().add(spDauereintraege);
+		ladeDauereintraege();
+	}
+	
+	//Wechseln der Stacks in Ausgaben per klick auf Button(Übersicht, Favoriten, Dauereintraege)
+	@FXML public void showStackAusgabenUebersicht(ActionEvent event) {
+		apAusgaben.getChildren().remove(spUebersicht);
+		apAusgaben.getChildren().add(spUebersicht);
+		ladeUebersicht();
+	}
+	@FXML public void showStackAusgabenFavoriten(ActionEvent event) throws SQLException {
+		apAusgaben.getChildren().remove(spFavoriten);
+		apAusgaben.getChildren().add(spFavoriten);
+		ladeFavoriten();
+	}
+	@FXML public void showStackAusgabenDauereintraege(ActionEvent event) {
+		apAusgaben.getChildren().remove(spDauereintraege);
+		apAusgaben.getChildren().add(spDauereintraege);
+		ladeDauereintraege();
 	}
 	
 	//Einnahmen Einträge/Dauereinträge speichern												
-	@FXML public void bEinnahmenEintragSpeichern(ActionEvent event) {
-		if(cbEinnahmenFavoritenIntervall.getValue().toString().equals("keine")) {
+	@FXML public void btnEintragSpeichern(ActionEvent event) {
+		if(cbFavoritenIntervall.getValue().toString().equals("keine")) {
 			try {
 				Datenbank.insertEintrag(new Eintrag(
-					dpEinnahmenFavoritenDatum.getValue(),
-					txtEinnahmenFavoritenTitel.getText(),
-					Double.parseDouble(txtEinnahmenFavoritenBetrag.getText()),
-					cbEinnahmenFavoritenBenutzer.getSelectionModel().getSelectedItem().getModellBenutzer(),
-					cbEinnahmenFavoritenKategorie.getSelectionModel().getSelectedItem().getModellKategorie()
+					dpFavoritenDatum.getValue(),
+					txtFavoritenTitel.getText(),
+					Double.parseDouble(txtFavoritenBetrag.getText()),
+					cbFavoritenBenutzer.getSelectionModel().getSelectedItem().getModellBenutzer(),
+					cbFavoritenKategorie.getSelectionModel().getSelectedItem().getModellKategorie()
 						));
 			} catch (NumberFormatException | SQLException e) {
 				e.printStackTrace();
@@ -410,13 +411,13 @@ public class MainController {
 		else {
 			try {
 				Datenbank.insertDauereintrag(new Dauereintrag(
-					dpEinnahmenFavoritenDatum.getValue(),
-					txtEinnahmenFavoritenTitel.getText(),
-					Double.parseDouble(txtEinnahmenFavoritenBetrag.getText()),
-					cbEinnahmenFavoritenBenutzer.getSelectionModel().getSelectedItem().getModellBenutzer(),
-					cbEinnahmenFavoritenIntervall.getSelectionModel().getSelectedItem(),
-					dpEinnahmenFavoritenEndeDauereintrag.getValue(),
-					cbEinnahmenFavoritenKategorie.getSelectionModel().getSelectedItem().getModellKategorie()
+					dpFavoritenDatum.getValue(),
+					txtFavoritenTitel.getText(),
+					Double.parseDouble(txtFavoritenBetrag.getText()),
+					cbFavoritenBenutzer.getSelectionModel().getSelectedItem().getModellBenutzer(),
+					cbFavoritenIntervall.getSelectionModel().getSelectedItem(),
+					dpFavoritenEndeDauereintrag.getValue(),
+					cbFavoritenKategorie.getSelectionModel().getSelectedItem().getModellKategorie()
 						));
 			} catch (NumberFormatException | SQLException e) {
 				e.printStackTrace();
@@ -486,43 +487,6 @@ public class MainController {
 		}
 	}
 	
-	//Wechseln der Stacks in Einnahmen per klick auf Button(Übersicht, Favoriten, Dauereintraege)		//Ev. nutzbar für Einnahemn und Ausgaben?
-	@FXML public void showStackEinnahmenUebersicht(ActionEvent event) {
-		apEinnahmen.getChildren().remove(spEinnahmenUebersicht);
-		apEinnahmen.getChildren().add(spEinnahmenUebersicht);
-		setSummeKategorien();
-		tableColumnsUebersicht();
-		
-	}
-	@FXML public void showStackEinnahmenFavoriten(ActionEvent event) throws SQLException {
-		apEinnahmen.getChildren().remove(spEinnahmenFavoriten);
-		apEinnahmen.getChildren().add(spEinnahmenFavoriten);
-		setTabsFavoritenAusgaben();
-	}
-	@FXML public void showStackEinnahmenDauereintraege(ActionEvent event) {
-		apEinnahmen.getChildren().remove(spEinnahmenDauereintraege);
-		apEinnahmen.getChildren().add(spEinnahmenDauereintraege);
-		tableColumnsDauereintraege();
-
-	}
-	
-	//Wechseln der Stacks in Ausgaben per klick auf Button(Übersicht, Favoriten, Dauereintraege)
-	@FXML public void showStackAusgabenUebersicht(ActionEvent event) {
-		apAusgaben.getChildren().remove(spAusgabenUebersicht);
-		apAusgaben.getChildren().add(spEinnahmenUebersicht);
-		getObservableListEintraege();
-	}
-	@FXML public void showStackAusgabenFavoriten(ActionEvent event) throws SQLException {
-		apAusgaben.getChildren().remove(spAusgabenFavoriten);
-		apAusgaben.getChildren().add(spEinnahmenFavoriten);
-		setTabsFavoritenAusgaben();
-	}
-	@FXML public void showStackAusgabenDauereintraege(ActionEvent event) {
-		apAusgaben.getChildren().remove(spAusgabenDauereintraege);
-		apAusgaben.getChildren().add(spEinnahmenDauereintraege);
-		getObservableListDauereintraege();
-	}
-	
 	//Öffnen des BenutzerDialog durch drücken des bBenutzerAnlegenEntfernen Buttons
 	@FXML public void benutzerAnlegen(ActionEvent event) throws SQLException{
 		try {
@@ -578,7 +542,7 @@ public class MainController {
 	//Favoriten Tabs erstellen und tabAusgabenFavoriten hinzufügen
 	ArrayList<Tab> alTabsFavoriten = new ArrayList<>();
 	int eineFavoritenKategorieId = 0;
-	public void setTabsFavoritenAusgaben() throws SQLException {
+	public void setTabsFavoriten() throws SQLException {
 		getObservableListFavoritenKategorien();
 		for(KategorieFX eineFavoritenKategorieFX : olFavoriten) {
 			//Neuen Tab erstellen
@@ -588,10 +552,7 @@ public class MainController {
 			eineFavoritenKategorieId = eineFavoritenKategorieFX.getKategorieId();
 		}
 		//Tabs der TabPane hinzufügen
-		if(tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText() == "Einnahmen")
-			tpEinnahmenFavoriten.getTabs().addAll(alTabsFavoriten);
-		else 
-			tpAusgabenFavoriten.getTabs().addAll(alTabsFavoriten);
+		tpFavoriten.getTabs().addAll(alTabsFavoriten);
 	}
 	
 	//Einträge nach Kategorie aus der Datenbank auslesen und in ObservableList eintragen und TableView erstellen
@@ -738,9 +699,8 @@ public class MainController {
         buttonCol.setCellFactory(cellFactory);
         buttonCol.setPrefWidth(456);
         buttonCol.setStyle("-fx-alignment: CENTER;");
-        tvEinnahmenUebersicht.getColumns().add(buttonCol);
-        														//tv Ausgaben hinzufügen
-	}
+        tvUebersicht.getColumns().add(buttonCol);
+    }
 	
 	//TableColumn mit Buttons erstellen und TableView Übersicht zuordnen
 	private void addButtonToDauereintraegeTable() {
@@ -780,8 +740,7 @@ public class MainController {
         buttonCol.setCellFactory(cellFactory);
         buttonCol.setPrefWidth(190);
         buttonCol.setStyle("-fx-alignment: CENTER;");
-        tvEinnahmenDauereintraege.getColumns().add(buttonCol);
-        														//tv Ausgaben hinzufügen
+        tvDauereintraege.getColumns().add(buttonCol);
 	}
 	
 	//Einträge nach Kategorie auslesen und summieren
@@ -797,23 +756,6 @@ public class MainController {
 			e.printStackTrace();
 		}				
 	}
-	
-	@FXML Button bEinnahmenUebersichtBearbeiten;
-	@FXML public void kategorieBearbeiten() {
-		
-	}
-	@FXML Button bEinnahmenUebersichtFavorite;
-	@FXML public void setKategorieFavorite() {
-		try {
-			if(!tvEinnahmenUebersicht.getSelectionModel().getSelectedItem().isFavorite())
-				Datenbank.setKategorieFavorit(tvEinnahmenUebersicht.getSelectionModel().getSelectedItem().getKategorieId(), true);
-			else
-				Datenbank.setKategorieFavorit(tvEinnahmenUebersicht.getSelectionModel().getSelectedItem().getKategorieId(), false);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
-	
 	
 	//Sortierung der Kategorien in der Übersicht
 	@FXML public void sortierungEinnahmenUebersicht() {
