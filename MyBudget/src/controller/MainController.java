@@ -287,9 +287,7 @@ public class MainController {
 		cbBenutzer.getSelectionModel().select(olBenutzer.stream().filter(b -> b.getName().equals("HAUSHALT")).findFirst().orElse(null));
 		//Einnahmen Übersicht
 		setSummeKategorien();
-		getObservableListKategorien();
 		tableColumnsUebersicht();
-		addButtonToUebersichtTable();
 		cbUebersichtSortierung.getSelectionModel().select("Kategorie A-Z");
 		cbUebersichtSortierung.setItems(olSortierung);
 		tvUebersicht.setItems(olKategorie);
