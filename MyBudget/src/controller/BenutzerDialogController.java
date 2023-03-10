@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Optional;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -16,6 +18,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -39,13 +42,31 @@ public class BenutzerDialogController extends Dialog<ButtonType> {
 	@FXML TableView<BenutzerFX> tvBenutzer;
 	@FXML TableColumn<BenutzerFX, String> benutzerCol;
 	
-	@FXML Button bBenutzerLoeschen;
+	@FXML Button btnBenutzerLoeschen;
+	@FXML Button btnBenutzerBearbeiten;			//Funktion hinterlegen
 	
 	//Methoden
 	@FXML public void initialize() {
 		benutzerCol.setCellValueFactory(new PropertyValueFactory<>("name"));
 		tvBenutzer.setItems(olBenutzer);
 		showBenutzer();
+	}
+	
+	//Benutzer bearbeiten
+	@FXML public void bearbeiteBenutzer(){
+		TextInputDialog bearbeiteNameBenutzer = new TextInputDialog(tvBenutzer.getSelectionModel().getSelectedItem().getModellBenutzer().getName());
+		bearbeiteNameBenutzer.setContentText("Neuen Benutzernamen eingeben");
+        Optional<String> result = bearbeiteNameBenutzer.showAndWait();
+        result.ifPresent(name -> 
+        	{
+				try {
+					Datenbank.updateBenutzer(tvBenutzer.getSelectionModel().getSelectedItem().getModellBenutzer(), bearbeiteNameBenutzer.getEditor().getText());
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+        );
+        showBenutzer();      
 	}
 	
 	//Methode für TextField

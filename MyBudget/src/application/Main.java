@@ -2,11 +2,13 @@ package application;
 	
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.stage.Stage;
 import model.Datenbank;
+import model.Dauereintrag;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 
@@ -19,7 +21,8 @@ public class Main extends Application {
 			Datenbank.createKategorieTable();
 			Datenbank.createEintragTable();
 			Datenbank.createDauereintragTable();
-			//Dauereintraege durchgehen und ausführen
+			Datenbank.dauereintraegeAusfuehren();
+			
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -31,6 +34,7 @@ public class Main extends Application {
 		primaryStage.show();
 	}
 	
+
 	public static void main(String[] args) {
 		launch(args);
 	}

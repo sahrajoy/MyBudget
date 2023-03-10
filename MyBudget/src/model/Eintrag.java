@@ -10,7 +10,8 @@ public class Eintrag {
 	private double betrag;
 	private Benutzer benutzer;
 	private Kategorie kategorie;
-	private String dauereintrag;			//wenn dauereintrag angelegt wird, wird hier das Intervall hinterlegt
+	private String dauereintrag;			//wenn dauereintrag angelegt wird, wird hier das Intervall hinterlegt, in Datenbank Variable addaptieren
+	
 	
 	public Eintrag(int eintragId, LocalDate datum, String titel, double betrag,
 			Benutzer benutzer, Kategorie kategorie) {

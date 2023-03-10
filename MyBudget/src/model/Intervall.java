@@ -5,7 +5,7 @@ public enum Intervall {
 	TAEGLICH("taeglich"),
 	WOECHENTLICH("woechentlich"),
 	MONATLICH("monatlich"),
-	QUARTAL("quartalsweise"),
+	QUARTALSWEISE("quartalsweise"),
 	JAEHRLICH("jaehrlich");
 
 	private String iName;

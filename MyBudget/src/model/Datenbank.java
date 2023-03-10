@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import javafx.collections.ObservableList;
 
 public class Datenbank {
 	private static final String DB_LOCATION = "C:\\Users\\sahra\\git\\MyBudget\\Temp\\Datenbank";
@@ -404,24 +403,25 @@ public class Datenbank {
 							KATEGORIE_TABLE + "." + KATEGORIE_ID;
 		
 		if(benutzerId != getHaushaltId())
-			select += " WHERE " + 	EINTRAG_BENUTZERID + "=" + benutzerId + " AND " + 
-									EINTRAG_KATEGORIEID  + "=" + kategorieId + " AND " + 
-									KATEGORIE_EINNAHMEODERAUSGABE + "=" + isEinnahmenParameter;
+			select += " WHERE " + 	EINTRAG_BENUTZERID + "=? AND " + 
+									EINTRAG_KATEGORIEID  + "=? AND " + 
+									KATEGORIE_EINNAHMEODERAUSGABE + "=?";
 		else
-			select += " WHERE " + 	EINTRAG_KATEGORIEID  + "=" + kategorieId + " AND " + 
-									KATEGORIE_EINNAHMEODERAUSGABE + "=" + isEinnahmenParameter;
+			select += " WHERE " + 	EINTRAG_KATEGORIEID  + "=? AND " + 
+									KATEGORIE_EINNAHMEODERAUSGABE + "=?";
 		try {
 			conn = DriverManager.getConnection(CONNECTION_URL);
 			stmt = conn.prepareStatement(select);
 			// Wenn BenutzerId != "HAUSHALT", dann 2 Parameter definieren, sonst nur einen
-//			if(benutzerId != getHaushaltId()) {
-//				stmt.setInt(1, benutzerId);
-//				stmt.setInt(2, kategorieId);;
-//				stmt.setBoolean(3, isEinnahmenParameter);
-//			}
-//			else {
-//				stmt.setBoolean(1, isEinnahmenParameter);
-//			}
+			if(benutzerId != getHaushaltId()) {
+				stmt.setInt(1, benutzerId);
+				stmt.setInt(2, kategorieId);
+				stmt.setBoolean(3, isEinnahmenParameter);
+			}
+			else {
+				stmt.setInt(1, kategorieId);
+				stmt.setBoolean(2, isEinnahmenParameter);
+			}
 			rs = stmt.executeQuery();
 			while(rs.next()) {			
 				alEintraege.add(
@@ -624,7 +624,6 @@ public class Datenbank {
 		return alFavoritenKategorien;
 	}
 	
-	
 	//Daten adaptieren
 	public static void insertBenutzer(Benutzer benutzer) throws SQLException{
 		Connection conn = null;
@@ -636,7 +635,7 @@ public class Datenbank {
                     ") VALUES (?)"; 	//BENUTZER_NAME
 			stmt = conn.prepareStatement(insert);
 			stmt.setString(1, benutzer.getName());		
-			int entryId = stmt.executeUpdate();		
+			stmt.executeUpdate();		
 		}
 		catch(SQLException e) {
 			throw e;
@@ -656,6 +655,7 @@ public class Datenbank {
 	public static void insertKategorie(Kategorie kategorie) throws SQLException{
 		Connection conn = null;
 		PreparedStatement stmt = null;
+		Statement stmti = null;
 		try {
 			conn = DriverManager.getConnection(CONNECTION_URL);
 			String insert = "INSERT INTO " + KATEGORIE_TABLE + 
@@ -667,7 +667,11 @@ public class Datenbank {
 			stmt.setBoolean(1, kategorie.isEinnahmeOderAusgabe());
 			stmt.setString(2, kategorie.getName());	
 			stmt.setBoolean(3, kategorie.isFavorite());
-			stmt.executeUpdate();		
+			stmt.executeUpdate();	
+			stmti = conn.createStatement();
+			ResultSet rs = stmti.executeQuery("SELECT IDENTITY_VAL_LOCAL() FROM " + KATEGORIE_TABLE);
+			if(rs.next())
+				kategorie.setKategorieId(rs.getInt("1"));
 		}
 		catch(SQLException e) {
 			throw e;
@@ -676,6 +680,8 @@ public class Datenbank {
 			try {
 				if(stmt != null) 
 					stmt.close();
+				if(stmti != null) 
+					stmti.close();
 				if(conn != null)
 					conn.close();
 			}
@@ -765,19 +771,150 @@ public class Datenbank {
 		}
 	}
 	
-	//Daten ändern																		//müssennoch fertiggestellt werden
-	public static void updateBenutzer(ObservableList<BenutzerFX> olBenutzerFX) throws SQLException{
-		
+	//Dauereintraege durchgehen und ausführen								//Methode ausarbeiten
+	public static void dauereintraegeAusfuehren() {
+//		readDauereintraege
+//		if(einDauereintragFX.getNaechsteFaelligkeit().isAfter(LocalDate.now()
+//		insertEintrag(new Eintrag(Daten aus Dauereintrag));
+//		anschließend das naechsteFaelligkeit Datum auf das nächste datum setzen
 	}
-	public static void updateKategorie(Kategorie kategorie) throws SQLException{
+	
+	//Daten ändern																		
+	public static void updateBenutzer(Benutzer benutzer, String neuerName) throws SQLException{
 		Connection conn = null;
+		PreparedStatement stmt = null;
+		try {
+			conn = DriverManager.getConnection(CONNECTION_URL);
+			String update = "UPDATE " + BENUTZER_TABLE + " SET " +
+					BENUTZER_NAME + "=? WHERE " + BENUTZER_ID + "=?";
+			stmt = conn.prepareStatement(update);
+			stmt.setString(1, neuerName);
+			stmt.setInt(2, benutzer.getBenutzerId());
+			stmt.executeUpdate();
+		}
+		catch (SQLException e) {
+			throw e;
+		}
+		finally {
+			try {
+				if(stmt != null) 
+					stmt.close();
+				if(conn != null)
+					conn.close();
+			}
+			catch(SQLException e) {
+				throw e;
+			}
+		}
+	}
+	public static void updateDauereintrag(Dauereintrag dauereintrag) throws SQLException{
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		try {
+			conn = DriverManager.getConnection(CONNECTION_URL);
+			String update = "UPDATE " + EINTRAG_TABLE + " SET " +
+					DAUEREINTRAG_NAECHSTEFAELLIGKEIT + "=?" +
+					DAUEREINTRAG_TITEL + "=?" +
+					DAUEREINTRAG_BETRAG + "=?" +
+					DAUEREINTRAG_BENUTZERID + "=?" +
+					DAUEREINTRAG_INTERVALL + "=?" +
+					DAUEREINTRAG_ENDEDATUM + "=?" +
+					DAUEREINTRAG_KATEGORIEID + "=? WHERE " + EINTRAG_ID + "=?";
+			stmt = conn.prepareStatement(update);
+			LocalDateTime ldt1 = LocalDateTime.of(dauereintrag.getNaechsteFaelligkeit(), LocalTime.of(0, 0, 0));
+			java.sql.Date naechsteFaelligkeit = new java.sql.Date(ldt1.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()); //in altes Date Objekt für JDBC umwandeln - ldt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+			stmt.setDate(1, naechsteFaelligkeit);
+			stmt.setString(2, dauereintrag.getDeTitel());	
+			stmt.setDouble(3, dauereintrag.getDeBetrag());
+			stmt.setInt(4, dauereintrag.getDeBenutzer().getBenutzerId());
+			stmt.setString(5, dauereintrag.getIntervall().getIName()); 		
+			LocalDateTime ldt2 = LocalDateTime.of(dauereintrag.getEnddatum(), LocalTime.of(0, 0, 0));
+			java.sql.Date endedatum = new java.sql.Date(ldt2.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()); //in altes Date Objekt für JDBC umwandeln - ldt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+			stmt.setDate(6, endedatum);
+			stmt.setInt(7, dauereintrag.getDeKategorie().getKategorieId());
+			stmt.executeUpdate();
+		}
+		catch (SQLException e) {
+			throw e;
+		}
+		finally {
+			try {
+				if(stmt != null) 
+					stmt.close();
+				if(conn != null)
+					conn.close();
+			}
+			catch(SQLException e) {
+				throw e;
+			}
+		}
 		
 	}
 	public static void updateEintrag(Eintrag eintrag) throws SQLException{
-		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		try {
+			conn = DriverManager.getConnection(CONNECTION_URL);
+			String update = "UPDATE " + EINTRAG_TABLE + " SET " +
+					EINTRAG_DATUM + "=?" +
+					EINTRAG_TITEL + "=?" +
+					EINTRAG_BETRAG + "=?" +
+					EINTRAG_BENUTZERID + "=?" +
+					EINTRAG_KATEGORIEID + "=? WHERE " + EINTRAG_ID + "=?";
+			stmt = conn.prepareStatement(update);
+			LocalDateTime ldt = LocalDateTime.of(eintrag.getDatum(), LocalTime.of(0, 0, 0));
+			java.sql.Date date = new java.sql.Date(ldt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()); //in altes Date Objekt für JDBC umwandeln - ldt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+			stmt.setDate(1, date);
+			stmt.setString(2, eintrag.getTitel());	
+			stmt.setDouble(3, eintrag.getBetrag());	
+			stmt.setInt(4, eintrag.getBenutzer().getBenutzerId());
+			stmt.setInt(5, eintrag.getKategorie().getKategorieId());
+			stmt.executeUpdate();
+		}
+		catch (SQLException e) {
+			throw e;
+		}
+		finally {
+			try {
+				if(stmt != null) 
+					stmt.close();
+				if(conn != null)
+					conn.close();
+			}
+			catch(SQLException e) {
+				throw e;
+			}
+		}
 	}
-	public static void updateDauereintrag(Dauereintrag dauereintrag) throws SQLException{
-		
+	public static void updateKategorie(Kategorie kategorie) throws SQLException{
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		try {
+			conn = DriverManager.getConnection(CONNECTION_URL);
+			String update = "UPDATE " + KATEGORIE_TABLE + " SET " +
+					KATEGORIE_EINNAHMEODERAUSGABE + "=?" +
+					KATEGORIE_NAME + "=?" +
+					KATEGORIE_FAVORITE + "=? WHERE " + KATEGORIE_ID + "=?";
+			stmt = conn.prepareStatement(update);
+			stmt.setBoolean(1, kategorie.isEinnahmeOderAusgabe());
+			stmt.setString(2, kategorie.getName());
+			stmt.setBoolean(3, kategorie.isFavorite());
+			stmt.executeUpdate();
+		}
+		catch (SQLException e) {
+			throw e;
+		}
+		finally {
+			try {
+				if(stmt != null) 
+					stmt.close();
+				if(conn != null)
+					conn.close();
+			}
+			catch(SQLException e) {
+				throw e;
+			}
+		}
 	}
 	public static void setKategorieFavorit(int kategorieId, Boolean isFavorit) throws SQLException {
 		Connection conn = null;

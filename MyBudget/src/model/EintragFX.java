@@ -2,26 +2,31 @@ package model;
 
 import java.time.LocalDate;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 
 public class EintragFX {
 	
 	private Eintrag modellEintrag;
+	private SimpleIntegerProperty eintragId;
 	private SimpleObjectProperty<LocalDate> datum;
 	private SimpleStringProperty titel;
 	private SimpleDoubleProperty betrag;
 	private SimpleObjectProperty<Benutzer> benutzer;
+	private SimpleStringProperty benutzerName;
 	private SimpleObjectProperty<Kategorie> kategorie;
-	private SimpleStringProperty dauereintrag = null;
+	private SimpleStringProperty dauereintrag;
 
 	public EintragFX(Eintrag modellEintrag) {
 		super();
 		this.modellEintrag = modellEintrag;
+		eintragId = new SimpleIntegerProperty(modellEintrag.getEintragId());
 		datum = new SimpleObjectProperty<>(modellEintrag.getDatum());
 		titel = new SimpleStringProperty(modellEintrag.getTitel());
 		betrag = new SimpleDoubleProperty(modellEintrag.getBetrag());
 		benutzer = new SimpleObjectProperty<>(modellEintrag.getBenutzer());
+		benutzerName = new SimpleStringProperty(modellEintrag.getBenutzer().getName());
 		kategorie = new SimpleObjectProperty<>(modellEintrag.getKategorie());
 		dauereintrag = new SimpleStringProperty(modellEintrag.getDauereintrag());
 	}
@@ -86,4 +91,25 @@ public class EintragFX {
 		this.dauereintragProperty().set(dauereintrag);
 	}
 
+	public final SimpleStringProperty benutzerNameProperty() {
+		return this.benutzerName;
+	}
+	public final String getBenutzerName() {
+		return this.benutzerNameProperty().get();
+	}
+	public final void setBenutzerName(final String benutzerName) {
+		this.benutzerNameProperty().set(benutzerName);
+	}
+
+	public final SimpleIntegerProperty eintragIdProperty() {
+		return this.eintragId;
+	}
+	public final int getEintragId() {
+		return this.eintragIdProperty().get();
+	}
+	public final void setEintragId(final int eintragId) {
+		this.eintragIdProperty().set(eintragId);
+	}
+	
+	
 }
