@@ -12,9 +12,8 @@ public class Eintrag {
 	private Kategorie kategorie;
 	private String dauereintrag;			//wenn dauereintrag angelegt wird, wird hier das Intervall hinterlegt, in Datenbank Variable addaptieren
 	
-	
 	public Eintrag(int eintragId, LocalDate datum, String titel, double betrag,
-			Benutzer benutzer, Kategorie kategorie) {
+			Benutzer benutzer, Kategorie kategorie, String dauereintrag) {
 		super();
 		this.eintragId = eintragId;
 		this.datum = datum;
@@ -22,14 +21,17 @@ public class Eintrag {
 		this.betrag = betrag;
 		this.benutzer = benutzer;
 		this.kategorie = kategorie;
+		this.dauereintrag = dauereintrag;
 	}
-	public Eintrag(LocalDate datum, String titel, double betrag, Benutzer benutzer, Kategorie kategorie) {
+	public Eintrag(LocalDate datum, String titel, double betrag,
+			Benutzer benutzer, Kategorie kategorie, String dauereintrag) {
 		super();
 		this.datum = datum;
 		this.titel = titel;
 		this.betrag = betrag;
 		this.benutzer = benutzer;
 		this.kategorie = kategorie;
+		this.dauereintrag = dauereintrag;
 	}
 	public Eintrag() {}
 

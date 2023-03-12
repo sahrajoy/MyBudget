@@ -189,7 +189,8 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 					txtBearbeitenTitel.getText(),
 					Double.parseDouble(txtBearbeitenBetrag.getText()),
 					cbBearbeitenBenutzer.getSelectionModel().getSelectedItem().getModellBenutzer(),
-					kategorieFX.getModellKategorie()		
+					kategorieFX.getModellKategorie(),
+					cbBearbeitenIntervall.getSelectionModel().getSelectedItem().getIName()
 						));
 			} catch (NumberFormatException | SQLException e) {
 				e.printStackTrace();

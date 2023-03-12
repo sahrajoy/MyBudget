@@ -37,6 +37,7 @@ public class Datenbank {
 	private static final String EINTRAG_BETRAG = "EintragBetrag";
 	private static final String EINTRAG_BENUTZERID = "EintragBenutzerId";
 	private static final String EINTRAG_KATEGORIEID = "EintragKategorieId";
+	private static final String EINTRAG_DAUEREINTRAGINTERVALL = "EintragDauereintragIntervall";
 	
 	//Dauereinträge Tabelle
 	private static final String DAUEREINTRAG_TABLE = "Dauereintrag";
@@ -136,6 +137,7 @@ public class Datenbank {
 					EINTRAG_BETRAG +  " DECIMAL," +
 					EINTRAG_BENUTZERID + " INTEGER," +
 					EINTRAG_KATEGORIEID + " INTEGER," +
+					EINTRAG_DAUEREINTRAGINTERVALL + " VARCHAR(200)," +
 					"PRIMARY KEY(" + EINTRAG_ID + ")," +
 					"FOREIGN KEY(" + EINTRAG_BENUTZERID + ") REFERENCES " + BENUTZER_TABLE + "(" + BENUTZER_ID + ")," +
 					"FOREIGN KEY(" + EINTRAG_KATEGORIEID + ") REFERENCES " + KATEGORIE_TABLE + "(" + KATEGORIE_ID + "))";
@@ -329,7 +331,8 @@ public class Datenbank {
 										rs.getInt(KATEGORIE_ID), 
 										rs.getBoolean(KATEGORIE_EINNAHMEODERAUSGABE), 
 										rs.getString(KATEGORIE_NAME), 
-										rs.getBoolean(KATEGORIE_FAVORITE))));
+										rs.getBoolean(KATEGORIE_FAVORITE)),
+								rs.getString(EINTRAG_DAUEREINTRAGINTERVALL)));
 			}
 			rs.close();
 			}
@@ -436,7 +439,8 @@ public class Datenbank {
 										rs.getInt(KATEGORIE_ID), 
 										rs.getBoolean(KATEGORIE_EINNAHMEODERAUSGABE), 
 										rs.getString(KATEGORIE_NAME), 
-										rs.getBoolean(KATEGORIE_FAVORITE))));
+										rs.getBoolean(KATEGORIE_FAVORITE)),
+								rs.getString(EINTRAG_DAUEREINTRAGINTERVALL)));
 			}
 			rs.close();
 			}
@@ -575,10 +579,12 @@ public class Datenbank {
 												KATEGORIE_EINNAHMEODERAUSGABE + ", " +
 												KATEGORIE_NAME + ", " +
 												KATEGORIE_FAVORITE +
-						" FROM " + KATEGORIE_TABLE 
-						+ " INNER JOIN " + EINTRAG_TABLE 
-						+ " ON " + 	EINTRAG_TABLE + "." + EINTRAG_KATEGORIEID + "=" + 
-									KATEGORIE_TABLE + "." + KATEGORIE_ID;
+							" FROM " + KATEGORIE_TABLE;
+		if(benutzerId != getHaushaltId()) {
+			select += 		" INNER JOIN " + EINTRAG_TABLE 
+						+ 	" ON " + 	EINTRAG_TABLE + "." + EINTRAG_KATEGORIEID + "=" + 
+										KATEGORIE_TABLE + "." + KATEGORIE_ID;
+		}
 		if(benutzerId != getHaushaltId())
 			select += " WHERE " + 	EINTRAG_BENUTZERID + "=? AND " + 
 									KATEGORIE_EINNAHMEODERAUSGABE + "=? AND " +
@@ -701,7 +707,8 @@ public class Datenbank {
 					"?," +	//EINTRAG_TITEL
 					"?," +	//EINTRAG_BETRAG
 					"?," +	//EINTRAG_BENUTZERID
-					"?)"; 	//EINTRAG_KATEGORIEID
+					"?," +	//EINTRAG_KATEGORIEID
+					"?)"; 	//EINTRAG_DAUEREINTRAG
 			stmt = conn.prepareStatement(insert);
 			LocalDateTime ldt = LocalDateTime.of(eintrag.getDatum(), LocalTime.of(0, 0, 0));
 			java.sql.Date date = new java.sql.Date(ldt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()); //in altes Date Objekt für JDBC umwandeln - ldt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
