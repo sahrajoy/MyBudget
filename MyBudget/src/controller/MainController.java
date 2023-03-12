@@ -157,7 +157,7 @@ public class MainController {
 	@FXML Tab tabEinnahmen;
 	@FXML AnchorPane apEinnahmen;
 	@FXML Button btnEinnahmenUebersicht;	
-	@FXML Button btnEinnahmenFavoriten;			//Set on disable bis Favoriten hinzugefügt wurden, wenn Favoriten vorhanden und Button geklickt dann setTabsFavoritenAusgaben();
+	@FXML Button btnEinnahmenFavoriten;			
 	@FXML Button btnEinnahmenDauereintraege;
 	
 	//Wechseln der Stacks in Einnahmen per klick auf Button(Übersicht, Favoriten, Dauereintraege)		
@@ -181,7 +181,7 @@ public class MainController {
 	@FXML Tab tabAusgaben;
 	@FXML AnchorPane apAusgaben;
 	@FXML Button btnAusgabenUebersicht;
-	@FXML Button btnAusgabenFavoriten;							//Set on disable bis Favoriten hinzugefügt wurden, wenn Favoriten vorhanden und Button geklickt dann setTabsFavoritenAusgaben();
+	@FXML Button btnAusgabenFavoriten;							
 	@FXML Button btnAusgabenDauereintraege;
 	
 	//Wechseln der Stacks in Ausgaben per klick auf Button(Übersicht, Favoriten, Dauereintraege)
@@ -246,7 +246,6 @@ public class MainController {
 				bdc.setKategorieFX(kategorieFX);
 				bdc.setKategorieFXData();
 			}
-			
 		
 			Dialog<ButtonType> dialogBearbeiten = new Dialog<>();
 			dialogBearbeiten.setDialogPane(bearbeitenDialog);
@@ -575,8 +574,7 @@ public class MainController {
 						txtFavoritenTitel.getText(),
 						Double.parseDouble(txtFavoritenBetrag.getText()),
 						cbFavoritenBenutzer.getSelectionModel().getSelectedItem().getModellBenutzer(),
-						cbFavoritenKategorie.getSelectionModel().getSelectedItem().getModellKategorie(),
-						cbFavoritenIntervall.getSelectionModel().getSelectedItem().getIName()
+						cbFavoritenKategorie.getSelectionModel().getSelectedItem().getModellKategorie()
 						));
 			} catch (NumberFormatException | SQLException e) {
 				e.printStackTrace();
@@ -679,11 +677,11 @@ public class MainController {
 		benutzerCol.setCellValueFactory(new PropertyValueFactory<>("benutzerName"));
 		benutzerCol.setPrefWidth(212.66);
 		benutzerCol.setStyle("-fx-alignment: CENTER;");
-		TableColumn<EintragFX, String> dauereintragCol = new TableColumn<>("Dauereintrag");
-		dauereintragCol.setCellValueFactory(new PropertyValueFactory<>("dauereintrag"));
-		dauereintragCol.setPrefWidth(212.66);
-		dauereintragCol.setStyle("-fx-alignment: CENTER;");								
-		tvFavoriten.getColumns().addAll(datumCol, titelCol, betragCol, benutzerCol, dauereintragCol, addButtonToEintraegeTable());
+		TableColumn<EintragFX, String> intervallCol = new TableColumn<>("Dauereintrag");
+		intervallCol.setCellValueFactory(new PropertyValueFactory<>("intervall"));
+		intervallCol.setPrefWidth(212.66);
+		intervallCol.setStyle("-fx-alignment: CENTER;");								
+		tvFavoriten.getColumns().addAll(datumCol, titelCol, betragCol, benutzerCol, intervallCol, addButtonToEintraegeTable());
 		tvFavoriten.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);	
 		return tvFavoriten;
 	}
@@ -975,6 +973,48 @@ public class MainController {
 			olDauereintraege.sort(Comparator.comparing(DauereintragFX::getNaechsteFaelligkeit));
 		else if(cbDauereintraegeSortierung.getSelectionModel().getSelectedItem().equalsIgnoreCase("Datum absteigend"))
 			olDauereintraege.sort(Comparator.comparing(DauereintragFX::getNaechsteFaelligkeit).reversed());
+	}
+	
+	//Dauereintraege durchgehen und ausführen								
+	public void dauereintraegeAusfuehren() throws SQLException {
+//			readDauereintraege
+//			überprüfen ob Dauereinträge bestehen mit dauereintragEnde nach dem aktuellen Datum und naechsteFaelligkeit vor dem aktuellen Datum
+//			wenn ja, dann insertEintrag(new Eintrag(Daten aus Dauereintrag));
+//			anschließend das naechsteFaelligkeit Datum auf die nächste Fälligkeit setzen setzen
+//			bis die nächste fälligkeit in der zukunft liegt
+		getObservableListDauereintraege();
+		for(DauereintragFX einDauereintragFX : olDauereintraege) {
+			while(einDauereintragFX.getDauereintragEnde().isAfter(LocalDate.now()) && einDauereintragFX.getNaechsteFaelligkeit().isBefore(LocalDate.now())){
+				Datenbank.insertEintrag(new Eintrag(
+						einDauereintragFX.getNaechsteFaelligkeit(),
+						einDauereintragFX.getTitel(),
+						einDauereintragFX.getBetrag(),
+						einDauereintragFX.getBenutzer(),
+						einDauereintragFX.getKategorie(),
+						einDauereintragFX.getIntervall()					
+						));
+				if(einDauereintragFX.getIntervall().equals(Intervall.TAEGLICH)) {
+					Datenbank.updateDauereintragNaechsteFaelligkeit(einDauereintragFX.getNaechsteFaelligkeit().plusDays(1), einDauereintragFX.getDauereintragId());
+					einDauereintragFX.setNaechsteFaelligkeit(einDauereintragFX.getNaechsteFaelligkeit().plusDays(1));
+				}
+				if(einDauereintragFX.getIntervall().equals(Intervall.WOECHENTLICH)) {
+					Datenbank.updateDauereintragNaechsteFaelligkeit(einDauereintragFX.getNaechsteFaelligkeit().plusWeeks(1), einDauereintragFX.getDauereintragId());
+					einDauereintragFX.setNaechsteFaelligkeit(einDauereintragFX.getNaechsteFaelligkeit().plusWeeks(1));
+				}
+				if(einDauereintragFX.getIntervall().equals(Intervall.MONATLICH)) {
+					Datenbank.updateDauereintragNaechsteFaelligkeit(einDauereintragFX.getNaechsteFaelligkeit().plusMonths(1), einDauereintragFX.getDauereintragId());
+					einDauereintragFX.setNaechsteFaelligkeit(einDauereintragFX.getNaechsteFaelligkeit().plusMonths(1));
+				}
+				if(einDauereintragFX.getIntervall().equals(Intervall.QUARTALSWEISE)) {
+					Datenbank.updateDauereintragNaechsteFaelligkeit(einDauereintragFX.getNaechsteFaelligkeit().plusMonths(3), einDauereintragFX.getDauereintragId());
+					einDauereintragFX.setNaechsteFaelligkeit(einDauereintragFX.getNaechsteFaelligkeit().plusMonths(3));
+				}
+				if(einDauereintragFX.getIntervall().equals(Intervall.JAEHRLICH)) {
+					Datenbank.updateDauereintragNaechsteFaelligkeit(einDauereintragFX.getNaechsteFaelligkeit().plusYears(1), einDauereintragFX.getDauereintragId());
+					einDauereintragFX.setNaechsteFaelligkeit(einDauereintragFX.getNaechsteFaelligkeit().plusYears(1));
+				}
+			}
+		}
 	}
 	
 	//TAB STATISTIK-------------------------------------------------------------------------------------------------------------------------

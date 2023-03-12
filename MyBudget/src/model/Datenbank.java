@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
@@ -298,7 +299,12 @@ public class Datenbank {
 		// Join mit Tabelle KATEGORIE_TABLE um Column KATEGORIE_EINNAHMEODERAUSGABE abfragen zu können 
 		String select = "SELECT * FROM " + EINTRAG_TABLE 
 				+ " INNER JOIN " + KATEGORIE_TABLE 
-				+ " ON " + EINTRAG_TABLE + "." + EINTRAG_KATEGORIEID + "=" + KATEGORIE_TABLE + "." + KATEGORIE_ID;
+				+ " ON " + 	EINTRAG_TABLE + "." + EINTRAG_KATEGORIEID + "=" + 
+							KATEGORIE_TABLE + "." + KATEGORIE_ID
+							
+				+ " INNER JOIN " + BENUTZER_TABLE  				
+				+ " ON " + 	EINTRAG_TABLE + "." + EINTRAG_BENUTZERID + "=" + 
+							BENUTZER_TABLE + "." + BENUTZER_ID;
 		
 		if(benutzerId != getHaushaltId())
 			select += " WHERE " + EINTRAG_BENUTZERID + "=? AND " + KATEGORIE_EINNAHMEODERAUSGABE + "=?";
@@ -326,13 +332,15 @@ public class Datenbank {
 								rs.getString(EINTRAG_TITEL), 
 								rs.getDouble(EINTRAG_BETRAG), 
 								new Benutzer(
-										rs.getInt(EINTRAG_BENUTZERID)),  
+										rs.getInt(BENUTZER_ID),
+										rs.getString(BENUTZER_NAME)), 
 								new Kategorie(
 										rs.getInt(KATEGORIE_ID), 
 										rs.getBoolean(KATEGORIE_EINNAHMEODERAUSGABE), 
 										rs.getString(KATEGORIE_NAME), 
 										rs.getBoolean(KATEGORIE_FAVORITE)),
-								rs.getString(EINTRAG_DAUEREINTRAGINTERVALL)));
+								Enum.valueOf(Intervall.class, rs.getString(EINTRAG_DAUEREINTRAGINTERVALL).toUpperCase())
+								));
 			}
 			rs.close();
 			}
@@ -392,7 +400,7 @@ public class Datenbank {
 		return summeEintraege;
 	}
 	
-	//Einnahmen-/Ausgaben-Einträge für eine bestimmte Kategorie und einen bestimmten Benutzer auslesen				//Filter auf Kategorie
+	//Einnahmen-/Ausgaben-Einträge für eine bestimmte Kategorie und einen bestimmten Benutzer auslesen				
 	public static ArrayList<Eintrag> readEintraegeNachKategorie(int benutzerId, String einnahmeOderAusgabe, int kategorieId) throws SQLException{
 		Connection conn = null;
 		PreparedStatement stmt = null;
@@ -403,7 +411,12 @@ public class Datenbank {
 		String select = "SELECT * FROM " + EINTRAG_TABLE 
 				+ " INNER JOIN " + KATEGORIE_TABLE 
 				+ " ON " + 	EINTRAG_TABLE + "." + EINTRAG_KATEGORIEID + "=" + 
-							KATEGORIE_TABLE + "." + KATEGORIE_ID;
+							KATEGORIE_TABLE + "." + KATEGORIE_ID
+							
+				+ " INNER JOIN " + BENUTZER_TABLE  				
+				+ " ON " + 	EINTRAG_TABLE + "." + EINTRAG_BENUTZERID + "=" + 
+							BENUTZER_TABLE + "." + BENUTZER_ID;
+				
 		
 		if(benutzerId != getHaushaltId())
 			select += " WHERE " + 	EINTRAG_BENUTZERID + "=? AND " + 
@@ -434,13 +447,15 @@ public class Datenbank {
 								rs.getString(EINTRAG_TITEL), 
 								rs.getDouble(EINTRAG_BETRAG), 
 								new Benutzer(
-										rs.getInt(EINTRAG_BENUTZERID)),  
+										rs.getInt(BENUTZER_ID),
+										rs.getString(BENUTZER_NAME)), 
 								new Kategorie(
 										rs.getInt(KATEGORIE_ID), 
 										rs.getBoolean(KATEGORIE_EINNAHMEODERAUSGABE), 
 										rs.getString(KATEGORIE_NAME), 
 										rs.getBoolean(KATEGORIE_FAVORITE)),
-								rs.getString(EINTRAG_DAUEREINTRAGINTERVALL)));
+								Enum.valueOf(Intervall.class, rs.getString(EINTRAG_DAUEREINTRAGINTERVALL).toUpperCase())
+								));
 			}
 			rs.close();
 			}
@@ -510,7 +525,8 @@ public class Datenbank {
 										rs.getInt(KATEGORIE_ID), 
 										rs.getBoolean(KATEGORIE_EINNAHMEODERAUSGABE), 
 										rs.getString(KATEGORIE_NAME), 
-										rs.getBoolean(KATEGORIE_FAVORITE))));
+										rs.getBoolean(KATEGORIE_FAVORITE))
+								));
 			}
 			rs.close();
 			}
@@ -702,7 +718,7 @@ public class Datenbank {
 		try {
 			conn = DriverManager.getConnection(CONNECTION_URL);
 			String insert = "INSERT INTO " + EINTRAG_TABLE + 
-					"(" + EINTRAG_DATUM + "," + EINTRAG_TITEL + "," + EINTRAG_BETRAG + "," + EINTRAG_BENUTZERID + "," + EINTRAG_KATEGORIEID + ") VALUES(" +
+					"(" + EINTRAG_DATUM + "," + EINTRAG_TITEL + "," + EINTRAG_BETRAG + "," + EINTRAG_BENUTZERID + "," + EINTRAG_KATEGORIEID + ","  + EINTRAG_DAUEREINTRAGINTERVALL + ") VALUES(" +
 					"?," +	//EINTRAG_DATUM
 					"?," +	//EINTRAG_TITEL
 					"?," +	//EINTRAG_BETRAG
@@ -717,6 +733,7 @@ public class Datenbank {
 			stmt.setDouble(3, eintrag.getBetrag());	
 			stmt.setInt(4, eintrag.getBenutzer().getBenutzerId());
 			stmt.setInt(5, eintrag.getKategorie().getKategorieId());
+			stmt.setString(6, eintrag.getIntervall().getIName());
 			stmt.executeUpdate();		
 		}
 		catch(SQLException e) {
@@ -778,14 +795,6 @@ public class Datenbank {
 		}
 	}
 	
-	//Dauereintraege durchgehen und ausführen								//Methode ausarbeiten
-	public static void dauereintraegeAusfuehren() {
-//		readDauereintraege
-//		if(einDauereintragFX.getNaechsteFaelligkeit().isAfter(LocalDate.now()
-//		insertEintrag(new Eintrag(Daten aus Dauereintrag));
-//		anschließend das naechsteFaelligkeit Datum auf das nächste datum setzen
-	}
-	
 	//Daten ändern																		
 	public static void updateBenutzer(Benutzer benutzer, String neuerName) throws SQLException{
 		Connection conn = null;
@@ -819,14 +828,14 @@ public class Datenbank {
 		PreparedStatement stmt = null;
 		try {
 			conn = DriverManager.getConnection(CONNECTION_URL);
-			String update = "UPDATE " + EINTRAG_TABLE + " SET " +
+			String update = "UPDATE " + DAUEREINTRAG_TABLE + " SET " +
 					DAUEREINTRAG_NAECHSTEFAELLIGKEIT + "=?" +
 					DAUEREINTRAG_TITEL + "=?" +
 					DAUEREINTRAG_BETRAG + "=?" +
 					DAUEREINTRAG_BENUTZERID + "=?" +
 					DAUEREINTRAG_INTERVALL + "=?" +
 					DAUEREINTRAG_ENDEDATUM + "=?" +
-					DAUEREINTRAG_KATEGORIEID + "=? WHERE " + EINTRAG_ID + "=?";
+					DAUEREINTRAG_KATEGORIEID + "=? WHERE " + DAUEREINTRAG_ID + "=?";
 			stmt = conn.prepareStatement(update);
 			LocalDateTime ldt1 = LocalDateTime.of(dauereintrag.getNaechsteFaelligkeit(), LocalTime.of(0, 0, 0));
 			java.sql.Date naechsteFaelligkeit = new java.sql.Date(ldt1.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()); //in altes Date Objekt für JDBC umwandeln - ldt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
@@ -839,6 +848,36 @@ public class Datenbank {
 			java.sql.Date endedatum = new java.sql.Date(ldt2.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()); //in altes Date Objekt für JDBC umwandeln - ldt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
 			stmt.setDate(6, endedatum);
 			stmt.setInt(7, dauereintrag.getDeKategorie().getKategorieId());
+			stmt.executeUpdate();
+		}
+		catch (SQLException e) {
+			throw e;
+		}
+		finally {
+			try {
+				if(stmt != null) 
+					stmt.close();
+				if(conn != null)
+					conn.close();
+			}
+			catch(SQLException e) {
+				throw e;
+			}
+		}
+		
+	}
+	public static void updateDauereintragNaechsteFaelligkeit(LocalDate naechsteFaelligkeit, int dauereintragId) throws SQLException{
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		try {
+			conn = DriverManager.getConnection(CONNECTION_URL);
+			String update = "UPDATE " + DAUEREINTRAG_TABLE + " SET " +
+					DAUEREINTRAG_NAECHSTEFAELLIGKEIT + "=? WHERE " + DAUEREINTRAG_ID + "=?";
+			stmt = conn.prepareStatement(update);
+			LocalDateTime ldt1 = LocalDateTime.of(naechsteFaelligkeit, LocalTime.of(0, 0, 0));
+			java.sql.Date nF = new java.sql.Date(ldt1.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()); //in altes Date Objekt für JDBC umwandeln - ldt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+			stmt.setDate(1, nF);
+			stmt.setInt(2, dauereintragId);
 			stmt.executeUpdate();
 		}
 		catch (SQLException e) {

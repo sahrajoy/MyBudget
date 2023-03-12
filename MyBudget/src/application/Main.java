@@ -2,13 +2,12 @@ package application;
 	
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
 
+import controller.MainController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.stage.Stage;
 import model.Datenbank;
-import model.Dauereintrag;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 
@@ -20,13 +19,22 @@ public class Main extends Application {
 			Datenbank.createBenutzerTable();
 			Datenbank.createKategorieTable();
 			Datenbank.createEintragTable();
-			Datenbank.createDauereintragTable();
-			Datenbank.dauereintraegeAusfuehren();
-			
+			Datenbank.createDauereintragTable();			
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		Parent root = FXMLLoader.load(getClass().getResource("/view/MyBudget.fxml"));
+		FXMLLoader fxmlLoaderMainController = new FXMLLoader();
+		fxmlLoaderMainController.setLocation(getClass().getResource("/view/MyBudget.fxml"));
+		Parent root = fxmlLoaderMainController.load();
+		
+		//Parent root = FXMLLoader.load(getClass().getResource("/view/MyBudget.fxml"));
+		MainController mc = (MainController)fxmlLoaderMainController.getController();
+		
+		try {
+			mc.dauereintraegeAusfuehren();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 		
 		Scene scene = new Scene(root);
 		primaryStage.setScene(scene);

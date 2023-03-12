@@ -16,7 +16,7 @@ public class EintragFX {
 	private SimpleObjectProperty<Benutzer> benutzer;
 	private SimpleStringProperty benutzerName;
 	private SimpleObjectProperty<Kategorie> kategorie;
-	private SimpleStringProperty dauereintrag;
+	private SimpleObjectProperty<Intervall> intervall;
 
 	public EintragFX(Eintrag modellEintrag) {
 		super();
@@ -28,7 +28,7 @@ public class EintragFX {
 		benutzer = new SimpleObjectProperty<>(modellEintrag.getBenutzer());
 		benutzerName = new SimpleStringProperty(modellEintrag.getBenutzer().getName());
 		kategorie = new SimpleObjectProperty<>(modellEintrag.getKategorie());
-		dauereintrag = new SimpleStringProperty(modellEintrag.getDauereintrag());
+		intervall = new SimpleObjectProperty<>(modellEintrag.getIntervall());
 	}
 
 	public final SimpleObjectProperty<LocalDate> datumProperty() {
@@ -80,17 +80,7 @@ public class EintragFX {
 	public final void setKategorie(final Kategorie kategorie) {
 		this.kategorieProperty().set(kategorie);
 	}
-
-	public final SimpleStringProperty dauereintragProperty() {
-		return this.dauereintrag;
-	}
-	public final String getDauereintrag() {
-		return this.dauereintragProperty().get();
-	}
-	public final void setDauereintrag(final String dauereintrag) {
-		this.dauereintragProperty().set(dauereintrag);
-	}
-
+	
 	public final SimpleStringProperty benutzerNameProperty() {
 		return this.benutzerName;
 	}
@@ -110,6 +100,17 @@ public class EintragFX {
 	public final void setEintragId(final int eintragId) {
 		this.eintragIdProperty().set(eintragId);
 	}
+
+	public final SimpleObjectProperty<Intervall> eintragProperty() {
+		return this.intervall;
+	}
+	public final Intervall getIntervall() {
+		return this.eintragProperty().get();
+	}
+	public final void setIntervall(final Intervall intervall) {
+		this.eintragProperty().set(intervall);
+	}
+	
 	
 	
 }

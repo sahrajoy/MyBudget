@@ -10,10 +10,11 @@ public class Eintrag {
 	private double betrag;
 	private Benutzer benutzer;
 	private Kategorie kategorie;
-	private String dauereintrag;			//wenn dauereintrag angelegt wird, wird hier das Intervall hinterlegt, in Datenbank Variable addaptieren
+	private Intervall intervall;			
 	
+	//Konstruktor um aus der Datenbank auszulesen
 	public Eintrag(int eintragId, LocalDate datum, String titel, double betrag,
-			Benutzer benutzer, Kategorie kategorie, String dauereintrag) {
+			Benutzer benutzer, Kategorie kategorie, Intervall intervall) {
 		super();
 		this.eintragId = eintragId;
 		this.datum = datum;
@@ -21,17 +22,28 @@ public class Eintrag {
 		this.betrag = betrag;
 		this.benutzer = benutzer;
 		this.kategorie = kategorie;
-		this.dauereintrag = dauereintrag;
+		this.intervall = intervall;
 	}
+	//Konstruktor um Eintraege über die dauereintraegeAusfuehren() Methode zu speichern
 	public Eintrag(LocalDate datum, String titel, double betrag,
-			Benutzer benutzer, Kategorie kategorie, String dauereintrag) {
+			Benutzer benutzer, Kategorie kategorie, Intervall intervall) {
 		super();
 		this.datum = datum;
 		this.titel = titel;
 		this.betrag = betrag;
 		this.benutzer = benutzer;
 		this.kategorie = kategorie;
-		this.dauereintrag = dauereintrag;
+		this.intervall = intervall;
+	}
+	//Konstruktor um Einträge über die Eingabezeilen zu speichern
+	public Eintrag(LocalDate datum, String titel, double betrag,
+			Benutzer benutzer, Kategorie kategorie) {
+		super();
+		this.datum = datum;
+		this.titel = titel;
+		this.betrag = betrag;
+		this.benutzer = benutzer;
+		this.kategorie = kategorie;
 	}
 	public Eintrag() {}
 
@@ -71,12 +83,13 @@ public class Eintrag {
 	public void setKategorie(Kategorie kategorie) {
 		this.kategorie = kategorie;
 	}
-	public String getDauereintrag() {
-		return dauereintrag;
+	public Intervall getIntervall() {
+		return intervall;
 	}
-	public void setDauereintrag(String dauereintrag) {
-		this.dauereintrag = dauereintrag;
+	public void setIntervall(Intervall intervall) {
+		this.intervall = intervall;
 	}
+
 	
 	
 }

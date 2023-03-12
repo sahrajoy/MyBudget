@@ -118,7 +118,6 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 		cbBearbeitenIntervall.setValue(Intervall.KEINE);
 		dpBearbeitenEndeDauereintrag.setDisable(true);
 		txtBearbeitenKategorieName.setPromptText("Kategoriename eingeben");
-		
 	}
 	
 	//MainController initialisieren
@@ -135,8 +134,12 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 	//Methode wird im MainController aufgerufen um die Daten zu übergeben
 	public void setKategorieFXData() {
 		txtBearbeitenKategorieName.setText(kategorieFX.getName());
+		getObservableListBenutzer();
+		getObservableListDauereintraege();
+		getObservableListEintraege();
 	}
 
+	//DatePicker auf Able setzen
 	@FXML public void setDatePickerEndeDauereintragOnAble() {
 		if(cbBearbeitenIntervall.getSelectionModel().getSelectedItem() == Intervall.KEINE)
 			dpBearbeitenEndeDauereintrag.setDisable(true);
@@ -189,9 +192,9 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 					txtBearbeitenTitel.getText(),
 					Double.parseDouble(txtBearbeitenBetrag.getText()),
 					cbBearbeitenBenutzer.getSelectionModel().getSelectedItem().getModellBenutzer(),
-					kategorieFX.getModellKategorie(),
-					cbBearbeitenIntervall.getSelectionModel().getSelectedItem().getIName()
+					kategorieFX.getModellKategorie()
 						));
+				getObservableListEintraege();
 			} catch (NumberFormatException | SQLException e) {
 				e.printStackTrace();
 			}
@@ -207,6 +210,7 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 					dpBearbeitenEndeDauereintrag.getValue(),
 					kategorieFX.getModellKategorie()
 						));
+				getObservableListDauereintraege();
 			} catch (NumberFormatException | SQLException e) {
 				e.printStackTrace();
 			}

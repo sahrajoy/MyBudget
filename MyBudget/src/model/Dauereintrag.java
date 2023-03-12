@@ -13,6 +13,7 @@ public class Dauereintrag {
 	private LocalDate enddatum;
 	private Kategorie deKategorie;
 	
+	//Konstruktor um aus der Datenbank auszulesen
 	public Dauereintrag(int dauereintragId, LocalDate naechsteFaelligkeit, String deTitel, double deBetrag,
 			Benutzer deBenutzer, Intervall intervall, LocalDate enddatum, Kategorie deKategorie) {
 		super();
@@ -25,6 +26,7 @@ public class Dauereintrag {
 		this.enddatum = enddatum;
 		this.deKategorie = deKategorie;
 	}
+	//Konstruktor um Einträge über die Eingabezeilen zu speichern
 	public Dauereintrag(LocalDate naechsteFaelligkeit, String deTitel, double deBetrag, Benutzer deBenutzer,
 			Intervall intervall, LocalDate enddatum, Kategorie deKategorie) {
 		super();
