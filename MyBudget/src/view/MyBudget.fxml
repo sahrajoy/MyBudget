@@ -70,57 +70,38 @@
                                           </HBox>
                                           <HBox fx:id="hbDauereintraege" alignment="CENTER" minHeight="25.0" spacing="5.0" style="-fx-background-color: LIGHTGREY;" AnchorPane.leftAnchor="15.0" AnchorPane.rightAnchor="15.0" AnchorPane.topAnchor="40.0">
                                              <children>
-                                                <Label fx:id="lblDauereintraegeKategorie" minHeight="25.0" minWidth="53.0" prefHeight="25.0" prefWidth="53.0" text="Kategorie" />
-                                                <ComboBox fx:id="cbDauereintraegeKategorie" prefHeight="25.0" prefWidth="145.0" />
                                                 <Label fx:id="lblDauereintraegeDatum" alignment="CENTER_RIGHT" minHeight="25.0" minWidth="39.0" prefHeight="25.0" prefWidth="39.0" text="Datum" />
                                                 <DatePicker fx:id="dpDauereintraegeDatum" minHeight="25.0" minWidth="96.0" prefHeight="25.0" prefWidth="96.0" />
+                                                <Label fx:id="lblDauereintraegeKategorie" minHeight="25.0" minWidth="53.0" prefHeight="25.0" prefWidth="53.0" text="Kategorie" />
+                                                <ComboBox fx:id="cbDauereintraegeKategorie" prefHeight="25.0" prefWidth="129.0" />
                                                 <Label fx:id="lblDauereintraegeTitel" alignment="CENTER_RIGHT" minHeight="25.0" minWidth="25.0" prefHeight="25.0" prefWidth="25.0" text="Titel" />
-                                                <TextField fx:id="txtDauereintraegeTitel" minHeight="25.0" minWidth="146.0" prefHeight="25.0" prefWidth="161.0" />
+                                                <TextField fx:id="txtDauereintraegeTitel" minHeight="25.0" minWidth="143.0" prefHeight="25.0" prefWidth="143.0" />
                                                 <Label fx:id="lblDauereintraegeBetrag" alignment="CENTER_RIGHT" minHeight="25.0" minWidth="36.0" prefHeight="25.0" prefWidth="36.0" text="Betrag" />
                                                 <TextField fx:id="txtDauereintraegeBetrag" minHeight="25.0" minWidth="107.0" prefHeight="25.0" prefWidth="107.0" />
                                                 <Label fx:id="lblDauereintraegeBenutzer" alignment="CENTER_RIGHT" minHeight="25.0" minWidth="48.0" prefHeight="25.0" prefWidth="48.0" text="Benutzer" />
-                                                <ComboBox fx:id="cbDauereintraegeBenutzer" minHeight="25.0" minWidth="133.0" prefHeight="25.0" prefWidth="133.0" />
+                                                <ComboBox fx:id="cbDauereintraegeBenutzer" minHeight="25.0" minWidth="121.0" prefHeight="25.0" prefWidth="121.0" />
                                                 <Label fx:id="lblDauereintraegeDauereintrag" alignment="CENTER_RIGHT" minHeight="25.0" minWidth="72.0" prefHeight="25.0" prefWidth="72.0" text="Dauereintrag" />
                                                 <ComboBox fx:id="cbDauereintraegeIntervall" minHeight="25.0" minWidth="115.0" onAction="#setDatePickerEndeDauereintragOnAble" prefHeight="25.0" prefWidth="115.0" />
                                                 <Label fx:id="lblDauereintraegeEndeDauereintrag" alignment="CENTER_RIGHT" minHeight="25.0" minWidth="100.0" prefHeight="25.0" prefWidth="100.0" text="Ende Dauereintrag" />
                                                 <DatePicker fx:id="dpDauereintraegeEndeDauereintrag" minHeight="25.0" minWidth="96.0" prefHeight="25.0" prefWidth="96.0" />
-                                                <Button fx:id="btnDauereintraegeSpeichern" contentDisplay="CENTER" mnemonicParsing="false" onAction="#btnSpeichernUeberDauereintrag" prefHeight="25.0" prefWidth="90.0" text="Speichern" />
+                                                <Button fx:id="btnDauereintraegeSpeichern" contentDisplay="CENTER" mnemonicParsing="false" onAction="#btnSpeichernUeberDauereintrag" prefHeight="25.0" prefWidth="122.0" text="Speichern" />
                                              </children>
                                              <padding>
                                                 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                              </padding>
                                           </HBox>
-                                          <HBox fx:id="hbDauereintraegeSortierung" alignment="CENTER_RIGHT" layoutX="16.0" layoutY="73.0" prefHeight="42.0" prefWidth="1370.0" spacing="5.0" AnchorPane.leftAnchor="15.0" AnchorPane.rightAnchor="15.0" AnchorPane.topAnchor="70.0">
-                                             <padding>
-                                                <Insets bottom="10.0" top="10.0" />
-                                             </padding>
-                                             <children>
-                                                <Label fx:id="lblDauereintraegeSortierung" alignment="CENTER_RIGHT" prefHeight="20.0" prefWidth="109.0" text="Sortieren nach">
-                                                   <font>
-                                                      <Font size="11.0" />
-                                                   </font>
-                                                   <padding>
-                                                      <Insets right="5.0" />
-                                                   </padding>
-                                                </Label>
-                                                <ComboBox fx:id="cbDauereintraegeSortierung" minHeight="25.0" minWidth="138.0" onAction="#sortierungDauerintraege" prefHeight="25.0" prefWidth="147.0" />
-                                             </children>
-                                          </HBox>
-                                          <AnchorPane fx:id="apDauereintraege" layoutY="105.0" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="15.0" AnchorPane.rightAnchor="15.0" AnchorPane.topAnchor="110.0">
+                                          <AnchorPane fx:id="apDauereintraege" layoutY="105.0" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="15.0" AnchorPane.rightAnchor="15.0" AnchorPane.topAnchor="75.0">
                                              <children>
                                                 <TableView fx:id="tvDauereintraege" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                                   <columns>
-                                                      <TableColumn fx:id="naechsteFaelligkeitCol" minWidth="-1.0" prefWidth="150.0" style="-fx-alignment: CENTER;" text="Nächste Fälligkeit" />
-                                                      <TableColumn fx:id="kategorieNameCol" minWidth="-1.0" prefWidth="150.0" style="-fx-alignment: CENTER;" text="Kategorie" />
-                                                      <TableColumn fx:id="titelCol" minWidth="-1.0" prefWidth="280.0" style="-fx-alignment: CENTER;" text="Titel" />
-                                                    <TableColumn fx:id="betragCol" minWidth="-1.0" prefWidth="150.0" style="-fx-alignment: CENTER;" text="Betrag" />
-                                                    <TableColumn fx:id="benutzerCol" minWidth="-1.0" prefWidth="150.0" style="-fx-alignment: CENTER;" text="Benutzer" />
-                                                      <TableColumn fx:id="intervallCol" minWidth="-1.0" prefWidth="150.0" style="-fx-alignment: CENTER;" text="Intervall" />
-                                                      <TableColumn fx:id="endeDauereintragCol" minWidth="-1.0" prefWidth="150.0" style="-fx-alignment: CENTER;" text="Ende Dauereintrag" />
+                                                      <TableColumn fx:id="naechsteFaelligkeitCol" minWidth="-1.0" prefWidth="144.0" style="-fx-alignment: CENTER;" text="Nächste Fälligkeit" />
+                                                      <TableColumn fx:id="kategorieNameCol" minWidth="-1.0" prefWidth="185.0" style="-fx-alignment: CENTER;" text="Kategorie" />
+                                                      <TableColumn fx:id="titelCol" minWidth="-1.0" prefWidth="179.0" style="-fx-alignment: CENTER;" text="Titel" />
+                                                    <TableColumn fx:id="betragCol" minWidth="-1.0" prefWidth="151.0" style="-fx-alignment: CENTER;" text="Betrag" />
+                                                    <TableColumn fx:id="benutzerCol" minWidth="-1.0" prefWidth="180.0" style="-fx-alignment: CENTER;" text="Benutzer" />
+                                                      <TableColumn fx:id="intervallCol" minWidth="-1.0" prefWidth="198.0" style="-fx-alignment: CENTER;" text="Intervall" />
+                                                      <TableColumn fx:id="endeDauereintragCol" minWidth="-1.0" prefWidth="182.0" style="-fx-alignment: CENTER;" text="Ende Dauereintrag" />
                                                   </columns>
-                                                   <columnResizePolicy>
-                                                      <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-                                                   </columnResizePolicy>
                                                 </TableView>
                                              </children>
                                           </AnchorPane>
@@ -203,7 +184,7 @@
                                                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                                              </padding>
                                           </HBox>
-                                          <GridPane fx:id="gpUebersichtPlusUndSortieren" AnchorPane.leftAnchor="15.0" AnchorPane.rightAnchor="15.0" AnchorPane.topAnchor="70.0">
+                                          <GridPane fx:id="gpUebersichtPlus" AnchorPane.leftAnchor="15.0" AnchorPane.rightAnchor="15.0" AnchorPane.topAnchor="70.0">
                                             <columnConstraints>
                                                 <ColumnConstraints hgrow="SOMETIMES" maxWidth="145.0" minWidth="0.0" prefWidth="26.0" />
                                               <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" maxWidth="1230.6666259765625" minWidth="10.0" percentWidth="0.0" prefWidth="1181.0" />
@@ -217,15 +198,6 @@
                                              </padding>
                                              <children>
                                                 <Button fx:id="btnPlus" alignment="CENTER" contentDisplay="CENTER" minHeight="25.0" minWidth="25.0" mnemonicParsing="false" onAction="#bearbeitenDialog" prefHeight="25.0" prefWidth="25.0" text="+" />
-                                                <Label fx:id="lblUebersichtSortierung" alignment="CENTER_RIGHT" prefHeight="17.0" prefWidth="109.0" text="Sortieren nach" GridPane.columnIndex="1">
-                                                   <font>
-                                                      <Font size="11.0" />
-                                                   </font>
-                                                   <padding>
-                                                      <Insets right="5.0" />
-                                                   </padding>
-                                                </Label>
-                                                <ComboBox fx:id="cbUebersichtSortierung" minHeight="25.0" minWidth="150.0" onAction="#sortierungUebersicht" prefHeight="25.0" prefWidth="150.0" GridPane.columnIndex="2" />
                                              </children>
                                           </GridPane>
                                           <AnchorPane fx:id="apUebersicht" layoutY="105.0" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="15.0" AnchorPane.rightAnchor="15.0" AnchorPane.topAnchor="105.0">

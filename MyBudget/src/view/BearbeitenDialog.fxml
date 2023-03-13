@@ -27,10 +27,10 @@
                   <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                </padding>
                <children>
-                  <Button fx:id="btnBearbeitenTag" mnemonicParsing="false" prefHeight="25.0" prefWidth="70.0" text="Tag" />
-                  <Button fx:id="btnBearbeitenWoche" mnemonicParsing="false" prefHeight="25.0" prefWidth="70.0" text="Woche" />
-                  <Button fx:id="btnBearbeitenMonat" mnemonicParsing="false" prefHeight="25.0" prefWidth="70.0" text="Monat" />
-                  <Button fx:id="btnBearbeitenJahr" mnemonicParsing="false" prefHeight="25.0" prefWidth="70.0" text="Jahr" />
+                  <Button fx:id="btnBearbeitenTag" mnemonicParsing="false" onAction="#setPeriodeTag" prefHeight="25.0" prefWidth="70.0" text="Tag" />
+                  <Button fx:id="btnBearbeitenWoche" mnemonicParsing="false" onAction="#setPeriodeWoche" prefHeight="25.0" prefWidth="70.0" text="Woche" />
+                  <Button fx:id="btnBearbeitenMonat" mnemonicParsing="false" onAction="#setPeriodeMonat" prefHeight="25.0" prefWidth="70.0" text="Monat" />
+                  <Button fx:id="btnBearbeitenJahr" mnemonicParsing="false" onAction="#setPeriodeJahr44444" prefHeight="25.0" prefWidth="70.0" text="Jahr" />
                </children>
             </HBox>
             <HBox fx:id="hbBearbeitenZeitraum" alignment="CENTER" spacing="10.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="45.0">
@@ -82,7 +82,7 @@
                                     <TableColumn fx:id="betragCol" minWidth="-1.0" prefWidth="150.0" style="-fx-alignment: CENTER;" text="Betrag" />
                                     <TableColumn fx:id="benutzerCol" minWidth="-1.0" prefWidth="150.0" style="-fx-alignment: CENTER;" text="Benutzer" />
                                     <TableColumn fx:id="intervallDauereintragCol" prefWidth="75.0" style="-fx-alignment: CENTER;" text="Dauereintrag" />
-                                    <TableColumn fx:id="bearbeitenEintragCol" editable="false" prefWidth="75.0" />
+                                    <TableColumn fx:id="bearbeitenEintragCol" editable="false" prefWidth="75.0" style="-fx-alignment: CENTER;" />
                                  </columns>
                                  <columnResizePolicy>
                                     <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
@@ -104,7 +104,7 @@
                                     <TableColumn fx:id="benutzerDauereintragCol" minWidth="-1.0" prefWidth="150.0" style="-fx-alignment: CENTER;" text="Benutzer" />
                                     <TableColumn fx:id="intervallCol" prefWidth="75.0" style="-fx-alignment: CENTER;" text="Intervall" />
                                     <TableColumn fx:id="endeDauereintragCol" prefWidth="75.0" style="-fx-alignment: CENTER;" text="Ende Dauereintrag" />
-                                    <TableColumn fx:id="bearbeitenDauereintragCol" prefWidth="75.0" />
+                                    <TableColumn fx:id="bearbeitenDauereintragCol" prefWidth="75.0" style="-fx-alignment: CENTER;" />
                                  </columns>
                                  <columnResizePolicy>
                                     <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />

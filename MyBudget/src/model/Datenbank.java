@@ -51,7 +51,7 @@ public class Datenbank {
 	private static final String DAUEREINTRAG_ENDEDATUM = "DauereintragEndedatum";
 	private static final String DAUEREINTRAG_KATEGORIEID = "DauereintragKategorieId";
 
-	//Tabellen erstellen
+	//TABELLENERSTELLEN
 	public static void createBenutzerTable() throws SQLException{		
 		Connection conn = null;
 		Statement stmt = null;
@@ -200,7 +200,7 @@ public class Datenbank {
 		}
 	}
 	
-	//Daten auslesen
+	//DATEN AUSLESEN
 	//Benutzer auslesen
 	public static ArrayList<Benutzer> readBenutzer() throws SQLException{
 			return readBenutzer(null);
@@ -239,31 +239,88 @@ public class Datenbank {
 		}
 		return alBenutzer;
 	}
-	
-	//Kategorien auslesen
-	public static ArrayList<Kategorie> readKategorie(String einnahmeOderAusgabe) throws SQLException {
-		return readKategorie(null, einnahmeOderAusgabe);
+	//ID von HAUSHALT zurückgeben
+	public static int getHaushaltId() throws SQLException {
+		// Hier eine Abfrage auf die Benutzertabelle machen
+		// um die Id des Eintrags "Haushalt" zu bekommen und die ID zurückgeben
+		// (SELECT BENUTZER_ID FROM BENUTZER_TABLE WHERE BENUTZER_NAME = "Haushalt") 
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		int haushaltId = 0;
+		String select = "SELECT * FROM " + BENUTZER_TABLE + " WHERE " + BENUTZER_NAME + "=?";
+		try {
+			conn = DriverManager.getConnection(CONNECTION_URL);
+			stmt = conn.prepareStatement(select);
+			stmt.setString(1, "HAUSHALT");
+			rs = stmt.executeQuery();
+			while(rs.next())
+				haushaltId = rs.getInt(BENUTZER_ID);
+			rs.close();
+		}
+		catch(SQLException e) {
+			throw e;
+		}
+		finally {
+			try {
+				if(stmt != null) 
+					stmt.close();
+				if(conn != null)
+					conn.close();
+			}
+			catch(SQLException e) {
+				throw e;
+			}
+		}
+		return haushaltId;
 	}
-	public static ArrayList<Kategorie> readKategorie(String kategorieName, String einnahmeOderAusgabe) throws SQLException{  	
+
+	//Kategorien auslesen
+	public static ArrayList<Kategorie> readKategorie(String einnahmeOderAusgabe, LocalDate anfangDatum, LocalDate endeDatum) throws SQLException {
+		return readKategorie(null, einnahmeOderAusgabe, anfangDatum, endeDatum);
+	}
+	public static ArrayList<Kategorie> readKategorie(String kategorieName, String einnahmeOderAusgabe, LocalDate anfangDatum, LocalDate endeDatum) throws SQLException{  	
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 		ArrayList<Kategorie> alKategorien = new ArrayList<>();
 		boolean isEinnahmenParameter = einnahmeOderAusgabe.equals("Einnahmen");
-		String select = "SELECT * FROM " + KATEGORIE_TABLE;
+		String select = "SELECT * FROM " + KATEGORIE_TABLE
+						+ " INNER JOIN " + EINTRAG_TABLE 
+						+ " ON " + 	KATEGORIE_TABLE + "." + KATEGORIE_ID + "=" + 
+									EINTRAG_TABLE + "." + EINTRAG_KATEGORIEID;
 		if(kategorieName != null)
-			select += " WHERE " + KATEGORIE_NAME + "=?" + KATEGORIE_EINNAHMEODERAUSGABE + "=?";
+			select += " WHERE " + 	KATEGORIE_NAME + "=? AND " + 
+									KATEGORIE_EINNAHMEODERAUSGABE + "=? AND " +
+									EINTRAG_DATUM + " >=? AND " + 
+									EINTRAG_DATUM + " <=?";
 		else
-			select += " WHERE " + KATEGORIE_EINNAHMEODERAUSGABE + "=?";
+			select += " WHERE " + 	KATEGORIE_EINNAHMEODERAUSGABE + "=? AND " +
+									EINTRAG_DATUM + " >=? AND " + 
+									EINTRAG_DATUM + " <=?";
+		
 		try {
 			conn = DriverManager.getConnection(CONNECTION_URL);
 			stmt = conn.prepareStatement(select);
 			if(kategorieName != null) {
 				stmt.setString(1, kategorieName);
 				stmt.setBoolean(2, isEinnahmenParameter);
+				LocalDateTime ldt1 = LocalDateTime.of(anfangDatum, LocalTime.of(0, 0, 0));
+				java.sql.Date dateBeginn = new java.sql.Date(ldt1.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()); 
+				stmt.setDate(3, dateBeginn);
+				LocalDateTime ldt2 = LocalDateTime.of(anfangDatum, LocalTime.of(0, 0, 0));
+				java.sql.Date dateEnd = new java.sql.Date(ldt2.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()); 
+				stmt.setDate(4, dateEnd);
 			}
-			else
+			else {
 				stmt.setBoolean(1, isEinnahmenParameter);
+				LocalDateTime ldt1 = LocalDateTime.of(anfangDatum, LocalTime.of(0, 0, 0));
+				java.sql.Date dateBeginn = new java.sql.Date(ldt1.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()); 
+				stmt.setDate(2, dateBeginn);
+				LocalDateTime ldt2 = LocalDateTime.of(endeDatum, LocalTime.of(0, 0, 0));
+				java.sql.Date dateEnd = new java.sql.Date(ldt2.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()); 
+				stmt.setDate(3, dateEnd);
+			}
 			rs = stmt.executeQuery();
 			while(rs.next())
 				alKategorien.add(new Kategorie(
@@ -289,7 +346,113 @@ public class Datenbank {
 		}
 		return alKategorien;
 	}
+	//Kategorie Summe aller Eintrage auslesen
+	public static double readKategorieSummeEintraege(String kategorieName, String einnahmeOderAusgabe, String zeitspanne, LocalDate anfangDatum, LocalDate endeDatum) throws SQLException{  		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		double summeEintraege = 0;
+		boolean isEinnahmenParameter = einnahmeOderAusgabe.equals("Einnahmen");
+		String select =  "SELECT SUM(" + EINTRAG_TABLE + "." + EINTRAG_BETRAG + ") AS " + KATEGORIE_SUMMEEINTRAEGE + " FROM " + EINTRAG_TABLE 
+				+ " INNER JOIN " + KATEGORIE_TABLE 
+				+ " ON " + 	EINTRAG_TABLE + "." + EINTRAG_KATEGORIEID + "=" + 
+							KATEGORIE_TABLE + "." + KATEGORIE_ID;
+		if(kategorieName != null)
+			select += " WHERE " + 	KATEGORIE_NAME + "=? AND " + 
+									KATEGORIE_EINNAHMEODERAUSGABE + "=?";
+		try {
+			conn = DriverManager.getConnection(CONNECTION_URL);
+			stmt = conn.prepareStatement(select);
+			if(kategorieName != null) {
+				stmt.setString(1, kategorieName);
+				stmt.setBoolean(2, isEinnahmenParameter);
+			}
+			rs = stmt.executeQuery();
+			while(rs.next())
+				summeEintraege = rs.getDouble(KATEGORIE_SUMMEEINTRAEGE);
+			rs.close();
+		}
+		catch(SQLException e) {
+			throw e;
+		}
+		finally {
+			try {
+				if(stmt != null) 
+					stmt.close();
+				if(conn != null)
+					conn.close();
+			}
+			catch(SQLException e) {
+				throw e;
+			}
+		}
+		return summeEintraege;
+	}
+	//Favorisierte Einnahmen-/Ausgaben Kategorien für einen bestimmten Benutzer auslesen
+	public static ArrayList<Kategorie> readFavoritenKategorien(int benutzerId, String einnahmeOderAusgabe) throws SQLException{ 		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		ArrayList<Kategorie> alFavoritenKategorien = new ArrayList<>();
+		//INNER JOIN Kategorie-Tabelle mit WHERE Bedingung auf KATEGORIE_EINNAHMEODERAUSGABE, damit nur Dauereinträge ausgegeben werden, welche eine Ausgabe oder Einnahme sind
+		boolean isEinnahmenParameter = einnahmeOderAusgabe.equals("Einnahmen");
+		String select = "SELECT DISTINCT " + 	KATEGORIE_ID + ", " + 
+				KATEGORIE_EINNAHMEODERAUSGABE + ", " +
+				KATEGORIE_NAME + ", " +
+				KATEGORIE_FAVORITE +
+				" FROM " + KATEGORIE_TABLE;
+		if(benutzerId != getHaushaltId()) {
+			select += 		" INNER JOIN " + EINTRAG_TABLE 
+					+ 	" ON " + 	EINTRAG_TABLE + "." + EINTRAG_KATEGORIEID + "=" + 
+					KATEGORIE_TABLE + "." + KATEGORIE_ID;
+		}
+		if(benutzerId != getHaushaltId())
+			select += " WHERE " + 	EINTRAG_BENUTZERID + "=? AND " + 
+					KATEGORIE_EINNAHMEODERAUSGABE + "=? AND " +
+					KATEGORIE_FAVORITE + "=?";
+		else
+			select += " WHERE " + 	KATEGORIE_EINNAHMEODERAUSGABE + "=? AND " +
+					KATEGORIE_FAVORITE + "=?";
+		try {
+			conn = DriverManager.getConnection(CONNECTION_URL);
+			stmt = conn.prepareStatement(select);
+			if(benutzerId != getHaushaltId()) {
+				stmt.setInt(1, benutzerId);
+				stmt.setBoolean(2, isEinnahmenParameter);
+				stmt.setBoolean(3, true);
+			}
+			else {
+				stmt.setBoolean(1, isEinnahmenParameter);
+				stmt.setBoolean(2, true);
+			}
+			rs = stmt.executeQuery();
+			while(rs.next())
+				alFavoritenKategorien.add(new Kategorie(
+						rs.getInt(KATEGORIE_ID), 
+						rs.getBoolean(KATEGORIE_EINNAHMEODERAUSGABE), 
+						rs.getString(KATEGORIE_NAME), 
+						rs.getBoolean(KATEGORIE_FAVORITE)));
+			rs.close();
+		}
+		catch(SQLException e) {
+			throw e;
+		}
+		finally {
+			try {
+				if(stmt != null) 
+					stmt.close();
+				if(conn != null)
+					conn.close();
+			}
+			catch(SQLException e) {
+				throw e;
+			}
+		}
+		return alFavoritenKategorien;
+	}
 	
+	//Einträge auslesen
+	//Einnahmen-/Ausgaben-Einträge für einen bestimmten Benutzer auslesen
 	public static ArrayList<Eintrag> readEintraege(int benutzerId, String einnahmeOderAusgabe) throws SQLException {
 		Connection conn = null;
 		PreparedStatement stmt = null;
@@ -360,46 +523,6 @@ public class Datenbank {
 		}
 		return alEintraege;
 	}
-	
-	//Kategorie Summe aller Eintrage auslesen
-	public static double readKategorieSummeEintraege(String kategorieName) throws SQLException{  		
-		Connection conn = null;
-		PreparedStatement stmt = null;
-		ResultSet rs = null;
-		double summeEintraege = 0;
-		String select =  "SELECT SUM(" + EINTRAG_TABLE + "." + EINTRAG_BETRAG + ") AS " + KATEGORIE_SUMMEEINTRAEGE + " FROM " + EINTRAG_TABLE 
-				+ " INNER JOIN " + KATEGORIE_TABLE 
-				+ " ON " + 	EINTRAG_TABLE + "." + EINTRAG_KATEGORIEID + "=" + 
-							KATEGORIE_TABLE + "." + KATEGORIE_ID;
-		if(kategorieName != null)
-			select += " WHERE " + KATEGORIE_NAME + "=?";
-		try {
-			conn = DriverManager.getConnection(CONNECTION_URL);
-			stmt = conn.prepareStatement(select);
-			if(kategorieName != null)
-				stmt.setString(1, kategorieName);
-			rs = stmt.executeQuery();
-			while(rs.next())
-				summeEintraege = rs.getDouble(KATEGORIE_SUMMEEINTRAEGE);
-			rs.close();
-		}
-		catch(SQLException e) {
-			throw e;
-		}
-		finally {
-			try {
-				if(stmt != null) 
-					stmt.close();
-				if(conn != null)
-					conn.close();
-			}
-			catch(SQLException e) {
-				throw e;
-			}
-		}
-		return summeEintraege;
-	}
-	
 	//Einnahmen-/Ausgaben-Einträge für eine bestimmte Kategorie und einen bestimmten Benutzer auslesen				
 	public static ArrayList<Eintrag> readEintraegeNachKategorie(int benutzerId, String einnahmeOderAusgabe, int kategorieId) throws SQLException{
 		Connection conn = null;
@@ -476,6 +599,7 @@ public class Datenbank {
 		return alEintraege;
 	}
 	
+	//Dauereinträge auslesen
 	//Einnahmen-/Ausgaben-Dauereinträge für einen bestimmten Benutzer auslesen
 	public static ArrayList<Dauereintrag> readDauereintraege(int benutzerId, String einnahmeOderAusgabe) throws SQLException{
 		Connection conn = null;
@@ -546,89 +670,65 @@ public class Datenbank {
 		}
 		return alDauereintraege;
 	}
-	
-	//ID von HAUSHALT zurückgeben
-	public static int getHaushaltId() throws SQLException {
-		// Hier eine Abfrage auf die Benutzertabelle machen
-		// um die Id des Eintrags "Haushalt" zu bekommen und die ID zurückgeben
-		// (SELECT BENUTZER_ID FROM BENUTZER_TABLE WHERE BENUTZER_NAME = "Haushalt") 
+	//Einnahmen-/Ausgaben-Einträge für eine bestimmte Kategorie und einen bestimmten Benutzer auslesen	
+	public static ArrayList<Dauereintrag> readDauereintraegeNachKategorie(int benutzerId, String einnahmeOderAusgabe, int kategorieId) throws SQLException {
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
-		int haushaltId = 0;
-		String select = "SELECT * FROM " + BENUTZER_TABLE + " WHERE " + BENUTZER_NAME + "=?";
-		try {
-			conn = DriverManager.getConnection(CONNECTION_URL);
-			stmt = conn.prepareStatement(select);
-			stmt.setString(1, "HAUSHALT");
-			rs = stmt.executeQuery();
-			while(rs.next())
-				haushaltId = rs.getInt(BENUTZER_ID);
-			rs.close();
-		}
-		catch(SQLException e) {
-			throw e;
-		}
-		finally {
-			try {
-				if(stmt != null) 
-					stmt.close();
-				if(conn != null)
-					conn.close();
-			}
-			catch(SQLException e) {
-				throw e;
-			}
-		}
-		return haushaltId;
-	}
-	
-	//Favorisierte Einnahmen-/Ausgaben Kategorien für einen bestimmten Benutzer auslesen
-	public static ArrayList<Kategorie> readFavoritenKategorien(int benutzerId, String einnahmeOderAusgabe) throws SQLException{ 		
-		Connection conn = null;
-		PreparedStatement stmt = null;
-		ResultSet rs = null;
-		ArrayList<Kategorie> alFavoritenKategorien = new ArrayList<>();
+		ArrayList<Dauereintrag> alDauereintraege = new ArrayList<>();
 		//INNER JOIN Kategorie-Tabelle mit WHERE Bedingung auf KATEGORIE_EINNAHMEODERAUSGABE, damit nur Dauereinträge ausgegeben werden, welche eine Ausgabe oder Einnahme sind
 		boolean isEinnahmenParameter = einnahmeOderAusgabe.equals("Einnahmen");
-		String select = "SELECT DISTINCT " + 	KATEGORIE_ID + ", " + 
-												KATEGORIE_EINNAHMEODERAUSGABE + ", " +
-												KATEGORIE_NAME + ", " +
-												KATEGORIE_FAVORITE +
-							" FROM " + KATEGORIE_TABLE;
-		if(benutzerId != getHaushaltId()) {
-			select += 		" INNER JOIN " + EINTRAG_TABLE 
-						+ 	" ON " + 	EINTRAG_TABLE + "." + EINTRAG_KATEGORIEID + "=" + 
-										KATEGORIE_TABLE + "." + KATEGORIE_ID;
-		}
+		String select = "SELECT * FROM " + DAUEREINTRAG_TABLE 
+				+ " INNER JOIN " + KATEGORIE_TABLE  				
+				+ " ON " + 	DAUEREINTRAG_TABLE + "." + DAUEREINTRAG_KATEGORIEID + "=" + 
+							KATEGORIE_TABLE + "." + KATEGORIE_ID 
+				+ " INNER JOIN " + BENUTZER_TABLE  				
+				+ " ON " + 	DAUEREINTRAG_TABLE + "." + DAUEREINTRAG_BENUTZERID + "=" + 
+							BENUTZER_TABLE + "." + BENUTZER_ID;
+		
 		if(benutzerId != getHaushaltId())
-			select += " WHERE " + 	EINTRAG_BENUTZERID + "=? AND " + 
-									KATEGORIE_EINNAHMEODERAUSGABE + "=? AND " +
-									KATEGORIE_FAVORITE + "=?";
+			select += " WHERE " + 	DAUEREINTRAG_BENUTZERID + "=? AND " + 
+									DAUEREINTRAG_KATEGORIEID + "=? AND" +
+									KATEGORIE_EINNAHMEODERAUSGABE + "=?";
 		else
-			select += " WHERE " + 	KATEGORIE_EINNAHMEODERAUSGABE + "=? AND " +
-									KATEGORIE_FAVORITE + "=?";
+			select += " WHERE " + 	DAUEREINTRAG_KATEGORIEID  + "=? AND " + 
+									KATEGORIE_EINNAHMEODERAUSGABE + "=?";
 		try {
 			conn = DriverManager.getConnection(CONNECTION_URL);
 			stmt = conn.prepareStatement(select);
+			// Wenn BenutzerId != "HAUSHALT", dann 2 Parameter definieren, sonst nur einen
 			if(benutzerId != getHaushaltId()) {
 				stmt.setInt(1, benutzerId);
-				stmt.setBoolean(2, isEinnahmenParameter);
-				stmt.setBoolean(3, true);
+				stmt.setInt(2, kategorieId);
+				stmt.setBoolean(3, isEinnahmenParameter);
 			}
 			else {
 				stmt.setBoolean(1, isEinnahmenParameter);
-				stmt.setBoolean(2, true);
+				stmt.setInt(2, kategorieId);
 			}
+			
 			rs = stmt.executeQuery();
-			while(rs.next())
-				alFavoritenKategorien.add(new Kategorie(
-						rs.getInt(KATEGORIE_ID), 
-						rs.getBoolean(KATEGORIE_EINNAHMEODERAUSGABE), 
-						rs.getString(KATEGORIE_NAME), 
-						rs.getBoolean(KATEGORIE_FAVORITE)));
+			while(rs.next()) {			
+				alDauereintraege.add(
+						new Dauereintrag(
+								rs.getInt(DAUEREINTRAG_ID), 
+								rs.getDate(DAUEREINTRAG_NAECHSTEFAELLIGKEIT).toLocalDate(), 
+								rs.getString(DAUEREINTRAG_TITEL), 
+								rs.getDouble(DAUEREINTRAG_BETRAG), 
+								new Benutzer(
+										rs.getInt(BENUTZER_ID),
+										rs.getString(BENUTZER_NAME)), 
+								Enum.valueOf(Intervall.class, rs.getString(DAUEREINTRAG_INTERVALL).toUpperCase()), 
+								rs.getDate(DAUEREINTRAG_ENDEDATUM).toLocalDate(), 
+								new Kategorie(
+										rs.getInt(KATEGORIE_ID), 
+										rs.getBoolean(KATEGORIE_EINNAHMEODERAUSGABE), 
+										rs.getString(KATEGORIE_NAME), 
+										rs.getBoolean(KATEGORIE_FAVORITE))
+								));
+			}
 			rs.close();
-		}
+			}
 		catch(SQLException e) {
 			throw e;
 		}
@@ -643,10 +743,10 @@ public class Datenbank {
 				throw e;
 			}
 		}
-		return alFavoritenKategorien;
+		return alDauereintraege;
 	}
-	
-	//Daten adaptieren
+			
+	//DATEN EINTRAGEN
 	public static void insertBenutzer(Benutzer benutzer) throws SQLException{
 		Connection conn = null;
 		PreparedStatement stmt = null;
@@ -751,7 +851,6 @@ public class Datenbank {
 			}
 		}
 	}
-	
 	public static void insertDauereintrag(Dauereintrag dauereintrag) throws SQLException{
 		Connection conn = null;
 		PreparedStatement stmt = null;
@@ -796,7 +895,8 @@ public class Datenbank {
 		}
 	}
 	
-	//Daten ändern																		
+	//DATEN UPDATEN		
+	//Benutzer updaten
 	public static void updateBenutzer(Benutzer benutzer, String neuerName) throws SQLException{
 		Connection conn = null;
 		PreparedStatement stmt = null;
@@ -824,18 +924,20 @@ public class Datenbank {
 			}
 		}
 	}
+	
+	//Dauereinträge updaten
 	public static void updateDauereintrag(Dauereintrag dauereintrag) throws SQLException{
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		try {
 			conn = DriverManager.getConnection(CONNECTION_URL);
 			String update = "UPDATE " + DAUEREINTRAG_TABLE + " SET " +
-					DAUEREINTRAG_NAECHSTEFAELLIGKEIT + "=?" +
-					DAUEREINTRAG_TITEL + "=?" +
-					DAUEREINTRAG_BETRAG + "=?" +
-					DAUEREINTRAG_BENUTZERID + "=?" +
-					DAUEREINTRAG_INTERVALL + "=?" +
-					DAUEREINTRAG_ENDEDATUM + "=?" +
+					DAUEREINTRAG_NAECHSTEFAELLIGKEIT + "=?," +
+					DAUEREINTRAG_TITEL + "=?," +
+					DAUEREINTRAG_BETRAG + "=?," +
+					DAUEREINTRAG_BENUTZERID + "=?," +
+					DAUEREINTRAG_INTERVALL + "=?," +
+					DAUEREINTRAG_ENDEDATUM + "=?," +
 					DAUEREINTRAG_KATEGORIEID + "=? WHERE " + DAUEREINTRAG_ID + "=?";
 			stmt = conn.prepareStatement(update);
 			LocalDateTime ldt1 = LocalDateTime.of(dauereintrag.getNaechsteFaelligkeit(), LocalTime.of(0, 0, 0));
@@ -849,6 +951,7 @@ public class Datenbank {
 			java.sql.Date endedatum = new java.sql.Date(ldt2.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()); //in altes Date Objekt für JDBC umwandeln - ldt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
 			stmt.setDate(6, endedatum);
 			stmt.setInt(7, dauereintrag.getDeKategorie().getKategorieId());
+			stmt.setInt(8, dauereintrag.getDauereintragId());
 			stmt.executeUpdate();
 		}
 		catch (SQLException e) {
@@ -865,7 +968,34 @@ public class Datenbank {
 				throw e;
 			}
 		}
-		
+	}
+	//Update BenutzerId Fremdschlüssel: übgeben der Dauereinträge von Benutzer an Haushalt durch austauschen des Fremdschlüssels auf BenutzerId Haushalt
+	private static void updateDauereintraegeAufBenutzerHaushalt(int benutzerId) throws SQLException{
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		try {
+			conn = DriverManager.getConnection(CONNECTION_URL);
+			String update = "UPDATE " + DAUEREINTRAG_TABLE + " SET " +
+					DAUEREINTRAG_BENUTZERID + "=? WHERE " + DAUEREINTRAG_BENUTZERID + "=?";
+			stmt = conn.prepareStatement(update);
+			stmt.setInt(1, getHaushaltId());
+			stmt.setInt(2, benutzerId);	
+			stmt.executeUpdate();
+		}
+		catch (SQLException e) {
+			throw e;
+		}
+		finally {
+			try {
+				if(stmt != null) 
+					stmt.close();
+				if(conn != null)
+					conn.close();
+			}
+			catch(SQLException e) {
+				throw e;
+			}
+		}
 	}
 	public static void updateDauereintragNaechsteFaelligkeit(LocalDate naechsteFaelligkeit, int dauereintragId) throws SQLException{
 		Connection conn = null;
@@ -897,16 +1027,18 @@ public class Datenbank {
 		}
 		
 	}
+	
+	//Einträge updaten
 	public static void updateEintrag(Eintrag eintrag) throws SQLException{
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		try {
 			conn = DriverManager.getConnection(CONNECTION_URL);
 			String update = "UPDATE " + EINTRAG_TABLE + " SET " +
-					EINTRAG_DATUM + "=?" +
-					EINTRAG_TITEL + "=?" +
-					EINTRAG_BETRAG + "=?" +
-					EINTRAG_BENUTZERID + "=?" +
+					EINTRAG_DATUM + "=?," +
+					EINTRAG_TITEL + "=?," +
+					EINTRAG_BETRAG + "=?," +
+					EINTRAG_BENUTZERID + "=?," +
 					EINTRAG_KATEGORIEID + "=? WHERE " + EINTRAG_ID + "=?";
 			stmt = conn.prepareStatement(update);
 			LocalDateTime ldt = LocalDateTime.of(eintrag.getDatum(), LocalTime.of(0, 0, 0));
@@ -916,6 +1048,7 @@ public class Datenbank {
 			stmt.setDouble(3, eintrag.getBetrag());	
 			stmt.setInt(4, eintrag.getBenutzer().getBenutzerId());
 			stmt.setInt(5, eintrag.getKategorie().getKategorieId());
+			stmt.setInt(6, eintrag.getEintragId());
 			stmt.executeUpdate();
 		}
 		catch (SQLException e) {
@@ -933,19 +1066,46 @@ public class Datenbank {
 			}
 		}
 	}
-	public static void updateKategorie(Kategorie kategorie) throws SQLException{
+	//Update BenutzerId Fremdschlüssel: übgeben der Einträge von Benutzer an Haushalt durch austauschen des Fremdschlüssels auf BenutzerId Haushalt
+	private static void updateEintraegeAufBenutzerHaushalt(int benutzerId) throws SQLException {
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		try {
+			conn = DriverManager.getConnection(CONNECTION_URL);
+			String update = "UPDATE " + EINTRAG_TABLE + " SET " +
+					EINTRAG_BENUTZERID + "=? WHERE " + EINTRAG_BENUTZERID + "=?";
+			stmt = conn.prepareStatement(update);
+			stmt.setInt(1, getHaushaltId());
+			stmt.setInt(2, benutzerId);	
+			stmt.executeUpdate();
+		}
+		catch (SQLException e) {
+			throw e;
+		}
+		finally {
+			try {
+				if(stmt != null) 
+					stmt.close();
+				if(conn != null)
+					conn.close();
+			}
+			catch(SQLException e) {
+				throw e;
+			}
+		}
+	}	
+	
+	//Kategorienname updaten
+	public static void updateKategorieName(Kategorie kategorie, String neuerName) throws SQLException{
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		try {
 			conn = DriverManager.getConnection(CONNECTION_URL);
 			String update = "UPDATE " + KATEGORIE_TABLE + " SET " +
-					KATEGORIE_EINNAHMEODERAUSGABE + "=?" +
-					KATEGORIE_NAME + "=?" +
-					KATEGORIE_FAVORITE + "=? WHERE " + KATEGORIE_ID + "=?";
+					KATEGORIE_NAME + "=? WHERE " + KATEGORIE_ID + "=?";
 			stmt = conn.prepareStatement(update);
-			stmt.setBoolean(1, kategorie.isEinnahmeOderAusgabe());
-			stmt.setString(2, kategorie.getName());
-			stmt.setBoolean(3, kategorie.isFavorite());
+			stmt.setString(1, neuerName);
+			stmt.setInt(2, kategorie.getKategorieId());
 			stmt.executeUpdate();
 		}
 		catch (SQLException e) {
@@ -963,6 +1123,7 @@ public class Datenbank {
 			}
 		}
 	}
+	//Kategorie favorisieren
 	public static void setKategorieFavorit(int kategorieId, Boolean isFavorit) throws SQLException {
 		Connection conn = null;
 		PreparedStatement stmt = null;
@@ -991,8 +1152,13 @@ public class Datenbank {
 		}
 	}
 	
-	//Daten löschen
+	//DATEN LÖSCHEN
+	//Benutzer Löschen und alle Einträge und Dauereinträge mit der BenutzerId werden auf HAUSHALT überschrieben
 	public static void deleteBenutzer(int benutzerId) throws SQLException{
+		//Fremdschlüssel Referenz austauschen
+		updateDauereintraegeAufBenutzerHaushalt(benutzerId);
+		updateEintraegeAufBenutzerHaushalt(benutzerId);
+		//Benutzer löschen
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		try {
@@ -1017,14 +1183,20 @@ public class Datenbank {
 			}
 		}
 	} 
-	public static void deleteKategorie(int kategorieId) throws SQLException{			//Einträge auch löschen oder auf Kategorie null setzen?
+	//Löschen einer Kategorie inkl. aller Einträge und Dauereinträge
+	public static void deleteKategorie(int kategorieId) throws SQLException{	
+		//Zuerst löschen der Einträge und Dauerenträge
+		deleteEintraegeEinerKategorie(kategorieId);
+		deleteDauereintraegeEinerKategorie(kategorieId);
+		//Jetzt Löschen der Kategorie
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		try {
 			conn = DriverManager.getConnection(CONNECTION_URL);
 			String delete = "DELETE FROM " + KATEGORIE_TABLE + 
-					" WHERE " + KATEGORIE_ID + "=" + kategorieId;
+					" WHERE " + KATEGORIE_ID + "=?";
 			stmt = conn.prepareStatement(delete);
+			stmt.setInt(1, kategorieId);
 			stmt.executeUpdate();		
 		}
 		catch(SQLException e) {
@@ -1042,6 +1214,59 @@ public class Datenbank {
 			}
 		}
 	} 
+	private static void deleteDauereintraegeEinerKategorie(int kategorieId) throws SQLException {
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		try {
+			conn = DriverManager.getConnection(CONNECTION_URL);
+			String delete = "DELETE FROM " + EINTRAG_TABLE + 
+					" WHERE " + EINTRAG_KATEGORIEID + "=?";
+			stmt = conn.prepareStatement(delete);
+			stmt.setInt(1, kategorieId);
+			stmt.executeUpdate();		
+		}
+		catch(SQLException e) {
+			throw e;
+		}
+		finally {
+			try {
+				if(stmt != null) 
+					stmt.close();
+				if(conn != null)
+					conn.close();
+			}
+			catch(SQLException e) {
+				throw e;
+			}
+		}
+	}
+	private static void deleteEintraegeEinerKategorie(int kategorieId) throws SQLException {
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		try {
+			conn = DriverManager.getConnection(CONNECTION_URL);
+			String delete = "DELETE FROM " + DAUEREINTRAG_TABLE + 
+					" WHERE " + DAUEREINTRAG_KATEGORIEID + "=?";
+			stmt = conn.prepareStatement(delete);
+			stmt.setInt(1, kategorieId);
+			stmt.executeUpdate();		
+		}
+		catch(SQLException e) {
+			throw e;
+		}
+		finally {
+			try {
+				if(stmt != null) 
+					stmt.close();
+				if(conn != null)
+					conn.close();
+			}
+			catch(SQLException e) {
+				throw e;
+			}
+		}
+	}
+	//Eintrag löschen
 	public static void deleteEintrag(int eintragId) throws SQLException{
 		Connection conn = null;
 		PreparedStatement stmt = null;
@@ -1092,5 +1317,6 @@ public class Datenbank {
 			}
 		}
 	}
+
 
 }

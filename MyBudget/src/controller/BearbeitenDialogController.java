@@ -2,8 +2,10 @@ package controller;
 
 import java.sql.SQLException;
 import java.text.NumberFormat;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -29,7 +31,6 @@ import javafx.scene.control.TextFormatter;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
-import javafx.util.Callback;
 import javafx.util.converter.NumberStringConverter;
 import model.Benutzer;
 import model.BenutzerFX;
@@ -111,6 +112,7 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 	//Methoden
 	@FXML public void initialize() {
 		getObservableListBenutzer();
+		btnBearbeitenMonat.setDefaultButton(true);
 		tvBearbeitenDauereintraege.setItems(olDauereintraege);
 		tvBearbeitenEintraege.setItems(olEintraege);
 		dpBearbeitenDatum.setValue(LocalDate.now());
@@ -139,8 +141,10 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 	//Methode wird im MainController aufgerufen um die Daten der KategorieFX zu übergeben
 	public void setKategorieFXData() {
 		txtBearbeitenKategorieName.setText(kategorieFX.getName());
-		tableColumnsDauereintraege();
+		getObservableListEintraege();
+		getObservableListDauereintraege();
 		tableColumnsEintraege();
+		tableColumnsDauereintraege();
 	}
 
 	//DatePicker dpBearbeitenEndeDauereintrag auf Able setzen
@@ -163,25 +167,43 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 	    }
 	    if (!exists) {
 	    	if(mainController.getTabPane().getSelectionModel().getSelectedItem() == mainController.tabEinnahmen) {	
-	    		Kategorie k = new Kategorie(true, txtBearbeitenKategorieName.getText(), false);
-	    		try {
-	    			Datenbank.insertKategorie(k);	
-	    			KategorieFX kFX = new KategorieFX(k);
-	    			olKategorien.add(kFX);	
-	    			kategorieFX = kFX;
-	    		} catch (SQLException e) {
-	    			e.printStackTrace();
+	    		if(kategorieFX == null) {
+	    			Kategorie k = new Kategorie(true, txtBearbeitenKategorieName.getText(), false);
+	    			try {
+	    				Datenbank.insertKategorie(k);	
+	    				KategorieFX kFX = new KategorieFX(k);
+	    				olKategorien.add(kFX);	
+	    				kategorieFX = kFX;
+	    			} catch (SQLException e) {
+	    				e.printStackTrace();
+	    			}
+	    		}
+	    		else {
+	    			try {
+						Datenbank.updateKategorieName(kategorieFX.getModellKategorie(), txtBearbeitenKategorieName.getText());
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}
 	    		}
 	    	}
 	    	if(mainController.getTabPane().getSelectionModel().getSelectedItem() == mainController.tabAusgaben) {	
-	    		Kategorie k1 = new Kategorie(false, txtBearbeitenKategorieName.getText(), false);
-		    	try {
-		    		Datenbank.insertKategorie(k1);		
-		    		KategorieFX kFX1 = new KategorieFX(k1);
-		    		olKategorien.add(kFX1);	
-		    		kategorieFX = kFX1;
-		    	} catch (SQLException e) {
-		    		e.printStackTrace();
+	    		if(kategorieFX == null) {
+	    			Kategorie k1 = new Kategorie(false, txtBearbeitenKategorieName.getText(), false);
+	    			try {
+	    				Datenbank.insertKategorie(k1);		
+	    				KategorieFX kFX1 = new KategorieFX(k1);
+	    				olKategorien.add(kFX1);	
+	    				kategorieFX = kFX1;
+	    			} catch (SQLException e) {
+	    				e.printStackTrace();
+	    			}
+	    		}
+		    	else {
+	    			try {
+						Datenbank.updateKategorieName(kategorieFX.getModellKategorie(), txtBearbeitenKategorieName.getText());
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}
 		    	}
 	    	}
 	    }
@@ -199,6 +221,7 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 					kategorieFX.getModellKategorie(),
 					cbBearbeitenIntervall.getSelectionModel().getSelectedItem()
 						));
+				getObservableListEintraege();
 				tableColumnsEintraege();
 			} catch (NumberFormatException | SQLException e) {
 				e.printStackTrace();
@@ -215,6 +238,7 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 					dpBearbeitenEndeDauereintrag.getValue(),
 					kategorieFX.getModellKategorie()
 						));
+				getObservableListDauereintraege();
 				tableColumnsDauereintraege();
 			} catch (NumberFormatException | SQLException e) {
 				e.printStackTrace();
@@ -224,7 +248,7 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 
 	//TableColumns zuordnen Eintraege tvBearbeitenEintraege
 	public void tableColumnsEintraege() {
-		getObservableListEintraege();
+//		getObservableListEintraege();
 		datumCol.setCellValueFactory(new PropertyValueFactory<>("datum"));
 		datumCol.setCellFactory(column -> new TableCell<EintragFX, LocalDate>() {
 			@Override
@@ -256,6 +280,7 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 	}
 	
 	//TableColumn mit Buttons erstellen und TableView tvBearbeitenEintraege hinzufügen 
+	EintragFX e = null;
 	private void addButtonToEintraegeTable() {
 		bearbeitenEintragCol.setCellFactory(column -> new TableCell<>() {
 			private final Button btnBearbeiten = new Button("Update");
@@ -264,7 +289,7 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 			{
 				//ActionEvents für Buttons//                    	
 				btnBearbeiten.setOnAction((ActionEvent event) -> {
-					//
+					titelCol.setEditable(true);
 				});
 				btnLöschen.setOnAction((ActionEvent event) -> {
 					EintragFX eintragFX = getTableView().getItems().get(getIndex());
@@ -275,6 +300,7 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 					if (clickedButton.isPresent() && clickedButton.get() == ButtonType.OK) {
 						try {
 							Datenbank.deleteEintrag(eintragFX.getEintragId());
+							getObservableListEintraege();
 							tableColumnsEintraege();
 						} catch (SQLException e) {
 							e.printStackTrace();
@@ -297,7 +323,7 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 	
 	//TableColumns zuordnen Dauereintraege tvBearbeitenDauereintraege
 	public void tableColumnsDauereintraege() {
-		getObservableListDauereintraege();
+//		getObservableListDauereintraege();
 		naechsteFaelligkeitCol.setCellValueFactory(new PropertyValueFactory<>("naechsteFaelligkeit"));
 		naechsteFaelligkeitCol.setCellFactory(column -> new TableCell<DauereintragFX, LocalDate>() {
 			@Override
@@ -361,6 +387,7 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 					if (clickedButton.isPresent() && clickedButton.get() == ButtonType.OK) {
 						try {
 							Datenbank.deleteDauereintrag(dauereintragFX.getDauereintragId());
+							getObservableListDauereintraege();
 							tableColumnsDauereintraege();
 						} catch (SQLException e) {
 							e.printStackTrace();
@@ -395,7 +422,7 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 	//Einträge auslesen und der ObserverList hinzufügen
 	public void getObservableListEintraege(){
 		try {
-			ArrayList<Eintrag> alEintraege = Datenbank.readEintraege(mainController.cbBenutzer.getSelectionModel().getSelectedItem().getBenutzerId(), mainController.tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText());
+			ArrayList<Eintrag> alEintraege = Datenbank.readEintraegeNachKategorie(mainController.cbBenutzer.getSelectionModel().getSelectedItem().getBenutzerId(), mainController.tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText(), kategorieFX.getKategorieId());
 			olEintraege.clear();
 			for(Eintrag einEintrag : alEintraege)
 				olEintraege.add(new EintragFX(einEintrag));
@@ -406,7 +433,7 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 	//Dauereinträge auslesen und der ObserverList hinzufügen
 	public void getObservableListDauereintraege(){
 		try {
-			ArrayList<Dauereintrag> alDauereintraege = Datenbank.readDauereintraege(mainController.cbBenutzer.getSelectionModel().getSelectedItem().getBenutzerId(), mainController.tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText());
+			ArrayList<Dauereintrag> alDauereintraege = Datenbank.readDauereintraegeNachKategorie(mainController.cbBenutzer.getSelectionModel().getSelectedItem().getBenutzerId(), mainController.tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText(), kategorieFX.getKategorieId());
 			olDauereintraege.clear();
 			for(Dauereintrag einDauereintrag : alDauereintraege)
 				olDauereintraege.add(new DauereintragFX(einDauereintrag));	
@@ -418,7 +445,7 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 	//Kategorien auslesen und der ObserverList hinzufügen
 	@FXML public void showKategorie() {
 		try {
-			ArrayList<Kategorie> alKategorien =  Datenbank.readKategorie(mainController.getTabPane().getSelectionModel().getSelectedItem().getText());
+			ArrayList<Kategorie> alKategorien =  Datenbank.readKategorie(mainController.getTabPane().getSelectionModel().getSelectedItem().getText(), periodeZeitraum, anfangZeitraum, endeZeitraum);
 			olKategorien.clear();
 			for(Kategorie einKategorie : alKategorien)
 				olKategorien.add(new KategorieFX(einKategorie));	
@@ -426,4 +453,118 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 			new Alert(AlertType.ERROR, e.toString());
 		}
 	}	
+	
+	//Zeitraum Anzeigen
+	int letzterTagMonat = LocalDate.now().lengthOfMonth();
+	int letzterTagJahr = LocalDate.now().lengthOfYear();
+	LocalDate anfangZeitraum = LocalDate.now().withDayOfMonth(1);
+	LocalDate endeZeitraum = anfangZeitraum.withDayOfMonth(letzterTagMonat);
+	String periodeZeitraum = null;
+	
+	//ActionEvent btnBearbeitenTag
+	@FXML public void setPeriodeTag(){
+		//Button btnBearbeitenMonat wieder auf default false setzen
+		btnBearbeitenMonat.setDefaultButton(false);
+		//Periden Daten zurückgeben
+		periodeZeitraum = "'day'";
+		anfangZeitraum = LocalDate.now();
+		endeZeitraum = LocalDate.now();
+		lblBearbeitenZeitraum.setText(anfangZeitraum.format(formatter));
+	}
+		
+	//ActionEvent btnBearbeitenWoche
+	@FXML public void setPeriodeWoche(){
+		//Button btnBearbeitenMonat wieder auf default false setzen
+		btnBearbeitenMonat.setDefaultButton(false);
+		//Periden Daten zurückgeben
+		periodeZeitraum = "'week'";
+		anfangZeitraum = LocalDate.now().with(DayOfWeek.MONDAY);
+		endeZeitraum = LocalDate.now().with(DayOfWeek.SUNDAY);
+		//lblBearbeitenZeitraum neuen String hinterlegen
+		getZeitraum();
+	}
+		
+	//ActionEvent btnBearbeitenMonat
+	@FXML public void setPeriodeMonat(){
+		//Periden Daten zurückgeben
+		periodeZeitraum = "'month'";
+		anfangZeitraum = LocalDate.now().withDayOfMonth(1);
+		endeZeitraum = anfangZeitraum.withDayOfMonth(letzterTagMonat);
+		//lblBearbeitenZeitraum neuen String hinterlegen
+		getZeitraum();
+	}
+		
+	//ActionEvent btnBearbeitenJahr
+	@FXML public void setPeriodeJahr(){
+		//Button btnBearbeitenMonat wieder auf default false setzen
+		btnBearbeitenMonat.setDefaultButton(false);
+		//Periden Daten zurückgeben
+		periodeZeitraum = "'year'";
+		anfangZeitraum = LocalDate.now().withDayOfYear(1);
+		endeZeitraum = anfangZeitraum.withDayOfYear(letzterTagJahr);
+		//lblBearbeitenZeitraum neuen String hinterlegen
+		getZeitraum();
+	}
+		
+	//ActionEvent btnUebersichtPfeilVorwaerts
+	@FXML public void periodeZeitraumVor(){
+		if(periodeZeitraum.equalsIgnoreCase("'day'")) {
+			anfangZeitraum = anfangZeitraum.plus(1, ChronoUnit.DAYS);
+			endeZeitraum = endeZeitraum.plus(1, ChronoUnit.DAYS);
+			//lblBearbeitenZeitraum neuen String hinterlegen
+			lblBearbeitenZeitraum.setText(anfangZeitraum.format(formatter));
+		}
+		else if(periodeZeitraum.equalsIgnoreCase("'week'")) {
+			anfangZeitraum = anfangZeitraum.plus(1, ChronoUnit.WEEKS);
+			endeZeitraum = endeZeitraum.plus(1, ChronoUnit.WEEKS);
+			//lblBearbeitenZeitraum neuen String hinterlegen
+			getZeitraum();
+		}
+		else if(periodeZeitraum.equalsIgnoreCase("'month'")) {
+			anfangZeitraum = anfangZeitraum.plus(1, ChronoUnit.MONTHS);
+			endeZeitraum = endeZeitraum.plus(1, ChronoUnit.MONTHS);
+			//lblBearbeitenZeitraum neuen String hinterlegen
+			getZeitraum();
+		}
+		else if(periodeZeitraum.equalsIgnoreCase("'year'")) {
+			anfangZeitraum = anfangZeitraum.plus(1, ChronoUnit.YEARS);
+			endeZeitraum = endeZeitraum.plus(1, ChronoUnit.YEARS);
+			//lblBearbeitenZeitraum neuen String hinterlegen
+			getZeitraum();
+		}
+	}
+		
+	//ActionEvent btnUebersichtPfeilZurueck
+	@FXML public void periodeZeitraumZurueck(){
+		if(periodeZeitraum == "'day'") {
+			anfangZeitraum = anfangZeitraum.minus(1, ChronoUnit.DAYS);
+			endeZeitraum = endeZeitraum.minus(1, ChronoUnit.DAYS);
+			//lblBearbeitenZeitraum neuen String hinterlegen
+			lblBearbeitenZeitraum.setText(anfangZeitraum.format(formatter));
+		}
+		else if(periodeZeitraum == "'week'") {
+			anfangZeitraum = anfangZeitraum.minus(1, ChronoUnit.WEEKS);
+			endeZeitraum = endeZeitraum.minus(1, ChronoUnit.WEEKS);
+			//lblBearbeitenZeitraum neuen String hinterlegen
+			getZeitraum();
+		}
+		else if(periodeZeitraum == "'month'") {
+			anfangZeitraum = anfangZeitraum.minus(1, ChronoUnit.MONTHS);
+			endeZeitraum = endeZeitraum.minus(1, ChronoUnit.MONTHS);
+			//lblBearbeitenZeitraum neuen String hinterlegen
+			getZeitraum();
+		}
+		else if(periodeZeitraum == "'year'") {
+			anfangZeitraum = anfangZeitraum.minus(1, ChronoUnit.YEARS);
+			endeZeitraum = endeZeitraum.minus(1, ChronoUnit.YEARS);
+			//lblBearbeitenZeitraum neuen String hinterlegen
+			getZeitraum();
+		}	
+	}
+		
+	//Retourniert einen String für lblUebersichtZeitraum
+	public void getZeitraum() {
+		lblBearbeitenZeitraum.setText(anfangZeitraum.format(formatter) + " bis " + endeZeitraum.format(formatter));
+	}
+			
 }

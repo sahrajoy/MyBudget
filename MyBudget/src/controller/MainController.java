@@ -8,7 +8,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -81,20 +80,12 @@ public class MainController {
 				if(arg2 == tabAusgaben) {
 					showStackAusgabenUebersicht(null);
 					btnAusgabenUebersicht.setDefaultButton(true);
-					//Set Favoriten Button aktiv/inaktiv
-					btnAusgabenFavoriten.setDisable(true);
-					getObservableListFavoritenKategorien();
-					if(olFavoriten.size() != 0)
-						btnAusgabenFavoriten.setDisable(false);
+					setFavoriteButtonAbleOrDisable();
 				}
 				if(arg2 == tabEinnahmen) {
 					showStackEinnahmenUebersicht(null);	
 					btnEinnahmenUebersicht.setDefaultButton(true);
-					//Set Favoriten Button aktiv/inaktiv
-					btnEinnahmenFavoriten.setDisable(true);
-					getObservableListFavoritenKategorien();
-					if(olFavoriten.size() != 0)
-						btnEinnahmenFavoriten.setDisable(false);
+					setFavoriteButtonAbleOrDisable();
 				}
 			}
 		});
@@ -102,13 +93,13 @@ public class MainController {
 		getObservableListBenutzer();
 		cbBenutzer.setItems(olBenutzer);
 		cbBenutzer.getSelectionModel().select(olBenutzer.stream().filter(b -> b.getName().equals("HAUSHALT")).findFirst().orElse(null));
-		//Einnahmen Übersicht
+		//Einnahmen Übersicht laden
 		btnEinnahmenUebersicht.setDefaultButton(true);
-		setSummeKategorien();
 		ladeUebersicht();
 		ladeStatistik();
 		addButtonToDauereintraegeTable();
 		addButtonToUebersichtTable();
+		//Favoriten Button auf able oder disable setzen
 		setFavoriteButtonAbleOrDisable();
 	}
 	
@@ -124,15 +115,15 @@ public class MainController {
 	
 	@FXML HBox hbBenutzer;
 	@FXML Button bBenutzerAnlegenEntfernen; 			
+	//ActionEvent für bBenutzerAnlegenEntfernen ist benutzerAnlegen()
 	@FXML ComboBox<BenutzerFX> cbBenutzer;
-	//ActionEvent cbBenutzer
+	//ActionEvent für cbBenutzer ist datenAktualisieren()
+	
+	//TableViews neu laden
 	@FXML public void datenAktualisieren(){	
-		if(spUebersicht.isVisible()) 
-			ladeUebersicht();
-		else if(spFavoriten.isVisible())
-			ladeFavoriten();
-		else if(spDauereintraege.isVisible()) 
-			ladeDauereintraege();
+		ladeUebersicht();
+		ladeFavoriten();
+		ladeDauereintraege();
 	}
 	
 	//Benutzer aus Datenbank auslesen und ObservableList hinzufügen
@@ -145,6 +136,38 @@ public class MainController {
 		} catch (SQLException e) {
 			new Alert(AlertType.ERROR, e.toString());
 		}	
+	}
+	
+	//Öffnen des BenutzerDialog durch drücken des bBenutzerAnlegenEntfernen Buttons
+	@FXML public void benutzerAnlegen(ActionEvent event) throws SQLException{
+		try {
+			FXMLLoader fxmlLoaderBenutzer = new FXMLLoader();
+			fxmlLoaderBenutzer.setLocation(getClass().getResource("/view/BenutzerDialog.fxml"));
+			DialogPane benutzerDialog = fxmlLoaderBenutzer.load();
+			
+			//Holen der BenutzerDialogController-Instanzen
+			BenutzerDialogController bdc = fxmlLoaderBenutzer.getController();		
+			
+			Dialog<ButtonType> dialogBenutzer = new Dialog<>();
+			dialogBenutzer.setDialogPane(benutzerDialog);
+			dialogBenutzer.setTitle("Benutzer verwalten");
+			
+			Optional<ButtonType> clickedButton = dialogBenutzer.showAndWait();			
+			if(clickedButton.get() == ButtonType.OK ) {		
+				//olBenutzer updaten und anzeigen
+				getObservableListBenutzer();
+				cbBenutzer.setItems(olBenutzer);
+				cbBenutzer.getSelectionModel().select(olBenutzer.stream().filter(b -> b.getName().equals("HAUSHALT")).findFirst().orElse(null));
+				//neu laden der TableView Favoriten
+				setTabsFavoriten();
+				//neu laden der TableView Dauereinträge
+				tableColumnsDauereintraege();
+			}
+			else 
+				return;			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	//TABPANES
@@ -201,31 +224,41 @@ public class MainController {
 		ladeDauereintraege();
 	}
 	
-	//Öffnen des BenutzerDialog durch drücken des bBenutzerAnlegenEntfernen Buttons
-	@FXML public void benutzerAnlegen(ActionEvent event) throws SQLException{
-		try {
-			FXMLLoader fxmlLoaderBenutzer = new FXMLLoader();
-			fxmlLoaderBenutzer.setLocation(getClass().getResource("/view/BenutzerDialog.fxml"));
-			DialogPane benutzerDialog = fxmlLoaderBenutzer.load();
-				
-			//Holen der BenutzerDialogController-Instanzen
-			BenutzerDialogController bdc = fxmlLoaderBenutzer.getController();		
-							
-			Dialog<ButtonType> dialogBenutzer = new Dialog<>();
-			dialogBenutzer.setDialogPane(benutzerDialog);
-			dialogBenutzer.setTitle("Benutzer verwalten");
-
-			Optional<ButtonType> clickedButton = dialogBenutzer.showAndWait();			
-			if(clickedButton.get() == ButtonType.OK ) {		
-				getObservableListBenutzer();
-				cbBenutzer.setItems(olBenutzer);
-				cbBenutzer.getSelectionModel().select(olBenutzer.stream().filter(b -> b.getName().equals("HAUSHALT")).findFirst().orElse(null));
-				}
-			else 
-				return;			
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	//ÜBERSICHT ----------------------------------------------------------------------------------------------------------------------------
+	@FXML ObservableList<KategorieFX> olKategorie = FXCollections.observableArrayList();
+	@FXML ObservableList<String> olSortierungUebersicht = FXCollections.observableArrayList("Kategorie A-Z", "Kategorie Z-A", "Betrag aufsteigend","Betrag absteigend");
+	
+	//StackPane Übersicht
+	@FXML StackPane spUebersicht;
+	
+	@FXML HBox hbUebersichtButtonsZeitraum;
+	@FXML Button btnUebersichtMonat;
+	@FXML Button btnUebersichtJahr;
+	
+	@FXML HBox hbUebersichtZeitraum;
+	@FXML Button btnUebersichtPfeilZurueck;
+	@FXML Label lblUebersichtZeitraum;
+	@FXML Button btnUebersichtPfeilVorwaerts;
+	
+	@FXML GridPane gpUebersichtPlus;
+	@FXML Button btnPlus;
+	//ActionEvent für btnPlus ist bearbeitenDialog()
+	
+	@FXML AnchorPane apUebersicht;
+	
+	//TableView Übersicht
+	@FXML TableView<KategorieFX> tvUebersicht;
+	@FXML TableColumn<KategorieFX, String> kategorieCol;
+	@FXML TableColumn<KategorieFX, Double> summeCol;
+	
+	//Inhalt für Übersicht laden
+	public void ladeUebersicht() {
+		setPeriodeMonat();
+		btnUebersichtMonat.setDefaultButton(true);
+		getZeitraum();
+		tableColumnsUebersicht();
+		tvUebersicht.setItems(olKategorie);
+		tvUebersicht.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 	}
 	
 	//Öffnen des BearbeitenDialogControllers 
@@ -246,7 +279,7 @@ public class MainController {
 				bdc.setKategorieFX(kategorieFX);
 				bdc.setKategorieFXData();
 			}
-		
+			
 			Dialog<ButtonType> dialogBearbeiten = new Dialog<>();
 			dialogBearbeiten.setDialogPane(bearbeitenDialog);
 			dialogBearbeiten.setTitle("Bearbeiten");
@@ -260,54 +293,13 @@ public class MainController {
 		}
 	}
 	
-	//ÜBERSICHT ----------------------------------------------------------------------------------------------------------------------------
-	@FXML ObservableList<KategorieFX> olKategorie = FXCollections.observableArrayList();
-	@FXML ObservableList<String> olSortierungUebersicht = FXCollections.observableArrayList("Kategorie A-Z", "Kategorie Z-A", "Betrag aufsteigend","Betrag absteigend");
-	
-	//StackPane Übersicht
-	@FXML StackPane spUebersicht;
-	
-	@FXML HBox hbUebersichtButtonsZeitraum;
-	@FXML Button btnUebersichtMonat;
-	@FXML Button btnUebersichtJahr;
-	
-	@FXML HBox hbUebersichtZeitraum;
-	@FXML Button btnUebersichtPfeilZurueck;
-	@FXML Label lblUebersichtZeitraum;
-	@FXML Button btnUebersichtPfeilVorwaerts;
-	
-	@FXML GridPane gpUebersichtPlusUndSortieren;
-	@FXML Button btnPlus;
-	@FXML Label lblUebersichtSortierung;
-	@FXML ComboBox<String> cbUebersichtSortierung;
-	
-	@FXML AnchorPane apUebersicht;
-	
-	//TableView Übersicht
-	@FXML TableView<KategorieFX> tvUebersicht;
-	@FXML TableColumn<KategorieFX, String> kategorieCol;
-	@FXML TableColumn<KategorieFX, Double> summeCol;
-	
-	//Inhalt für Übersicht laden
-	public void ladeUebersicht() {
-		setPeriodeMonat();
-		btnUebersichtMonat.setDefaultButton(true);
-		getZeitraum();
-		setSummeKategorien();
-		tableColumnsUebersicht();
-		cbUebersichtSortierung.getSelectionModel().select("Kategorie A-Z");
-		cbUebersichtSortierung.setItems(olSortierungUebersicht);
-		tvUebersicht.setItems(olKategorie);
-		tvUebersicht.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-	}
-	
 	//Kategorien aus Datenbank auslesen und ObservableList hinzufügen
 	public void getObservableListKategorien() {
 		try {
-			ArrayList<Kategorie> alKategorien = Datenbank.readKategorie(tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText());
+			ArrayList<Kategorie> alKategorien = Datenbank.readKategorie(tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText(), anfangZeitraum, endeZeitraum);
 			olKategorie.clear();
 			for(Kategorie eineKategorie : alKategorien) {
-				eineKategorie.setSummeEintraege(Datenbank.readKategorieSummeEintraege(eineKategorie.getName()));
+				eineKategorie.setSummeEintraege(Datenbank.readKategorieSummeEintraege(eineKategorie.getName(), tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText(), anfangZeitraum, endeZeitraum));
 				olKategorie.add(new KategorieFX(eineKategorie));									
 			}
 		} catch (SQLException e) {
@@ -378,7 +370,8 @@ public class MainController {
                     		kategorieFX  = getTableView().getItems().get(getIndex());
                     		Alert confirmationDialog = new Alert(Alert.AlertType.CONFIRMATION);
                     	    confirmationDialog.setTitle("Kategorie löschen");
-                    	    confirmationDialog.setContentText("Soll die Kategorie wirklich gelöscht werden, Änderungen können nicht rückgängig gemacht werden!");
+                    	    confirmationDialog.setContentText("Soll die Kategorie wirklich gelöscht werden, mit der Kategorie werden auch alle: "
+                    	    		+ "\n\nEinträge und Dauereinträge\n\ngelöscht. \nÄnderungen können nicht rückgängig gemacht werden!");
                     	    Optional<ButtonType> clickedButton = confirmationDialog.showAndWait();
                     	    if (clickedButton.isPresent() && clickedButton.get() == ButtonType.OK) {
                     	    	try {
@@ -413,9 +406,10 @@ public class MainController {
         tvUebersicht.getColumns().add(buttonCol);
     }
 		
-		//ActionEvent btnUebersichtMonat
+	//ActionEvent btnUebersichtMonat
 	@FXML public void setPeriodeMonat(){
-		periodeZeitraum = "Monat";
+		//Periden Daten zurückgeben
+		periodeZeitraum = "month";
 		anfangZeitraum = LocalDate.now().withDayOfMonth(1);
 		endeZeitraum = anfangZeitraum.withDayOfMonth(letzterTagMonat);
 		getZeitraum();
@@ -423,8 +417,10 @@ public class MainController {
 	
 	//ActionEvent btnUebersichtJahr
 	@FXML public void setPeriodeJahr(){
-		periodeZeitraum = "Jahr";
+		//Button btnBearbeitenMonat wieder auf default false setzen
 		btnUebersichtMonat.setDefaultButton(false);
+		//Periden Daten zurückgeben
+		periodeZeitraum = "year";
 		anfangZeitraum = LocalDate.now().withDayOfYear(1);
 		endeZeitraum = anfangZeitraum.withDayOfYear(letzterTagJahr);
 		getZeitraum();
@@ -432,12 +428,12 @@ public class MainController {
 	
 	//ActionEvent btnUebersichtPfeilVorwaerts
 	@FXML public void periodeZeitraumVor(){
-		if(periodeZeitraum.equalsIgnoreCase("Monat")) {
+		if(periodeZeitraum.equalsIgnoreCase("month")) {
 			anfangZeitraum = anfangZeitraum.plus(1, ChronoUnit.MONTHS);
 			endeZeitraum = endeZeitraum.plus(1, ChronoUnit.MONTHS);
 			getZeitraum();
 		}
-		else if(periodeZeitraum.equalsIgnoreCase("Jahr")) {
+		else if(periodeZeitraum.equalsIgnoreCase("year")) {
 			anfangZeitraum = anfangZeitraum.plus(1, ChronoUnit.YEARS);
 			endeZeitraum = endeZeitraum.plus(1, ChronoUnit.YEARS);
 			getZeitraum();
@@ -446,12 +442,12 @@ public class MainController {
 	
 	//ActionEvent btnUebersichtPfeilZurueck
 	@FXML public void periodeZeitraumZurueck(){
-		if(periodeZeitraum == "Monat") {
+		if(periodeZeitraum == "month") {
 			anfangZeitraum = anfangZeitraum.minus(1, ChronoUnit.MONTHS);
 			endeZeitraum = endeZeitraum.minus(1, ChronoUnit.MONTHS);
 			getZeitraum();
 		}
-		if(periodeZeitraum == "Jahr") {
+		if(periodeZeitraum == "year") {
 			anfangZeitraum = anfangZeitraum.minus(1, ChronoUnit.YEARS);
 			endeZeitraum = endeZeitraum.minus(1, ChronoUnit.YEARS);
 			getZeitraum();
@@ -461,32 +457,6 @@ public class MainController {
 	//Retourniert einen String für lblUebersichtZeitraum
 	public void getZeitraum() {
 		lblUebersichtZeitraum.setText(anfangZeitraum.format(formatter) + " bis " + endeZeitraum.format(formatter));
-	}
-	
-	//Einträge nach Kategorie auslesen und summieren
-	public void setSummeKategorien() {
-		double setSummeEintraege = 0;
-		try {
-			ArrayList<Kategorie> alKategorien = Datenbank.readKategorie(tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText());
-			for(Kategorie eineKategorie : alKategorien) {
-				setSummeEintraege = Datenbank.readKategorieSummeEintraege(eineKategorie.getName());
-				eineKategorie.setSummeEintraege(setSummeEintraege);
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}				
-	}
-	
-	//Sortierung der Kategorien in der Übersicht
-	@FXML public void sortierungUebersicht(ActionEvent event) {
-		if(cbUebersichtSortierung.getSelectionModel().getSelectedItem().equalsIgnoreCase("Kategorie A-Z"))
-			olKategorie.sort(Comparator.comparing(KategorieFX::getName));
-		else if(cbUebersichtSortierung.getSelectionModel().getSelectedItem().equalsIgnoreCase("Kategorie Z-A"))
-			olKategorie.sort(Comparator.comparing(KategorieFX::getName).reversed());
-		else if(cbUebersichtSortierung.getSelectionModel().getSelectedItem().equalsIgnoreCase("Betrag aufsteigend"))
-			olKategorie.sort(Comparator.comparing(KategorieFX::getSummeEintraege));
-		else if(cbUebersichtSortierung.getSelectionModel().getSelectedItem().equalsIgnoreCase("Betrag absteigend"))
-			olKategorie.sort(Comparator.comparing(KategorieFX::getSummeEintraege).reversed());
 	}
 	
 	//FAVORITEN ----------------------------------------------------------------------------------------------------------------------------
@@ -569,6 +539,7 @@ public class MainController {
 	@FXML public void btnSpeichernUeberFavoriten(ActionEvent event) {
 		if(cbFavoritenIntervall.getValue().toString().equalsIgnoreCase("keine")) {
 			try {
+				//Eintrag hinzufügen
 				Datenbank.insertEintrag(new Eintrag(
 						dpFavoritenDatum.getValue(),
 						txtFavoritenTitel.getText(),
@@ -577,6 +548,8 @@ public class MainController {
 						cbFavoritenKategorie.getSelectionModel().getSelectedItem().getModellKategorie(),
 						cbFavoritenIntervall.getSelectionModel().getSelectedItem()
 						));
+				//TableView neu laden
+				setTabsFavoriten();
 			} catch (NumberFormatException | SQLException e) {
 				e.printStackTrace();
 			}
@@ -767,11 +740,6 @@ public class MainController {
 	@FXML DatePicker dpDauereintraegeEndeDauereintrag;
 	@FXML Button btnDauereintraegeSpeichern;	
 	
-	@FXML HBox hbDauereintraegeSortierung;
-	@FXML Label lblDauereintraegeSortierung;
-	@FXML ComboBox<String> cbDauereintraegeSortierung;
-	@FXML AnchorPane apDauereintraege;
-	
 	//TableView Dauereinträge
 	@FXML TableView<DauereintragFX> tvDauereintraege;
 	@FXML TableColumn<DauereintragFX, LocalDate> naechsteFaelligkeitCol;
@@ -790,7 +758,7 @@ public class MainController {
 		//Default setzen und Listen laden für Eingabezeile
 		dpDauereintraegeDatum.setValue(LocalDate.now());
 		cbDauereintraegeKategorie.setItems(olKategorie);
-		cbDauereintraegeKategorie.setPromptText("Kategorie wählen");
+		cbDauereintraegeKategorie.setPromptText("Bitte wählen");
 		txtDauereintraegeTitel.setPromptText("Titel eingeben");
 		txtDauereintraegeBetrag.setPromptText("00.00");
 		txtDauereintraegeBetrag.setTextFormatter(new TextFormatter<>(converter));
@@ -799,9 +767,6 @@ public class MainController {
 		cbDauereintraegeIntervall.getItems().setAll(Intervall.values());
 		cbDauereintraegeIntervall.setValue(Intervall.KEINE);
 		dpDauereintraegeEndeDauereintrag.setDisable(true);
-		//Sortierung
-		cbDauereintraegeSortierung.getSelectionModel().select("Datum aufsteigend");
-		cbDauereintraegeSortierung.setItems(olSortierungDauereintraege);
 		//TableView
 		tvDauereintraege.setItems(olDauereintraege);
 		tableColumnsDauereintraege();
@@ -958,22 +923,6 @@ public class MainController {
 				}
 			}
 		});
-	}
-		
-	//Sortierung der Dauereinträge
-	@FXML public void sortierungDauerintraege(ActionEvent event) {
-		if(cbDauereintraegeSortierung.getSelectionModel().getSelectedItem().equalsIgnoreCase("Kategorie A-Z"))
-			olDauereintraege.sort(Comparator.comparing(DauereintragFX::getKategorieName));
-		else if(cbDauereintraegeSortierung.getSelectionModel().getSelectedItem().equalsIgnoreCase("Kategorie Z-A"))
-			olDauereintraege.sort(Comparator.comparing(DauereintragFX::getKategorieName).reversed());
-		else if(cbDauereintraegeSortierung.getSelectionModel().getSelectedItem().equalsIgnoreCase("Betrag aufsteigend"))
-			olDauereintraege.sort(Comparator.comparing(DauereintragFX::getBetrag));
-		else if(cbDauereintraegeSortierung.getSelectionModel().getSelectedItem().equalsIgnoreCase("Betrag absteigend"))
-			olDauereintraege.sort(Comparator.comparing(DauereintragFX::getBetrag).reversed());
-		else if(cbDauereintraegeSortierung.getSelectionModel().getSelectedItem().equalsIgnoreCase("Datum aufsteigend"))
-			olDauereintraege.sort(Comparator.comparing(DauereintragFX::getNaechsteFaelligkeit));
-		else if(cbDauereintraegeSortierung.getSelectionModel().getSelectedItem().equalsIgnoreCase("Datum absteigend"))
-			olDauereintraege.sort(Comparator.comparing(DauereintragFX::getNaechsteFaelligkeit).reversed());
 	}
 	
 	//Dauereintraege durchgehen und ausführen								
