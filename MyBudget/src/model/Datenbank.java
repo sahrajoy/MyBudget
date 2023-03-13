@@ -718,7 +718,7 @@ public class Datenbank {
 		try {
 			conn = DriverManager.getConnection(CONNECTION_URL);
 			String insert = "INSERT INTO " + EINTRAG_TABLE + 
-					"(" + EINTRAG_DATUM + "," + EINTRAG_TITEL + "," + EINTRAG_BETRAG + "," + EINTRAG_BENUTZERID + "," + EINTRAG_KATEGORIEID + ","  + EINTRAG_DAUEREINTRAGINTERVALL + ") VALUES(" +
+					"(" + EINTRAG_DATUM + "," + EINTRAG_TITEL + "," + EINTRAG_BETRAG + "," + EINTRAG_BENUTZERID + "," + EINTRAG_KATEGORIEID + "," + EINTRAG_DAUEREINTRAGINTERVALL + ") VALUES(" +
 					"?," +	//EINTRAG_DATUM
 					"?," +	//EINTRAG_TITEL
 					"?," +	//EINTRAG_BETRAG
@@ -751,6 +751,7 @@ public class Datenbank {
 			}
 		}
 	}
+	
 	public static void insertDauereintrag(Dauereintrag dauereintrag) throws SQLException{
 		Connection conn = null;
 		PreparedStatement stmt = null;

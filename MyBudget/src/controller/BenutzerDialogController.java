@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import java.util.Optional;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -43,7 +41,7 @@ public class BenutzerDialogController extends Dialog<ButtonType> {
 	@FXML TableColumn<BenutzerFX, String> benutzerCol;
 	
 	@FXML Button btnBenutzerLoeschen;
-	@FXML Button btnBenutzerBearbeiten;			//Funktion hinterlegen
+	@FXML Button btnBenutzerBearbeiten;			
 	
 	//Methoden
 	@FXML public void initialize() {
@@ -52,7 +50,7 @@ public class BenutzerDialogController extends Dialog<ButtonType> {
 		showBenutzer();
 	}
 	
-	//Benutzer bearbeiten
+	//Benutzer bearbeiten über Button btnBenutzerBearbeiten
 	@FXML public void bearbeiteBenutzer(){
 		TextInputDialog bearbeiteNameBenutzer = new TextInputDialog(tvBenutzer.getSelectionModel().getSelectedItem().getModellBenutzer().getName());
 		bearbeiteNameBenutzer.setContentText("Neuen Benutzernamen eingeben");
@@ -69,7 +67,7 @@ public class BenutzerDialogController extends Dialog<ButtonType> {
         showBenutzer();      
 	}
 	
-	//Methode für TextField
+	//Neuen Benutzer anlegen über TextField tfNeuerBenutzer
 	@FXML public void insertBenutzerToList() {	
 		boolean exists = false;
 	    for (BenutzerFX einBenutzerFX : olBenutzer) {
@@ -90,7 +88,7 @@ public class BenutzerDialogController extends Dialog<ButtonType> {
 	    }
 	}
 	
-	//Methode für Löschen Button
+	//Benutzer löschen über Button btnBenutzerLoeschen
 	@FXML public void loescheBenutzer(){
 	    Alert confirmationDialog = new Alert(Alert.AlertType.CONFIRMATION);
 	    confirmationDialog.setTitle("Benutzer löschen");

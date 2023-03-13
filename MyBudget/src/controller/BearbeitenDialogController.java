@@ -5,11 +5,13 @@ import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Optional;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -27,6 +29,7 @@ import javafx.scene.control.TextFormatter;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
+import javafx.util.Callback;
 import javafx.util.converter.NumberStringConverter;
 import model.Benutzer;
 import model.BenutzerFX;
@@ -51,8 +54,7 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 	NumberFormat currencyFormat = NumberFormat.getCurrencyInstance();
 	//Format Text zeigen in Decimalzahl
 	NumberStringConverter converter = new NumberStringConverter("#0.00");
-	
-	
+		
 	@FXML HBox hbBearbeitenButtonsZeitraum;
 	@FXML Button btnBearbeitenTag;
 	@FXML Button btnBearbeitenWoche;
@@ -92,7 +94,8 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 	@FXML TableColumn<EintragFX, String> titelCol;
 	@FXML TableColumn<EintragFX, Double> betragCol;
 	@FXML TableColumn<EintragFX, String> benutzerCol;
-	@FXML TableColumn<EintragFX, LocalDate> dauereintragCol;
+	@FXML TableColumn<EintragFX, Intervall> intervallDauereintragCol;
+	@FXML TableColumn<EintragFX, Node> bearbeitenEintragCol;
 		
 	@FXML Tab tabBearbeitenDauereintraege;
 	
@@ -103,9 +106,11 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 	@FXML TableColumn<DauereintragFX, String> benutzerDauereintragCol;
 	@FXML TableColumn<DauereintragFX, Intervall> intervallCol;
 	@FXML TableColumn<DauereintragFX, LocalDate> endeDauereintragCol;
+	@FXML TableColumn<DauereintragFX, Node> bearbeitenDauereintragCol;
 	
 	//Methoden
 	@FXML public void initialize() {
+		getObservableListBenutzer();
 		tvBearbeitenDauereintraege.setItems(olDauereintraege);
 		tvBearbeitenEintraege.setItems(olEintraege);
 		dpBearbeitenDatum.setValue(LocalDate.now());
@@ -131,15 +136,14 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 		this.kategorieFX = kategorieFX;
 	}
 	
-	//Methode wird im MainController aufgerufen um die Daten zu übergeben
+	//Methode wird im MainController aufgerufen um die Daten der KategorieFX zu übergeben
 	public void setKategorieFXData() {
 		txtBearbeitenKategorieName.setText(kategorieFX.getName());
-		getObservableListBenutzer();
-		getObservableListDauereintraege();
-		getObservableListEintraege();
+		tableColumnsDauereintraege();
+		tableColumnsEintraege();
 	}
 
-	//DatePicker auf Able setzen
+	//DatePicker dpBearbeitenEndeDauereintrag auf Able setzen
 	@FXML public void setDatePickerEndeDauereintragOnAble() {
 		if(cbBearbeitenIntervall.getSelectionModel().getSelectedItem() == Intervall.KEINE)
 			dpBearbeitenEndeDauereintrag.setDisable(true);
@@ -147,7 +151,7 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 			dpBearbeitenEndeDauereintrag.setDisable(false);
 	}
 	
-	//Kategorie speichern über btnBearbeitenKategorieName
+	//Kategorie speichern über Button btnBearbeitenKategorieName
 	@FXML public void kategorieSpeichern(ActionEvent event) {	
 		boolean exists = false;
 	    for (KategorieFX einKategorieFX : olKategorien) {
@@ -183,7 +187,7 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 	    }
 	}
 	
-	//Eintrag/Dauereintrag speichern
+	//Eintrag/Dauereintrag speichern über Button btnBearbeitenSpeichern
 	@FXML public void btnEintragSpeichern(){
 		if(cbBearbeitenIntervall.getValue().toString().equals("keine")) {
 			try {
@@ -192,9 +196,10 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 					txtBearbeitenTitel.getText(),
 					Double.parseDouble(txtBearbeitenBetrag.getText()),
 					cbBearbeitenBenutzer.getSelectionModel().getSelectedItem().getModellBenutzer(),
-					kategorieFX.getModellKategorie()
+					kategorieFX.getModellKategorie(),
+					cbBearbeitenIntervall.getSelectionModel().getSelectedItem()
 						));
-				getObservableListEintraege();
+				tableColumnsEintraege();
 			} catch (NumberFormatException | SQLException e) {
 				e.printStackTrace();
 			}
@@ -210,57 +215,14 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 					dpBearbeitenEndeDauereintrag.getValue(),
 					kategorieFX.getModellKategorie()
 						));
-				getObservableListDauereintraege();
+				tableColumnsDauereintraege();
 			} catch (NumberFormatException | SQLException e) {
 				e.printStackTrace();
 			}
 		}
 	}
-	//TableColumns zuordnen Dauereintraege
-	public void tableColumnsDauereintraege() {
-		getObservableListDauereintraege();
-		naechsteFaelligkeitCol.setCellValueFactory(new PropertyValueFactory<>("naechsteFaelligkeit"));
-		naechsteFaelligkeitCol.setCellFactory(column -> new TableCell<DauereintragFX, LocalDate>() {
-			@Override
-			protected void updateItem(LocalDate date, boolean empty) {
-				super.updateItem(date, empty);
-		        if (empty) {
-		           setText("");
-		        } else {
-		           setText(formatter.format(date));
-		        }
-		    }
-		});
-		titelDauereintragCol.setCellValueFactory(new PropertyValueFactory<>("titel"));
-		betragDauereintragCol.setCellValueFactory(new PropertyValueFactory<>("betrag"));
-		betragDauereintragCol.setCellFactory(column -> new TableCell<DauereintragFX, Double>() {
-			@Override
-			protected void updateItem(Double betrag, boolean empty) {
-				 super.updateItem(betrag, empty);
-				 if (empty) {
-				    setText(null);
-				 } else {
-					setText(currencyFormat.format(betrag));
-				 }
-			}
-		});
-		benutzerDauereintragCol.setCellValueFactory(new PropertyValueFactory<>("benutzerName"));
-		intervallCol.setCellValueFactory(new PropertyValueFactory<>("intervall"));
-		endeDauereintragCol.setCellValueFactory(new PropertyValueFactory<>("dauereintragEnde"));
-		endeDauereintragCol.setCellFactory(column -> new TableCell<DauereintragFX, LocalDate>() {
-			@Override
-			protected void updateItem(LocalDate date, boolean empty) {
-		        super.updateItem(date, empty);
-		        if (empty) {
-		            setText("");
-		        } else {
-		            setText(formatter.format(date));
-		        }
-		    }
-		});
-	}
 
-	//TableColumns zuordnen Dauereintraege
+	//TableColumns zuordnen Eintraege tvBearbeitenEintraege
 	public void tableColumnsEintraege() {
 		getObservableListEintraege();
 		datumCol.setCellValueFactory(new PropertyValueFactory<>("datum"));
@@ -289,9 +251,135 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 			}
 		});
 		benutzerCol.setCellValueFactory(new PropertyValueFactory<>("benutzerName"));
-		dauereintragCol.setCellValueFactory(new PropertyValueFactory<>("dauereintrag"));
+		intervallDauereintragCol.setCellValueFactory(new PropertyValueFactory<>("intervall"));
+		addButtonToEintraegeTable();
 	}
 	
+	//TableColumn mit Buttons erstellen und TableView tvBearbeitenEintraege hinzufügen 
+	private void addButtonToEintraegeTable() {
+		bearbeitenEintragCol.setCellFactory(column -> new TableCell<>() {
+			private final Button btnBearbeiten = new Button("Update");
+			private final Button btnLöschen = new Button("Löschen");
+			HBox hbButtons = new HBox(10, btnBearbeiten, btnLöschen);
+			{
+				//ActionEvents für Buttons//                    	
+				btnBearbeiten.setOnAction((ActionEvent event) -> {
+					//
+				});
+				btnLöschen.setOnAction((ActionEvent event) -> {
+					EintragFX eintragFX = getTableView().getItems().get(getIndex());
+					Alert confirmationDialog = new Alert(Alert.AlertType.CONFIRMATION);
+					confirmationDialog.setTitle("Eintrag löschen");
+					confirmationDialog.setContentText("Soll der Eintrag wirklich gelöscht werden, Änderungen können nicht rückgängig gemacht werden!");
+					Optional<ButtonType> clickedButton = confirmationDialog.showAndWait();
+					if (clickedButton.isPresent() && clickedButton.get() == ButtonType.OK) {
+						try {
+							Datenbank.deleteEintrag(eintragFX.getEintragId());
+							tableColumnsEintraege();
+						} catch (SQLException e) {
+							e.printStackTrace();
+						}
+					}
+				});
+			}
+			//Button nur anzeigen wenn Text in der Zeile gezeigt wird
+			@Override
+			public void updateItem(Node item, boolean empty) {
+				super.updateItem(item, empty);
+				if (empty) {
+					setGraphic(null);
+				} else {
+					setGraphic(hbButtons);
+				}
+			}
+		});
+	}
+	
+	//TableColumns zuordnen Dauereintraege tvBearbeitenDauereintraege
+	public void tableColumnsDauereintraege() {
+		getObservableListDauereintraege();
+		naechsteFaelligkeitCol.setCellValueFactory(new PropertyValueFactory<>("naechsteFaelligkeit"));
+		naechsteFaelligkeitCol.setCellFactory(column -> new TableCell<DauereintragFX, LocalDate>() {
+			@Override
+			protected void updateItem(LocalDate date, boolean empty) {
+				super.updateItem(date, empty);
+		        if (empty) {
+		           setText("");
+		        } else {
+		           setText(formatter.format(date));
+		        }
+		    }
+		});
+		naechsteFaelligkeitCol.setEditable(true);
+		titelDauereintragCol.setCellValueFactory(new PropertyValueFactory<>("titel"));
+		betragDauereintragCol.setCellValueFactory(new PropertyValueFactory<>("betrag"));
+		betragDauereintragCol.setCellFactory(column -> new TableCell<DauereintragFX, Double>() {
+			@Override
+			protected void updateItem(Double betrag, boolean empty) {
+				 super.updateItem(betrag, empty);
+				 if (empty) {
+				    setText(null);
+				 } else {
+					setText(currencyFormat.format(betrag));
+				 }
+			}
+		});
+		benutzerDauereintragCol.setCellValueFactory(new PropertyValueFactory<>("benutzerName"));
+		intervallCol.setCellValueFactory(new PropertyValueFactory<>("intervall"));
+		endeDauereintragCol.setCellValueFactory(new PropertyValueFactory<>("dauereintragEnde"));
+		endeDauereintragCol.setCellFactory(column -> new TableCell<DauereintragFX, LocalDate>() {
+			@Override
+			protected void updateItem(LocalDate date, boolean empty) {
+		        super.updateItem(date, empty);
+		        if (empty) {
+		            setText("");
+		        } else {
+		            setText(formatter.format(date));
+		        }
+		    }
+		});
+		addButtonToDauereintraegeTable(); 
+	}
+	
+	//TableColumn mit Buttons erstellen und TableView tvBearbeitenDauereintraege hinzufügen 
+	private void addButtonToDauereintraegeTable() {
+		bearbeitenDauereintragCol.setCellFactory(column -> new TableCell<>() {
+			private final Button btnBearbeiten = new Button("Update");
+			private final Button btnLöschen = new Button("Löschen");
+			HBox hbButtons = new HBox(10, btnBearbeiten, btnLöschen);
+			{
+				//ActionEvents für Buttons//                    	
+				btnBearbeiten.setOnAction((ActionEvent event) -> {
+					//
+				});
+				btnLöschen.setOnAction((ActionEvent event) -> {
+					DauereintragFX dauereintragFX = getTableView().getItems().get(getIndex());
+					Alert confirmationDialog = new Alert(Alert.AlertType.CONFIRMATION);
+					confirmationDialog.setTitle("Eintrag löschen");
+					confirmationDialog.setContentText("Soll der Eintrag wirklich gelöscht werden, Änderungen können nicht rückgängig gemacht werden!");
+					Optional<ButtonType> clickedButton = confirmationDialog.showAndWait();
+					if (clickedButton.isPresent() && clickedButton.get() == ButtonType.OK) {
+						try {
+							Datenbank.deleteDauereintrag(dauereintragFX.getDauereintragId());
+							tableColumnsDauereintraege();
+						} catch (SQLException e) {
+							e.printStackTrace();
+						}
+					}
+				});
+			}
+			//Button nur anzeigen wenn Text in der Zeile gezeigt wird
+			@Override
+			public void updateItem(Node item, boolean empty) {
+				super.updateItem(item, empty);
+				if (empty) {
+					setGraphic(null);
+				} else {
+					setGraphic(hbButtons);
+				}
+			}
+		});
+	}
 		
 	//Benutzer auslesen und der ObserverList hinzufügen
 	public void getObservableListBenutzer() {

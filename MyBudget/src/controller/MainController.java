@@ -574,7 +574,8 @@ public class MainController {
 						txtFavoritenTitel.getText(),
 						Double.parseDouble(txtFavoritenBetrag.getText()),
 						cbFavoritenBenutzer.getSelectionModel().getSelectedItem().getModellBenutzer(),
-						cbFavoritenKategorie.getSelectionModel().getSelectedItem().getModellKategorie()
+						cbFavoritenKategorie.getSelectionModel().getSelectedItem().getModellKategorie(),
+						cbFavoritenIntervall.getSelectionModel().getSelectedItem()
 						));
 			} catch (NumberFormatException | SQLException e) {
 				e.printStackTrace();
@@ -1042,6 +1043,11 @@ public class MainController {
 	@FXML public void ladeStatistik() {
 		setCbBenutzerStatistik();
 	}
+	
+	public void setToggleGroup() {
+		
+	}
+	
 	
 	//Statistik Methoden
 	//Add CheckBoxes to vbStatistikBenutzer

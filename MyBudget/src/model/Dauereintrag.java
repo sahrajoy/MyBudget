@@ -2,6 +2,8 @@ package model;
 
 import java.time.LocalDate;
 
+import javafx.scene.Node;
+
 public class Dauereintrag {
 
 	private int dauereintragId;
