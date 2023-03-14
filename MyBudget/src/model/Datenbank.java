@@ -278,61 +278,59 @@ public class Datenbank {
 	}
 
 	//Kategorien auslesen
-		public static ArrayList<Kategorie> readKategorie(String einnahmeOderAusgabe) throws SQLException {
-			return readKategorie(null, einnahmeOderAusgabe);
-		}
-		public static ArrayList<Kategorie> readKategorie(String kategorieName, String einnahmeOderAusgabe) throws SQLException{  	
-			Connection conn = null;
-			PreparedStatement stmt = null;
-			ResultSet rs = null;
-			ArrayList<Kategorie> alKategorien = new ArrayList<>();
-			boolean isEinnahmenParameter = einnahmeOderAusgabe.equals("Einnahmen");
-			String select = "SELECT * FROM " + KATEGORIE_TABLE;
-			if(kategorieName != null)
-				select += " WHERE " + KATEGORIE_NAME + "=?" + KATEGORIE_EINNAHMEODERAUSGABE + "=?";
+	public static ArrayList<Kategorie> readKategorie(String einnahmeOderAusgabe) throws SQLException {
+		return readKategorie(null, einnahmeOderAusgabe);
+	}
+	public static ArrayList<Kategorie> readKategorie(String kategorieName, String einnahmeOderAusgabe) throws SQLException{  	
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		ArrayList<Kategorie> alKategorien = new ArrayList<>();
+		boolean isEinnahmenParameter = einnahmeOderAusgabe.equals("Einnahmen");
+		String select = "SELECT * FROM " + KATEGORIE_TABLE;
+		if(kategorieName != null)
+			select += " WHERE " + KATEGORIE_NAME + "=?" + KATEGORIE_EINNAHMEODERAUSGABE + "=?";
+		else
+			select += " WHERE " + KATEGORIE_EINNAHMEODERAUSGABE + "=?";
+		try {
+			conn = DriverManager.getConnection(CONNECTION_URL);
+			stmt = conn.prepareStatement(select);
+			if(kategorieName != null) {
+				stmt.setString(1, kategorieName);
+				stmt.setBoolean(2, isEinnahmenParameter);
+			}
 			else
-				select += " WHERE " + KATEGORIE_EINNAHMEODERAUSGABE + "=?";
+				stmt.setBoolean(1, isEinnahmenParameter);
+			rs = stmt.executeQuery();
+			while(rs.next())
+				alKategorien.add(new Kategorie(
+						rs.getInt(KATEGORIE_ID), 
+						rs.getBoolean(KATEGORIE_EINNAHMEODERAUSGABE), 
+						rs.getString(KATEGORIE_NAME), 
+						rs.getBoolean(KATEGORIE_FAVORITE)));
+			rs.close();
+		}
+		catch(SQLException e) {
+			throw e;
+		}
+		finally {
 			try {
-				conn = DriverManager.getConnection(CONNECTION_URL);
-				stmt = conn.prepareStatement(select);
-				if(kategorieName != null) {
-					stmt.setString(1, kategorieName);
-					stmt.setBoolean(2, isEinnahmenParameter);
-				}
-				else
-					stmt.setBoolean(1, isEinnahmenParameter);
-				rs = stmt.executeQuery();
-				while(rs.next())
-					alKategorien.add(new Kategorie(
-							rs.getInt(KATEGORIE_ID), 
-							rs.getBoolean(KATEGORIE_EINNAHMEODERAUSGABE), 
-							rs.getString(KATEGORIE_NAME), 
-							rs.getBoolean(KATEGORIE_FAVORITE)));
-				rs.close();
+				if(stmt != null) 
+					stmt.close();
+				if(conn != null)
+					conn.close();
 			}
 			catch(SQLException e) {
 				throw e;
 			}
-			finally {
-				try {
-					if(stmt != null) 
-						stmt.close();
-					if(conn != null)
-						conn.close();
-				}
-				catch(SQLException e) {
-					throw e;
-				}
-			}
-			return alKategorien;
 		}
+		return alKategorien;
+	}
 	
 	//Kategorien nach Datum auslesen
 	public static ArrayList<Kategorie> readKategorieNachDatum(String einnahmeOderAusgabe, LocalDate anfangDatum, LocalDate endeDatum) throws SQLException {
 		return readKategorieNachDatum(null, einnahmeOderAusgabe, anfangDatum, endeDatum);
 	}
-	
-	//Kategorien nach Datum auslesen
 	public static ArrayList<Kategorie> readKategorieNachDatum(String kategorieName, String einnahmeOderAusgabe, LocalDate anfangDatum, LocalDate endeDatum) throws SQLException{  	
 		Connection conn = null;
 		PreparedStatement stmt = null;
@@ -671,9 +669,11 @@ public class Datenbank {
 							BENUTZER_TABLE + "." + BENUTZER_ID;
 		
 		if(benutzerId != getHaushaltId())
-			select += " WHERE " + DAUEREINTRAG_BENUTZERID + "=? AND " + KATEGORIE_EINNAHMEODERAUSGABE + "=?";
-		else
-			select += " WHERE " + KATEGORIE_EINNAHMEODERAUSGABE + "=?";
+			select += " WHERE " + 	DAUEREINTRAG_BENUTZERID + "=? AND " + 
+									KATEGORIE_EINNAHMEODERAUSGABE + "=?";
+		else 
+			select += " WHERE " +	KATEGORIE_EINNAHMEODERAUSGABE + "=?";
+		
 		try {
 			conn = DriverManager.getConnection(CONNECTION_URL);
 			stmt = conn.prepareStatement(select);
@@ -704,6 +704,49 @@ public class Datenbank {
 										rs.getBoolean(KATEGORIE_EINNAHMEODERAUSGABE), 
 										rs.getString(KATEGORIE_NAME), 
 										rs.getBoolean(KATEGORIE_FAVORITE))
+								));
+			}
+			rs.close();
+			}
+		catch(SQLException e) {
+			throw e;
+		}
+		finally {
+			try {
+				if(stmt != null) 
+					stmt.close();
+				if(conn != null)
+					conn.close();
+			}
+			catch(SQLException e) {
+				throw e;
+			}
+		}
+		return alDauereintraege;
+	}
+	public static ArrayList<Dauereintrag> readDauereintraegeAlle() throws SQLException{
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		ArrayList<Dauereintrag> alDauereintraege = new ArrayList<>();
+		String select = "SELECT * FROM " + DAUEREINTRAG_TABLE; 
+		try {
+			conn = DriverManager.getConnection(CONNECTION_URL);
+			stmt = conn.prepareStatement(select);
+			rs = stmt.executeQuery();
+			while(rs.next()) {			
+				alDauereintraege.add(
+						new Dauereintrag(
+								rs.getInt(DAUEREINTRAG_ID), 
+								rs.getDate(DAUEREINTRAG_NAECHSTEFAELLIGKEIT).toLocalDate(), 
+								rs.getString(DAUEREINTRAG_TITEL), 
+								rs.getDouble(DAUEREINTRAG_BETRAG), 
+								new Benutzer(
+										rs.getInt(DAUEREINTRAG_BENUTZERID)), 
+								Enum.valueOf(Intervall.class, rs.getString(DAUEREINTRAG_INTERVALL).toUpperCase()), 
+								rs.getDate(DAUEREINTRAG_ENDEDATUM).toLocalDate(), 
+								new Kategorie(
+										rs.getInt(DAUEREINTRAG_KATEGORIEID))
 								));
 			}
 			rs.close();

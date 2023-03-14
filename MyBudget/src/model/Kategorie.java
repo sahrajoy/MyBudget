@@ -30,6 +30,10 @@ public class Kategorie {
 		this.name = name;
 		this.favorite = favorite;
 	}
+	public Kategorie(int kategorieId) {
+		super();
+		this.kategorieId = kategorieId;
+	}
 	public Kategorie() {}
 	
 	public int getKategorieId() {

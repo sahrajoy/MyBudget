@@ -3,6 +3,7 @@ package controller;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.NumberFormat;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
@@ -103,21 +104,128 @@ public class MainController {
 		setFavoriteButtonAbleOrDisable();
 	}
 	
+	//ZEITRAUM------------------------------------------------------------------------------------------------------------------------------
 	//Zeitraum Anzeigen
 	LocalDate anfangZeitraum = LocalDate.now().withDayOfMonth(1);
 	int letzterTagMonat = LocalDate.now().lengthOfMonth();
 	int letzterTagJahr = LocalDate.now().lengthOfYear();
 	LocalDate endeZeitraum = anfangZeitraum.withDayOfMonth(letzterTagMonat);
-	String periodeZeitraum = null;
+	String periodeZeitraum = "month";
 		
+	//ActionEvent btnBearbeitenTag
+	@FXML public void setPeriodeTag(){
+		//Button Monat default entfernen
+		btnUebersichtMonat.setDefaultButton(false);
+		btnFavoritenMonat.setDefaultButton(false);
+		btnStatistikMonat.setDefaultButton(false);
+		//Periden Daten zurückgeben
+		periodeZeitraum = "'day'";
+		anfangZeitraum = LocalDate.now();
+		endeZeitraum = LocalDate.now();
+		lblUebersichtZeitraum.setText(anfangZeitraum.format(formatter));
+	}
+		
+	//ActionEvent btnBearbeitenWoche
+	@FXML public void setPeriodeWoche(){
+		//Button Monat default entfernen
+		btnUebersichtMonat.setDefaultButton(false);
+		btnFavoritenMonat.setDefaultButton(false);
+		btnStatistikMonat.setDefaultButton(false);
+		//Periden Daten zurückgeben
+		periodeZeitraum = "'week'";
+		anfangZeitraum = LocalDate.now().with(DayOfWeek.MONDAY);
+		endeZeitraum = LocalDate.now().with(DayOfWeek.SUNDAY);
+		//lblBearbeitenZeitraum neuen String hinterlegen
+		getZeitraum();
+	}
+	
+	//ActionEvent btnUebersichtMonat
+	@FXML public void setPeriodeMonat(ActionEvent event){
+		//Periden Daten zurückgeben
+		periodeZeitraum = "month";
+		anfangZeitraum = LocalDate.now().withDayOfMonth(1);
+		endeZeitraum = anfangZeitraum.withDayOfMonth(letzterTagMonat);
+		getZeitraum();
+	}
+	
+	//ActionEvent btnUebersichtJahr
+	@FXML public void setPeriodeJahr(ActionEvent event){
+		//Button Monat default entfernen
+		btnUebersichtMonat.setDefaultButton(false);
+		btnFavoritenMonat.setDefaultButton(false);
+		btnStatistikMonat.setDefaultButton(false);
+		//Periden Daten zurückgeben
+		periodeZeitraum = "year";
+		anfangZeitraum = LocalDate.now().withDayOfYear(1);
+		endeZeitraum = anfangZeitraum.withDayOfYear(letzterTagJahr);
+		getZeitraum();
+	}
+	
+	//ActionEvent btnUebersichtPfeilVorwaerts
+	@FXML public void periodeZeitraumVor(ActionEvent event){
+		if(periodeZeitraum.equalsIgnoreCase("'day'")) {
+			anfangZeitraum = anfangZeitraum.plus(1, ChronoUnit.DAYS);
+			endeZeitraum = endeZeitraum.plus(1, ChronoUnit.DAYS);
+			//lblBearbeitenZeitraum neuen String hinterlegen
+			lblUebersichtZeitraum.setText(anfangZeitraum.format(formatter));
+		}
+		else if(periodeZeitraum.equalsIgnoreCase("'week'")) {
+			anfangZeitraum = anfangZeitraum.plus(1, ChronoUnit.WEEKS);
+			endeZeitraum = endeZeitraum.plus(1, ChronoUnit.WEEKS);
+			//lblBearbeitenZeitraum neuen String hinterlegen
+			getZeitraum();
+		}
+		else if(periodeZeitraum.equalsIgnoreCase("month")) {
+			anfangZeitraum = anfangZeitraum.plus(1, ChronoUnit.MONTHS);
+			endeZeitraum = endeZeitraum.plus(1, ChronoUnit.MONTHS);
+			getZeitraum();
+		}
+		else if(periodeZeitraum.equalsIgnoreCase("year")) {
+			anfangZeitraum = anfangZeitraum.plus(1, ChronoUnit.YEARS);
+			endeZeitraum = endeZeitraum.plus(1, ChronoUnit.YEARS);
+			getZeitraum();
+		}
+	}
+	
+	//ActionEvent btnUebersichtPfeilZurueck
+	@FXML public void periodeZeitraumZurueck(ActionEvent event){
+		if(periodeZeitraum == "'day'") {
+			anfangZeitraum = anfangZeitraum.minus(1, ChronoUnit.DAYS);
+			endeZeitraum = endeZeitraum.minus(1, ChronoUnit.DAYS);
+			//lblBearbeitenZeitraum neuen String hinterlegen
+			lblUebersichtZeitraum.setText(anfangZeitraum.format(formatter));
+		}
+		else if(periodeZeitraum == "'week'") {
+			anfangZeitraum = anfangZeitraum.minus(1, ChronoUnit.WEEKS);
+			endeZeitraum = endeZeitraum.minus(1, ChronoUnit.WEEKS);
+			//lblBearbeitenZeitraum neuen String hinterlegen
+			getZeitraum();
+		}
+		else if(periodeZeitraum == "month") {
+			anfangZeitraum = anfangZeitraum.minus(1, ChronoUnit.MONTHS);
+			endeZeitraum = endeZeitraum.minus(1, ChronoUnit.MONTHS);
+			getZeitraum();
+		}
+		else if(periodeZeitraum == "year") {
+			anfangZeitraum = anfangZeitraum.minus(1, ChronoUnit.YEARS);
+			endeZeitraum = endeZeitraum.minus(1, ChronoUnit.YEARS);
+			getZeitraum();
+		}	
+	}
+	
+	//Retourniert einen String für lblUebersichtZeitraum
+	public void getZeitraum() {
+		lblUebersichtZeitraum.setText(anfangZeitraum.format(formatter) + " bis " + endeZeitraum.format(formatter));
+		lblFavoritenZeitraum.setText(anfangZeitraum.format(formatter) + " bis " + endeZeitraum.format(formatter));
+		lblStatistikZeitraum.setText(anfangZeitraum.format(formatter) + " bis " + endeZeitraum.format(formatter));
+	}
+	
 	//BENUTZER------------------------------------------------------------------------------------------------------------------------------
 	@FXML ObservableList<BenutzerFX> olBenutzer = FXCollections.observableArrayList();		
 	
 	@FXML HBox hbBenutzer;
-	@FXML Button bBenutzerAnlegenEntfernen; 			
-	//ActionEvent für bBenutzerAnlegenEntfernen ist benutzerAnlegen()
-	@FXML ComboBox<BenutzerFX> cbBenutzer;
-	//ActionEvent für cbBenutzer ist datenAktualisieren()
+	@FXML Button bBenutzerAnlegenEntfernen; //ActionEvent ist benutzerAnlegen()
+	@FXML ComboBox<BenutzerFX> cbBenutzer; //ActionEvent ist datenAktualisieren()
 	
 	//TableViews neu laden
 	@FXML public void datenAktualisieren(){	
@@ -179,9 +287,9 @@ public class MainController {
 	//TAB EINNAHMEN
 	@FXML Tab tabEinnahmen;
 	@FXML AnchorPane apEinnahmen;
-	@FXML Button btnEinnahmenUebersicht;	
-	@FXML Button btnEinnahmenFavoriten;			
-	@FXML Button btnEinnahmenDauereintraege;
+	@FXML Button btnEinnahmenUebersicht; //ActionEvent ist showStackEinnahmenUebersicht()
+	@FXML Button btnEinnahmenFavoriten; //ActionEvent ist showStackEinnahmenFavoriten()
+	@FXML Button btnEinnahmenDauereintraege; //ActionEvent ist showStackEinnahmenDauereintraege()
 	
 	//Wechseln der Stacks in Einnahmen per klick auf Button(Übersicht, Favoriten, Dauereintraege)		
 	@FXML public void showStackEinnahmenUebersicht(ActionEvent event) {
@@ -203,9 +311,9 @@ public class MainController {
 	//TAB AUSGABEN
 	@FXML Tab tabAusgaben;
 	@FXML AnchorPane apAusgaben;
-	@FXML Button btnAusgabenUebersicht;
-	@FXML Button btnAusgabenFavoriten;							
-	@FXML Button btnAusgabenDauereintraege;
+	@FXML Button btnAusgabenUebersicht; //ActionEvent ist showStackAusgabenUebersicht()
+	@FXML Button btnAusgabenFavoriten; //ActionEvent ist showStackAusgabenFavoriten()	
+	@FXML Button btnAusgabenDauereintraege; //ActionEvent ist showStackAusgabenDauereintraege()
 	
 	//Wechseln der Stacks in Ausgaben per klick auf Button(Übersicht, Favoriten, Dauereintraege)
 	@FXML public void showStackAusgabenUebersicht(ActionEvent event) {
@@ -232,13 +340,13 @@ public class MainController {
 	@FXML StackPane spUebersicht;
 	
 	@FXML HBox hbUebersichtButtonsZeitraum;
-	@FXML Button btnUebersichtMonat;
-	@FXML Button btnUebersichtJahr;
+	@FXML Button btnUebersichtMonat; //ActionEvent ist setPeriodeMonat()
+	@FXML Button btnUebersichtJahr; //ActionEvent ist setPeriodeJahr()
 	
 	@FXML HBox hbUebersichtZeitraum;
-	@FXML Button btnUebersichtPfeilZurueck;
+	@FXML Button btnUebersichtPfeilZurueck; //ActionEvent ist periodeZeitraumZurueck()
 	@FXML Label lblUebersichtZeitraum;
-	@FXML Button btnUebersichtPfeilVorwaerts;
+	@FXML Button btnUebersichtPfeilVorwaerts; //ActionEvent ist periodeZeitraumVor()
 	
 	@FXML GridPane gpUebersichtPlus;
 	@FXML Button btnPlus; //ActionEvent ist bearbeitenDialog()
@@ -252,9 +360,10 @@ public class MainController {
 	
 	//Inhalt für Übersicht laden
 	public void ladeUebersicht() {
-		setPeriodeMonat();
+		//Zeitraum laden
 		btnUebersichtMonat.setDefaultButton(true);
 		getZeitraum();
+		//TableView laden
 		tableColumnsUebersicht();
 		tvUebersicht.setItems(olKategorie);
 		tvUebersicht.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
@@ -324,6 +433,7 @@ public class MainController {
 			    }
 		});
 	}
+	
 	//TableColumn mit Buttons erstellen und TableView tvUebersicht hinzufügen
 	KategorieFX kategorieFX = null;
 	private void addButtonToUebersichtTable() {
@@ -409,75 +519,22 @@ public class MainController {
         buttonCol.setStyle("-fx-alignment: CENTER;");
         tvUebersicht.getColumns().add(buttonCol);
     }
-		
-	//ActionEvent btnUebersichtMonat
-	@FXML public void setPeriodeMonat(){
-		//Periden Daten zurückgeben
-		periodeZeitraum = "month";
-		anfangZeitraum = LocalDate.now().withDayOfMonth(1);
-		endeZeitraum = anfangZeitraum.withDayOfMonth(letzterTagMonat);
-		getZeitraum();
-	}
-	
-	//ActionEvent btnUebersichtJahr
-	@FXML public void setPeriodeJahr(){
-		//Button btnBearbeitenMonat wieder auf default false setzen
-		btnUebersichtMonat.setDefaultButton(false);
-		//Periden Daten zurückgeben
-		periodeZeitraum = "year";
-		anfangZeitraum = LocalDate.now().withDayOfYear(1);
-		endeZeitraum = anfangZeitraum.withDayOfYear(letzterTagJahr);
-		getZeitraum();
-	}
-	
-	//ActionEvent btnUebersichtPfeilVorwaerts
-	@FXML public void periodeZeitraumVor(){
-		if(periodeZeitraum.equalsIgnoreCase("month")) {
-			anfangZeitraum = anfangZeitraum.plus(1, ChronoUnit.MONTHS);
-			endeZeitraum = endeZeitraum.plus(1, ChronoUnit.MONTHS);
-			getZeitraum();
-		}
-		else if(periodeZeitraum.equalsIgnoreCase("year")) {
-			anfangZeitraum = anfangZeitraum.plus(1, ChronoUnit.YEARS);
-			endeZeitraum = endeZeitraum.plus(1, ChronoUnit.YEARS);
-			getZeitraum();
-		}
-	}
-	
-	//ActionEvent btnUebersichtPfeilZurueck
-	@FXML public void periodeZeitraumZurueck(){
-		if(periodeZeitraum == "month") {
-			anfangZeitraum = anfangZeitraum.minus(1, ChronoUnit.MONTHS);
-			endeZeitraum = endeZeitraum.minus(1, ChronoUnit.MONTHS);
-			getZeitraum();
-		}
-		if(periodeZeitraum == "year") {
-			anfangZeitraum = anfangZeitraum.minus(1, ChronoUnit.YEARS);
-			endeZeitraum = endeZeitraum.minus(1, ChronoUnit.YEARS);
-			getZeitraum();
-		}	
-	}
-	
-	//Retourniert einen String für lblUebersichtZeitraum
-	public void getZeitraum() {
-		lblUebersichtZeitraum.setText(anfangZeitraum.format(formatter) + " bis " + endeZeitraum.format(formatter));
-	}
-	
+
 	//FAVORITEN ----------------------------------------------------------------------------------------------------------------------------
 	@FXML ObservableList<KategorieFX> olFavoriten = FXCollections.observableArrayList();
 	
 	//StackPane Favoriten
 	@FXML StackPane spFavoriten;		
 	@FXML HBox hbFavoritenButtonsZeitraum;
-	@FXML Button btnFavoritenTag;
-	@FXML Button btnFavoritenWoche;
-	@FXML Button btnFavoritenMonat;
-	@FXML Button btnFavoritenJahr;
+	@FXML Button btnFavoritenTag; //ActionEvent ist setPeriodeTag()
+	@FXML Button btnFavoritenWoche; //ActionEvent ist setPeriodeWoche()
+	@FXML Button btnFavoritenMonat; //ActionEvent ist setPeriodeMonat()
+	@FXML Button btnFavoritenJahr; //ActionEvent ist setPeriodeJahr()
 	
 	@FXML HBox hbFavoritenZeitraum;
-	@FXML Button btnFavoritenPfeilZurueck;
+	@FXML Button btnFavoritenPfeilZurueck; //ActionEvent ist periodeZeitraumZurueck()
 	@FXML Label lblFavoritenZeitraum;
-	@FXML Button btnFavoritenPfeilVorwaerts;
+	@FXML Button btnFavoritenPfeilVorwaerts; //ActionEvent ist periodeZeitraumVor()
 	
 	@FXML HBox hbFavoritenEingabezeile;
 	@FXML Label lblFavoritenKategorie;
@@ -491,18 +548,22 @@ public class MainController {
 	@FXML Label lblFavoritenBenutzer;
 	@FXML ComboBox<BenutzerFX> cbFavoritenBenutzer;
 	@FXML Label lblFavoritenDauereintrag;
-	@FXML ComboBox<Intervall> cbFavoritenIntervall;
+	@FXML ComboBox<Intervall> cbFavoritenIntervall; //ActionEvent ist setDatePickerEndeDauereintragOnAbleFavoriten()
 	@FXML Label lblFavoritenEndeDauereintrag;
 	@FXML DatePicker dpFavoritenEndeDauereintrag;
-	@FXML Button btnFavoritenSpeichern;					//Prüfungen auf vollständigkeit der eingegebenen Daten hinterlegen und speichern in DB
+	@FXML Button btnFavoritenSpeichern; //ActionEvent ist btnSpeichernUeberFavoriten()
 	
 	@FXML TabPane tpFavoriten;
 
 	//Inhalt für Favoriten laden
 	public void ladeFavoriten() {
-		//Defaults setzen und Listen laden für Eingabezeile
+		//Zeitraum laden
+		btnFavoritenMonat.setDefaultButton(true);
+		getZeitraum();
+		//btnEinnahmenUebersicht als Default entfernen
 		btnEinnahmenUebersicht.setDefaultButton(false);
 		btnAusgabenUebersicht.setDefaultButton(false);
+		//Defaults setzen und Listen laden für Eingabezeile
 		dpFavoritenDatum.setValue(LocalDate.now());
 		cbFavoritenKategorie.setItems(olKategorie);
 		cbFavoritenKategorie.setPromptText("Kategorie wählen");
@@ -539,6 +600,7 @@ public class MainController {
 		}
 	}
 	
+	//DatePicker dpFavoritenEndeDauereintrag set on able oder disable
 	@FXML public void setDatePickerEndeDauereintragOnAbleFavoriten(ActionEvent event){
 		if(cbFavoritenIntervall.getSelectionModel().getSelectedItem() == Intervall.KEINE)
 			dpFavoritenEndeDauereintrag.setDisable(true);
@@ -614,7 +676,7 @@ public class MainController {
 	}
 	
 	//Einträge nach Kategorie aus der Datenbank auslesen und in ObservableList eintragen und TableView erstellen
-	@FXML public Node getObservableListUndTableViewEintraegeNachKategorie() {
+	public Node getObservableListUndTableViewEintraegeNachKategorie() {
 		ObservableList<EintragFX> olEintraege = FXCollections.observableArrayList();
 		TableView<EintragFX> tvFavoriten = new TableView<>(olEintraege);
 		try {
@@ -749,8 +811,8 @@ public class MainController {
 	@FXML Label lblDauereintraegeDauereintrag;
 	@FXML ComboBox<Intervall> cbDauereintraegeIntervall;
 	@FXML Label lblDauereintraegeEndeDauereintrag;
-	@FXML DatePicker dpDauereintraegeEndeDauereintrag;
-	@FXML Button btnDauereintraegeSpeichern;	
+	@FXML DatePicker dpDauereintraegeEndeDauereintrag; //ActionEvent ist setDatePickerEndeDauereintragOnAble
+	@FXML Button btnDauereintraegeSpeichern; //ActionEvent ist btnSpeichernUeberDauereintrag
 	
 	//TableView Dauereinträge
 	@FXML TableView<DauereintragFX> tvDauereintraege;
@@ -763,7 +825,8 @@ public class MainController {
 	@FXML TableColumn<DauereintragFX, LocalDate> endeDauereintragCol;
 	
 	//Inhalt für Dauereintrag laden
-	@FXML public void ladeDauereintraege() {
+	public void ladeDauereintraege() {
+		//btnEinnahmenUebersicht als Default entfernen
 		btnEinnahmenUebersicht.setDefaultButton(false);
 		btnAusgabenUebersicht.setDefaultButton(false);
 		lblDauereintraegeAktuellesDatum.setText(LocalDate.now().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)));
@@ -779,13 +842,13 @@ public class MainController {
 		cbDauereintraegeIntervall.getItems().setAll(Intervall.values());
 		cbDauereintraegeIntervall.setValue(Intervall.KEINE);
 		dpDauereintraegeEndeDauereintrag.setDisable(true);
-		//TableView
+		//TableView laden
 		tvDauereintraege.setItems(olDauereintraege);
 		tableColumnsDauereintraege();
 		tvDauereintraege.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 		}
 	
-	//Set DatePicker on able
+	//DatePicker dpDauereintraegeEndeDauereintrag set on able oder disable
 	@FXML public void setDatePickerEndeDauereintragOnAble(ActionEvent event) {
 		if(cbDauereintraegeIntervall.getSelectionModel().getSelectedItem() == Intervall.KEINE)
 			dpDauereintraegeEndeDauereintrag.setDisable(true);
@@ -795,7 +858,7 @@ public class MainController {
 	}
 	
 	//Dauereinträge nach Benutzer und Einnahmen/Ausgaben und ObservableList hinzufügen
-	@FXML public void getObservableListDauereintraege() {
+	public void getObservableListDauereintraege() {
 		try {
 			ArrayList<Dauereintrag> alDauereintraege = Datenbank.readDauereintraege(cbBenutzer.getSelectionModel().getSelectedItem().getBenutzerId(), tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText());
 			olDauereintraege.clear();
@@ -808,33 +871,18 @@ public class MainController {
 	
 	//Einnahmen Einträge/Dauereinträge speichern über Dauereintrag	
 	@FXML public void btnSpeichernUeberDauereintrag(ActionEvent event) {
-		if(cbDauereintraegeIntervall.getValue().toString().equalsIgnoreCase("keine")) {
-//			try {
-//				Datenbank.insertEintrag(new Eintrag(
-//					dpDauereintraegeDatum.getValue(),
-//					txtDauereintraegeTitel.getText(),
-//					Double.parseDouble(txtDauereintraegeBetrag.getText()),
-//					cbDauereintraegeBenutzer.getSelectionModel().getSelectedItem().getModellBenutzer(),
-//					cbDauereintraegeKategorie.getSelectionModel().getSelectedItem().getModellKategorie()
-//						));
-//			} catch (NumberFormatException | SQLException e) {
-//				e.printStackTrace();
-//			}
-		}
-		else {
-			try {
-				Datenbank.insertDauereintrag(new Dauereintrag(
-					dpDauereintraegeDatum.getValue(),
-					txtDauereintraegeTitel.getText(),
-					Double.parseDouble(txtDauereintraegeBetrag.getText()),
-					cbDauereintraegeBenutzer.getSelectionModel().getSelectedItem().getModellBenutzer(),
-					cbDauereintraegeIntervall.getSelectionModel().getSelectedItem(),
-					dpDauereintraegeEndeDauereintrag.getValue(),
-					cbDauereintraegeKategorie.getSelectionModel().getSelectedItem().getModellKategorie()
-						));
-			} catch (NumberFormatException | SQLException e) {
-				e.printStackTrace();
-			}
+		try {
+			Datenbank.insertDauereintrag(new Dauereintrag(
+				dpDauereintraegeDatum.getValue(),
+				txtDauereintraegeTitel.getText(),
+				Double.parseDouble(txtDauereintraegeBetrag.getText()),
+				cbDauereintraegeBenutzer.getSelectionModel().getSelectedItem().getModellBenutzer(),
+				cbDauereintraegeIntervall.getSelectionModel().getSelectedItem(),
+				dpDauereintraegeEndeDauereintrag.getValue(),
+				cbDauereintraegeKategorie.getSelectionModel().getSelectedItem().getModellKategorie()
+					));
+		} catch (NumberFormatException | SQLException e) {
+			e.printStackTrace();
 		}
 		tableColumnsDauereintraege();
 	}
@@ -937,41 +985,38 @@ public class MainController {
 	
 	//Dauereintraege durchgehen und ausführen								
 	public void dauereintraegeAusfuehren() throws SQLException {
-//			readDauereintraege
-//			überprüfen ob Dauereinträge bestehen mit dauereintragEnde nach dem aktuellen Datum und naechsteFaelligkeit vor dem aktuellen Datum
-//			wenn ja, dann insertEintrag(new Eintrag(Daten aus Dauereintrag));
-//			anschließend das naechsteFaelligkeit Datum auf die nächste Fälligkeit setzen setzen
-//			bis die nächste fälligkeit in der zukunft liegt
-		getObservableListDauereintraege();
-		for(DauereintragFX einDauereintragFX : olDauereintraege) {
-			while(einDauereintragFX.getDauereintragEnde().isAfter(LocalDate.now()) && einDauereintragFX.getNaechsteFaelligkeit().isBefore(LocalDate.now())){
+		ArrayList<Dauereintrag> alDauereintraege = Datenbank.readDauereintraegeAlle();
+		for(Dauereintrag einDauereintrag : alDauereintraege) {
+			//überprüfen ob Dauereintrag dauereintragEnde nach dem aktuellen Datum und naechsteFaelligkeit vor dem aktuellen Datum hat
+			while(einDauereintrag.getEnddatum().isAfter(LocalDate.now()) && einDauereintrag.getNaechsteFaelligkeit().isBefore(LocalDate.now())){
 				Datenbank.insertEintrag(new Eintrag(
-						einDauereintragFX.getNaechsteFaelligkeit(),
-						einDauereintragFX.getTitel(),
-						einDauereintragFX.getBetrag(),
-						einDauereintragFX.getBenutzer(),
-						einDauereintragFX.getKategorie(),
-						einDauereintragFX.getIntervall()					
+						einDauereintrag.getNaechsteFaelligkeit(),
+						einDauereintrag.getDeTitel(),
+						einDauereintrag.getDeBetrag(),
+						einDauereintrag.getDeBenutzer(),
+						einDauereintrag.getDeKategorie(),
+						einDauereintrag.getIntervall()					
 						));
-				if(einDauereintragFX.getIntervall().equals(Intervall.TAEGLICH)) {
-					Datenbank.updateDauereintragNaechsteFaelligkeit(einDauereintragFX.getNaechsteFaelligkeit().plusDays(1), einDauereintragFX.getDauereintragId());
-					einDauereintragFX.setNaechsteFaelligkeit(einDauereintragFX.getNaechsteFaelligkeit().plusDays(1));
+				//das naechsteFaelligkeit Datum auf die nächste Fälligkeit setzen setzen
+				if(einDauereintrag.getIntervall().equals(Intervall.TAEGLICH)) {
+					Datenbank.updateDauereintragNaechsteFaelligkeit(einDauereintrag.getNaechsteFaelligkeit().plusDays(1), einDauereintrag.getDauereintragId());
+					einDauereintrag.setNaechsteFaelligkeit(einDauereintrag.getNaechsteFaelligkeit().plusDays(1));
 				}
-				if(einDauereintragFX.getIntervall().equals(Intervall.WOECHENTLICH)) {
-					Datenbank.updateDauereintragNaechsteFaelligkeit(einDauereintragFX.getNaechsteFaelligkeit().plusWeeks(1), einDauereintragFX.getDauereintragId());
-					einDauereintragFX.setNaechsteFaelligkeit(einDauereintragFX.getNaechsteFaelligkeit().plusWeeks(1));
+				if(einDauereintrag.getIntervall().equals(Intervall.WOECHENTLICH)) {
+					Datenbank.updateDauereintragNaechsteFaelligkeit(einDauereintrag.getNaechsteFaelligkeit().plusWeeks(1), einDauereintrag.getDauereintragId());
+					einDauereintrag.setNaechsteFaelligkeit(einDauereintrag.getNaechsteFaelligkeit().plusWeeks(1));
 				}
-				if(einDauereintragFX.getIntervall().equals(Intervall.MONATLICH)) {
-					Datenbank.updateDauereintragNaechsteFaelligkeit(einDauereintragFX.getNaechsteFaelligkeit().plusMonths(1), einDauereintragFX.getDauereintragId());
-					einDauereintragFX.setNaechsteFaelligkeit(einDauereintragFX.getNaechsteFaelligkeit().plusMonths(1));
+				if(einDauereintrag.getIntervall().equals(Intervall.MONATLICH)) {
+					Datenbank.updateDauereintragNaechsteFaelligkeit(einDauereintrag.getNaechsteFaelligkeit().plusMonths(1), einDauereintrag.getDauereintragId());
+					einDauereintrag.setNaechsteFaelligkeit(einDauereintrag.getNaechsteFaelligkeit().plusMonths(1));
 				}
-				if(einDauereintragFX.getIntervall().equals(Intervall.QUARTALSWEISE)) {
-					Datenbank.updateDauereintragNaechsteFaelligkeit(einDauereintragFX.getNaechsteFaelligkeit().plusMonths(3), einDauereintragFX.getDauereintragId());
-					einDauereintragFX.setNaechsteFaelligkeit(einDauereintragFX.getNaechsteFaelligkeit().plusMonths(3));
+				if(einDauereintrag.getIntervall().equals(Intervall.QUARTALSWEISE)) {
+					Datenbank.updateDauereintragNaechsteFaelligkeit(einDauereintrag.getNaechsteFaelligkeit().plusMonths(3), einDauereintrag.getDauereintragId());
+					einDauereintrag.setNaechsteFaelligkeit(einDauereintrag.getNaechsteFaelligkeit().plusMonths(3));
 				}
-				if(einDauereintragFX.getIntervall().equals(Intervall.JAEHRLICH)) {
-					Datenbank.updateDauereintragNaechsteFaelligkeit(einDauereintragFX.getNaechsteFaelligkeit().plusYears(1), einDauereintragFX.getDauereintragId());
-					einDauereintragFX.setNaechsteFaelligkeit(einDauereintragFX.getNaechsteFaelligkeit().plusYears(1));
+				if(einDauereintrag.getIntervall().equals(Intervall.JAEHRLICH)) {
+					Datenbank.updateDauereintragNaechsteFaelligkeit(einDauereintrag.getNaechsteFaelligkeit().plusYears(1), einDauereintrag.getDauereintragId());
+					einDauereintrag.setNaechsteFaelligkeit(einDauereintrag.getNaechsteFaelligkeit().plusYears(1));
 				}
 			}
 		}
@@ -979,6 +1024,7 @@ public class MainController {
 	
 	//TAB STATISTIK-------------------------------------------------------------------------------------------------------------------------
 	@FXML Tab tabStatistik;
+	
 	@FXML HBox hbStatistik;
 	@FXML VBox vbStatistikButtonsDiagramm;
 	@FXML HBox hbBilderDiagramme;
@@ -987,26 +1033,31 @@ public class MainController {
 	@FXML HBox hbRadioButtonsDiagramme;
 	@FXML RadioButton rbTortendiagramm; 
 	@FXML RadioButton rbSaeulendiagramm;
+	
 	@FXML VBox vbStatistikZeitraum;
 	@FXML HBox hbStatistikButtonsZeitraum;
-	@FXML Button bStatistikMonat;
-	@FXML Button bStatistikJahr;
+	@FXML Button btnStatistikMonat; //ActionEvent ist setPeriodeMonat()
+	@FXML Button btnStatistikJahr; //ActionEvent ist setPeriodeJahr()
 	@FXML HBox hbStatistikZeitraum;
-	@FXML Button bStatistikPfeilZurueck;
+	@FXML Button btnStatistikPfeilZurueck; //ActionEvent ist periodeZeitraumZurueck()
 	@FXML Label lblStatistikZeitraum;
-	@FXML Button bStatistikPfeilVorwaerts;
+	@FXML Button btnStatistikPfeilVorwaerts; //ActionEvent ist periodeZeitraumVor()
+	
 	@FXML VBox vbStatistikBenutzer;
 	@FXML Pane pStatistik;
 	
 	//Inhalt für Statistik laden
 	@FXML public void ladeStatistik() {
+		//Zeitraum laden
+		btnStatistikMonat.setDefaultButton(true);
+		getZeitraum();
+		//CheckBoxen für Benutzer laden
 		setCbBenutzerStatistik();
 	}
 	
 	public void setToggleGroup() {
 		
 	}
-	
 	
 	//Statistik Methoden
 	//Add CheckBoxes to vbStatistikBenutzer
@@ -1037,6 +1088,7 @@ public class MainController {
 		} 
 	}
 		
+	
 }
 
 

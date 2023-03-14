@@ -127,7 +127,7 @@
                                           <HBox fx:id="hbFavoritenZeitraum" alignment="CENTER" layoutX="549.0" layoutY="3.0" spacing="10.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="35.0">
                                              <children>
                                                 <Button fx:id="btnFavoritenPfeilZurueck" mnemonicParsing="false" text="&lt;" />
-                                                <Label fx:id="lblFavoritenZeitraum" alignment="CENTER" contentDisplay="CENTER" minHeight="-Infinity" prefHeight="25.0" prefWidth="48.0" text="Zeitraum" />
+                                                <Label fx:id="lblFavoritenZeitraum" alignment="CENTER" contentDisplay="CENTER" minHeight="-Infinity" prefHeight="25.0" text="Zeitraum" />
                                                 <Button fx:id="btnFavoritenPfeilVorwaerts" mnemonicParsing="false" text="&gt;" />
                                              </children>
                                              <padding>
@@ -293,15 +293,15 @@
                                                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                                              </padding>
                                              <children>
-                                                <Button fx:id="bStatistikMonat" mnemonicParsing="false" prefHeight="25.0" prefWidth="70.0" text="Monat" />
-                                                <Button fx:id="bStatistikJahr" mnemonicParsing="false" prefHeight="25.0" prefWidth="70.0" text="Jahr" />
+                                                <Button fx:id="btnStatistikMonat" mnemonicParsing="false" prefHeight="25.0" prefWidth="70.0" text="Monat" />
+                                                <Button fx:id="btnStatistikJahr" mnemonicParsing="false" prefHeight="25.0" prefWidth="70.0" text="Jahr" />
                                              </children>
                                           </HBox>
                                           <HBox fx:id="hbStatistikZeitraum" alignment="CENTER" spacing="10.0">
                                              <children>
-                                                <Button fx:id="bStatistikPfeilZurueck" mnemonicParsing="false" text="&lt;" />
+                                                <Button fx:id="btnStatistikPfeilZurueck" mnemonicParsing="false" text="&lt;" />
                                                 <Label fx:id="lblStatistikZeitraum" alignment="CENTER" contentDisplay="CENTER" minHeight="-Infinity" prefHeight="25.0" prefWidth="48.0" text="Zeitraum" />
-                                                <Button fx:id="bStatistikPfeilVorwaerts" mnemonicParsing="false" text="&gt;" />
+                                                <Button fx:id="btnStatistikPfeilVorwaerts" mnemonicParsing="false" text="&gt;" />
                                              </children>
                                              <padding>
                                                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
