@@ -241,8 +241,7 @@ public class MainController {
 	@FXML Button btnUebersichtPfeilVorwaerts;
 	
 	@FXML GridPane gpUebersichtPlus;
-	@FXML Button btnPlus;
-	//ActionEvent für btnPlus ist bearbeitenDialog()
+	@FXML Button btnPlus; //ActionEvent ist bearbeitenDialog()
 	
 	@FXML AnchorPane apUebersicht;
 	
@@ -287,6 +286,7 @@ public class MainController {
 			Optional<ButtonType> clickedButton = dialogBearbeiten.showAndWait();
 			if(clickedButton.get() == ButtonType.OK ) {	
 				ladeUebersicht();
+				kategorieFX = new KategorieFX(new Kategorie(0, isEinnahmenParameter, "", false));
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -352,6 +352,8 @@ public class MainController {
                     			setFavoriteButtonAbleOrDisable();
                     			//Liste neu laden
                     			tableColumnsUebersicht();
+                    			boolean isEinnahmenParameter = tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText().equals("Einnahmen");	
+                    			kategorieFX = new KategorieFX(new Kategorie(0, isEinnahmenParameter, "", false));
                     		} catch (SQLException e) {
                     			e.printStackTrace(); 
                     		}
@@ -367,7 +369,7 @@ public class MainController {
                         });
                     	//ActionEvents für Löschen Button
                     	btnLöschen.setOnAction((ActionEvent event) -> {
-                    		kategorieFX  = getTableView().getItems().get(getIndex());
+                    		kategorieFX = getTableView().getItems().get(getIndex());
                     		Alert confirmationDialog = new Alert(Alert.AlertType.CONFIRMATION);
                     	    confirmationDialog.setTitle("Kategorie löschen");
                     	    confirmationDialog.setContentText("Soll die Kategorie wirklich gelöscht werden, mit der Kategorie werden auch alle: "
@@ -382,6 +384,8 @@ public class MainController {
                     	    		e.printStackTrace();
                     	    	}
                     	    }
+                    	    boolean isEinnahmenParameter = tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText().equals("Einnahmen");	
+                			kategorieFX = new KategorieFX(new Kategorie(0, isEinnahmenParameter, "", false));
                         });
                     }
                     //Button nur anzeigen wenn Text in der Zeile gezeigt wird
@@ -532,6 +536,14 @@ public class MainController {
 				btnAusgabenFavoriten.setDisable(false);
 			else
 				btnAusgabenFavoriten.setDisable(true);
+		}
+	}
+	
+	@FXML public void setDatePickerEndeDauereintragOnAbleFavoriten(ActionEvent event){
+		if(cbFavoritenIntervall.getSelectionModel().getSelectedItem() == Intervall.KEINE)
+			dpFavoritenEndeDauereintrag.setDisable(true);
+		else {
+			dpFavoritenEndeDauereintrag.setDisable(false);
 		}
 	}
 	
@@ -774,14 +786,12 @@ public class MainController {
 		}
 	
 	//Set DatePicker on able
-	@FXML public void setDatePickerEndeDauereintragOnAble() {
-		if(cbFavoritenIntervall.getSelectionModel().getSelectedItem() == Intervall.KEINE)
-			dpFavoritenEndeDauereintrag.setDisable(true);
-		else if(cbDauereintraegeIntervall.getSelectionModel().getSelectedItem() == Intervall.KEINE)
+	@FXML public void setDatePickerEndeDauereintragOnAble(ActionEvent event) {
+		if(cbDauereintraegeIntervall.getSelectionModel().getSelectedItem() == Intervall.KEINE)
 			dpDauereintraegeEndeDauereintrag.setDisable(true);
-		else
-			dpFavoritenEndeDauereintrag.setDisable(false);
-		dpDauereintraegeEndeDauereintrag.setDisable(false);
+		else {
+			dpDauereintraegeEndeDauereintrag.setDisable(false);
+		}
 	}
 	
 	//Dauereinträge nach Benutzer und Einnahmen/Ausgaben und ObservableList hinzufügen

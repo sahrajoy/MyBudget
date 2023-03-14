@@ -167,7 +167,7 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 	    }
 	    if (!exists) {
 	    	if(mainController.getTabPane().getSelectionModel().getSelectedItem() == mainController.tabEinnahmen) {	
-	    		if(kategorieFX == null) {
+	    		if(kategorieFX.getName() == "") {
 	    			Kategorie k = new Kategorie(true, txtBearbeitenKategorieName.getText(), false);
 	    			try {
 	    				Datenbank.insertKategorie(k);	
@@ -187,7 +187,7 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 	    		}
 	    	}
 	    	if(mainController.getTabPane().getSelectionModel().getSelectedItem() == mainController.tabAusgaben) {	
-	    		if(kategorieFX == null) {
+	    		if(kategorieFX.getName() == "") {
 	    			Kategorie k1 = new Kategorie(false, txtBearbeitenKategorieName.getText(), false);
 	    			try {
 	    				Datenbank.insertKategorie(k1);		
