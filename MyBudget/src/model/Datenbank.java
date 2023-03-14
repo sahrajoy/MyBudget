@@ -276,10 +276,62 @@ public class Datenbank {
 	}
 
 	//Kategorien auslesen
-	public static ArrayList<Kategorie> readKategorie(String einnahmeOderAusgabe, LocalDate anfangDatum, LocalDate endeDatum) throws SQLException {
-		return readKategorie(null, einnahmeOderAusgabe, anfangDatum, endeDatum);
+		public static ArrayList<Kategorie> readKategorie(String einnahmeOderAusgabe) throws SQLException {
+			return readKategorie(null, einnahmeOderAusgabe);
+		}
+		public static ArrayList<Kategorie> readKategorie(String kategorieName, String einnahmeOderAusgabe) throws SQLException{  	
+			Connection conn = null;
+			PreparedStatement stmt = null;
+			ResultSet rs = null;
+			ArrayList<Kategorie> alKategorien = new ArrayList<>();
+			boolean isEinnahmenParameter = einnahmeOderAusgabe.equals("Einnahmen");
+			String select = "SELECT * FROM " + KATEGORIE_TABLE;
+			if(kategorieName != null)
+				select += " WHERE " + KATEGORIE_NAME + "=?" + KATEGORIE_EINNAHMEODERAUSGABE + "=?";
+			else
+				select += " WHERE " + KATEGORIE_EINNAHMEODERAUSGABE + "=?";
+			try {
+				conn = DriverManager.getConnection(CONNECTION_URL);
+				stmt = conn.prepareStatement(select);
+				if(kategorieName != null) {
+					stmt.setString(1, kategorieName);
+					stmt.setBoolean(2, isEinnahmenParameter);
+				}
+				else
+					stmt.setBoolean(1, isEinnahmenParameter);
+				rs = stmt.executeQuery();
+				while(rs.next())
+					alKategorien.add(new Kategorie(
+							rs.getInt(KATEGORIE_ID), 
+							rs.getBoolean(KATEGORIE_EINNAHMEODERAUSGABE), 
+							rs.getString(KATEGORIE_NAME), 
+							rs.getBoolean(KATEGORIE_FAVORITE)));
+				rs.close();
+			}
+			catch(SQLException e) {
+				throw e;
+			}
+			finally {
+				try {
+					if(stmt != null) 
+						stmt.close();
+					if(conn != null)
+						conn.close();
+				}
+				catch(SQLException e) {
+					throw e;
+				}
+			}
+			return alKategorien;
+		}
+	
+	//Kategorien nach Datum auslesen
+	public static ArrayList<Kategorie> readKategorieNachDatum(String einnahmeOderAusgabe, LocalDate anfangDatum, LocalDate endeDatum) throws SQLException {
+		return readKategorieNachDatum(null, einnahmeOderAusgabe, anfangDatum, endeDatum);
 	}
-	public static ArrayList<Kategorie> readKategorie(String kategorieName, String einnahmeOderAusgabe, LocalDate anfangDatum, LocalDate endeDatum) throws SQLException{  	
+	
+	//Kategorien nach Datum auslesen
+	public static ArrayList<Kategorie> readKategorieNachDatum(String kategorieName, String einnahmeOderAusgabe, LocalDate anfangDatum, LocalDate endeDatum) throws SQLException{  	
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
@@ -308,7 +360,7 @@ public class Datenbank {
 				LocalDateTime ldt1 = LocalDateTime.of(anfangDatum, LocalTime.of(0, 0, 0));
 				java.sql.Date dateBeginn = new java.sql.Date(ldt1.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()); 
 				stmt.setDate(3, dateBeginn);
-				LocalDateTime ldt2 = LocalDateTime.of(anfangDatum, LocalTime.of(0, 0, 0));
+				LocalDateTime ldt2 = LocalDateTime.of(endeDatum, LocalTime.of(0, 0, 0));
 				java.sql.Date dateEnd = new java.sql.Date(ldt2.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()); 
 				stmt.setDate(4, dateEnd);
 			}
@@ -347,7 +399,7 @@ public class Datenbank {
 		return alKategorien;
 	}
 	//Kategorie Summe aller Eintrage auslesen
-	public static double readKategorieSummeEintraege(String kategorieName, String einnahmeOderAusgabe, String zeitspanne, LocalDate anfangDatum, LocalDate endeDatum) throws SQLException{  		
+	public static double readKategorieSummeEintraege(String kategorieName, String einnahmeOderAusgabe) throws SQLException{  		
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;

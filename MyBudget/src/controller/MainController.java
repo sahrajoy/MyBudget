@@ -296,10 +296,10 @@ public class MainController {
 	//Kategorien aus Datenbank auslesen und ObservableList hinzufügen
 	public void getObservableListKategorien() {
 		try {
-			ArrayList<Kategorie> alKategorien = Datenbank.readKategorie(tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText(), anfangZeitraum, endeZeitraum);
+			ArrayList<Kategorie> alKategorien = Datenbank.readKategorie(tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText());
 			olKategorie.clear();
 			for(Kategorie eineKategorie : alKategorien) {
-				eineKategorie.setSummeEintraege(Datenbank.readKategorieSummeEintraege(eineKategorie.getName(), tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText(), anfangZeitraum, endeZeitraum));
+				eineKategorie.setSummeEintraege(Datenbank.readKategorieSummeEintraege(eineKategorie.getName(), tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText()));
 				olKategorie.add(new KategorieFX(eineKategorie));									
 			}
 		} catch (SQLException e) {

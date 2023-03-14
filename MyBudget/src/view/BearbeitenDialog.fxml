@@ -30,7 +30,7 @@
                   <Button fx:id="btnBearbeitenTag" mnemonicParsing="false" onAction="#setPeriodeTag" prefHeight="25.0" prefWidth="70.0" text="Tag" />
                   <Button fx:id="btnBearbeitenWoche" mnemonicParsing="false" onAction="#setPeriodeWoche" prefHeight="25.0" prefWidth="70.0" text="Woche" />
                   <Button fx:id="btnBearbeitenMonat" mnemonicParsing="false" onAction="#setPeriodeMonat" prefHeight="25.0" prefWidth="70.0" text="Monat" />
-                  <Button fx:id="btnBearbeitenJahr" mnemonicParsing="false" onAction="#setPeriodeJahr44444" prefHeight="25.0" prefWidth="70.0" text="Jahr" />
+                  <Button fx:id="btnBearbeitenJahr" mnemonicParsing="false" onAction="#setPeriodeJahr" prefHeight="25.0" prefWidth="70.0" text="Jahr" />
                </children>
             </HBox>
             <HBox fx:id="hbBearbeitenZeitraum" alignment="CENTER" spacing="10.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="45.0">
