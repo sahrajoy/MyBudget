@@ -84,7 +84,7 @@
                                                 <ComboBox fx:id="cbDauereintraegeIntervall" minHeight="25.0" minWidth="115.0" onAction="#setDatePickerEndeDauereintragOnAble" prefHeight="25.0" prefWidth="115.0" />
                                                 <Label fx:id="lblDauereintraegeEndeDauereintrag" alignment="CENTER_RIGHT" minHeight="25.0" minWidth="100.0" prefHeight="25.0" prefWidth="100.0" text="Ende Dauereintrag" />
                                                 <DatePicker fx:id="dpDauereintraegeEndeDauereintrag" minHeight="25.0" minWidth="96.0" prefHeight="25.0" prefWidth="96.0" />
-                                                <Button fx:id="btnDauereintraegeSpeichern" contentDisplay="CENTER" mnemonicParsing="false" onAction="#btnSpeichernUeberDauereintrag" prefHeight="25.0" prefWidth="122.0" text="Speichern" />
+                                                <Button fx:id="btnDauereintraegeSpeichern" contentDisplay="CENTER" mnemonicParsing="false" onAction="#speichernUeberDauereintrag" prefHeight="25.0" prefWidth="122.0" text="Speichern" />
                                              </children>
                                              <padding>
                                                 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
@@ -118,17 +118,17 @@
                                                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                                              </padding>
                                              <children>
-                                                <Button fx:id="btnFavoritenTag" mnemonicParsing="false" prefHeight="25.0" prefWidth="70.0" text="Tag" />
-                                                <Button fx:id="btnFavoritenWoche" mnemonicParsing="false" prefHeight="25.0" prefWidth="70.0" text="Woche" />
-                                                <Button fx:id="btnFavoritenMonat" mnemonicParsing="false" prefHeight="25.0" prefWidth="70.0" text="Monat" />
-                                                <Button fx:id="btnFavoritenJahr" mnemonicParsing="false" prefHeight="25.0" prefWidth="70.0" text="Jahr" />
+                                                <Button fx:id="btnFavoritenTag" mnemonicParsing="false" onAction="#setPeriodeTag" prefHeight="25.0" prefWidth="70.0" text="Tag" />
+                                                <Button fx:id="btnFavoritenWoche" mnemonicParsing="false" onAction="#setPeriodeWoche" prefHeight="25.0" prefWidth="70.0" text="Woche" />
+                                                <Button fx:id="btnFavoritenMonat" mnemonicParsing="false" onAction="#setPeriodeMonat" prefHeight="25.0" prefWidth="70.0" text="Monat" />
+                                                <Button fx:id="btnFavoritenJahr" mnemonicParsing="false" onAction="#setPeriodeJahr" prefHeight="25.0" prefWidth="70.0" text="Jahr" />
                                              </children>
                                           </HBox>
                                           <HBox fx:id="hbFavoritenZeitraum" alignment="CENTER" layoutX="549.0" layoutY="3.0" spacing="10.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="35.0">
                                              <children>
-                                                <Button fx:id="btnFavoritenPfeilZurueck" mnemonicParsing="false" text="&lt;" />
-                                                <Label fx:id="lblFavoritenZeitraum" alignment="CENTER" contentDisplay="CENTER" minHeight="-Infinity" prefHeight="25.0" prefWidth="48.0" text="Zeitraum" />
-                                                <Button fx:id="btnFavoritenPfeilVorwaerts" mnemonicParsing="false" text="&gt;" />
+                                                <Button fx:id="btnFavoritenPfeilZurueck" mnemonicParsing="false" onAction="#periodeZeitraumZurueck" text="&lt;" />
+                                                <Label fx:id="lblFavoritenZeitraum" alignment="CENTER" contentDisplay="CENTER" minHeight="-Infinity" prefHeight="25.0" text="Zeitraum" />
+                                                <Button fx:id="btnFavoritenPfeilVorwaerts" mnemonicParsing="false" onAction="#periodeZeitraumVor" text="&gt;" />
                                              </children>
                                              <padding>
                                                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
@@ -149,8 +149,8 @@
                                                 <Label fx:id="lblFavoritenDauereintrag" alignment="CENTER_RIGHT" minHeight="25.0" minWidth="72.0" prefHeight="25.0" prefWidth="72.0" text="Dauereintrag" />
                                                 <ComboBox fx:id="cbFavoritenIntervall" minHeight="25.0" minWidth="115.0" onAction="#setDatePickerEndeDauereintragOnAble" prefHeight="25.0" prefWidth="115.0" />
                                                 <Label fx:id="lblFavoritenEndeDauereintrag" alignment="CENTER_RIGHT" minHeight="25.0" minWidth="100.0" prefHeight="25.0" prefWidth="100.0" text="Ende Dauereintrag" />
-                                                <DatePicker fx:id="dpFavoritenEndeDauereintrag" minHeight="25.0" minWidth="96.0" onAction="#setDatePickerEndeDauereintragOnAble" prefHeight="25.0" prefWidth="96.0" />
-                                                <Button fx:id="btnFavoritenSpeichern" contentDisplay="CENTER" mnemonicParsing="false" onAction="#btnSpeichernUeberFavoriten" prefHeight="25.0" prefWidth="90.0" text="Speichern" />
+                                                <DatePicker fx:id="dpFavoritenEndeDauereintrag" minHeight="25.0" minWidth="96.0" prefHeight="25.0" prefWidth="96.0" />
+                                                <Button fx:id="btnFavoritenSpeichern" contentDisplay="CENTER" mnemonicParsing="false" onAction="#speichernUeberFavoriten" prefHeight="25.0" prefWidth="90.0" text="Speichern" />
                                              </children>
                                              <padding>
                                                 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
@@ -293,15 +293,15 @@
                                                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                                              </padding>
                                              <children>
-                                                <Button fx:id="bStatistikMonat" mnemonicParsing="false" prefHeight="25.0" prefWidth="70.0" text="Monat" />
-                                                <Button fx:id="bStatistikJahr" mnemonicParsing="false" prefHeight="25.0" prefWidth="70.0" text="Jahr" />
+                                                <Button fx:id="btnStatistikMonat" mnemonicParsing="false" onAction="#setPeriodeMonat" prefHeight="25.0" prefWidth="70.0" text="Monat" />
+                                                <Button fx:id="btnStatistikJahr" mnemonicParsing="false" onAction="#setPeriodeJahr" prefHeight="25.0" prefWidth="70.0" text="Jahr" />
                                              </children>
                                           </HBox>
                                           <HBox fx:id="hbStatistikZeitraum" alignment="CENTER" spacing="10.0">
                                              <children>
-                                                <Button fx:id="bStatistikPfeilZurueck" mnemonicParsing="false" text="&lt;" />
-                                                <Label fx:id="lblStatistikZeitraum" alignment="CENTER" contentDisplay="CENTER" minHeight="-Infinity" prefHeight="25.0" prefWidth="48.0" text="Zeitraum" />
-                                                <Button fx:id="bStatistikPfeilVorwaerts" mnemonicParsing="false" text="&gt;" />
+                                                <Button fx:id="btnStatistikPfeilZurueck" mnemonicParsing="false" onAction="#periodeZeitraumZurueck" text="&lt;" />
+                                                <Label fx:id="lblStatistikZeitraum" alignment="CENTER" contentDisplay="CENTER" minHeight="-Infinity" prefHeight="25.0" text="Zeitraum" />
+                                                <Button fx:id="btnStatistikPfeilVorwaerts" mnemonicParsing="false" onAction="#periodeZeitraumVor" text="&gt;" />
                                              </children>
                                              <padding>
                                                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />

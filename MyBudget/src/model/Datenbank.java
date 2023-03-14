@@ -347,7 +347,7 @@ public class Datenbank {
 		return alKategorien;
 	}
 	//Kategorie Summe aller Eintrage auslesen
-	public static double readKategorieSummeEintraege(String kategorieName, String einnahmeOderAusgabe, String zeitspanne, LocalDate anfangDatum, LocalDate endeDatum) throws SQLException{  		
+	public static double readKategorieSummeEintraege(int kategorieId, String einnahmeOderAusgabe, LocalDate anfangDatum, LocalDate endeDatum) throws SQLException{  		
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
@@ -357,15 +357,23 @@ public class Datenbank {
 				+ " INNER JOIN " + KATEGORIE_TABLE 
 				+ " ON " + 	EINTRAG_TABLE + "." + EINTRAG_KATEGORIEID + "=" + 
 							KATEGORIE_TABLE + "." + KATEGORIE_ID;
-		if(kategorieName != null)
-			select += " WHERE " + 	KATEGORIE_NAME + "=? AND " + 
-									KATEGORIE_EINNAHMEODERAUSGABE + "=?";
+		if(kategorieId != 0)
+			select += " WHERE " + 	KATEGORIE_ID + "=? AND " + 
+									KATEGORIE_EINNAHMEODERAUSGABE + "=? AND " +
+									EINTRAG_DATUM + " >=? AND " + 
+									EINTRAG_DATUM + " <=?";
 		try {
 			conn = DriverManager.getConnection(CONNECTION_URL);
 			stmt = conn.prepareStatement(select);
-			if(kategorieName != null) {
-				stmt.setString(1, kategorieName);
+			if(kategorieId != 0) {
+				stmt.setInt(1, kategorieId);
 				stmt.setBoolean(2, isEinnahmenParameter);
+				LocalDateTime ldt1 = LocalDateTime.of(anfangDatum, LocalTime.of(0, 0, 0));
+				java.sql.Date dateBeginn = new java.sql.Date(ldt1.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()); 
+				stmt.setDate(3, dateBeginn);
+				LocalDateTime ldt2 = LocalDateTime.of(anfangDatum, LocalTime.of(0, 0, 0));
+				java.sql.Date dateEnd = new java.sql.Date(ldt2.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()); 
+				stmt.setDate(4, dateEnd);
 			}
 			rs = stmt.executeQuery();
 			while(rs.next())

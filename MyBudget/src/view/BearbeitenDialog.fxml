@@ -30,14 +30,14 @@
                   <Button fx:id="btnBearbeitenTag" mnemonicParsing="false" onAction="#setPeriodeTag" prefHeight="25.0" prefWidth="70.0" text="Tag" />
                   <Button fx:id="btnBearbeitenWoche" mnemonicParsing="false" onAction="#setPeriodeWoche" prefHeight="25.0" prefWidth="70.0" text="Woche" />
                   <Button fx:id="btnBearbeitenMonat" mnemonicParsing="false" onAction="#setPeriodeMonat" prefHeight="25.0" prefWidth="70.0" text="Monat" />
-                  <Button fx:id="btnBearbeitenJahr" mnemonicParsing="false" onAction="#setPeriodeJahr44444" prefHeight="25.0" prefWidth="70.0" text="Jahr" />
+                  <Button fx:id="btnBearbeitenJahr" mnemonicParsing="false" onAction="#setPeriodeJahr" prefHeight="25.0" prefWidth="70.0" text="Jahr" />
                </children>
             </HBox>
             <HBox fx:id="hbBearbeitenZeitraum" alignment="CENTER" spacing="10.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="45.0">
                <children>
-                  <Button fx:id="btnBearbeitenPfeilZurueck" mnemonicParsing="false" text="&lt;" />
+                  <Button fx:id="btnBearbeitenPfeilZurueck" mnemonicParsing="false" onAction="#periodeZeitraumZurueck" text="&lt;" />
                   <Label fx:id="lblBearbeitenZeitraum" alignment="CENTER" contentDisplay="CENTER" minHeight="-Infinity" prefHeight="25.0" prefWidth="48.0" text="Zeitraum" />
-                  <Button fx:id="btnBearbeitenPfeilVorwaerts" mnemonicParsing="false" text="&gt;" />
+                  <Button fx:id="btnBearbeitenPfeilVorwaerts" mnemonicParsing="false" onAction="#periodeZeitraumVor" text="&gt;" />
                </children>
                <padding>
                   <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />

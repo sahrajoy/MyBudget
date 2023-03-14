@@ -465,7 +465,7 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 	@FXML public void setPeriodeTag(){
 		//Button btnBearbeitenMonat wieder auf default false setzen
 		btnBearbeitenMonat.setDefaultButton(false);
-		//Periden Daten zurückgeben
+		//Perioden Daten zurückgeben
 		periodeZeitraum = "'day'";
 		anfangZeitraum = LocalDate.now();
 		endeZeitraum = LocalDate.now();
@@ -476,7 +476,7 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 	@FXML public void setPeriodeWoche(){
 		//Button btnBearbeitenMonat wieder auf default false setzen
 		btnBearbeitenMonat.setDefaultButton(false);
-		//Periden Daten zurückgeben
+		//Perioden Daten zurückgeben
 		periodeZeitraum = "'week'";
 		anfangZeitraum = LocalDate.now().with(DayOfWeek.MONDAY);
 		endeZeitraum = LocalDate.now().with(DayOfWeek.SUNDAY);
@@ -486,7 +486,7 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 		
 	//ActionEvent btnBearbeitenMonat
 	@FXML public void setPeriodeMonat(){
-		//Periden Daten zurückgeben
+		//Perioden Daten zurückgeben
 		periodeZeitraum = "'month'";
 		anfangZeitraum = LocalDate.now().withDayOfMonth(1);
 		endeZeitraum = anfangZeitraum.withDayOfMonth(letzterTagMonat);
@@ -498,7 +498,7 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 	@FXML public void setPeriodeJahr(){
 		//Button btnBearbeitenMonat wieder auf default false setzen
 		btnBearbeitenMonat.setDefaultButton(false);
-		//Periden Daten zurückgeben
+		//Perioden Daten zurückgeben
 		periodeZeitraum = "'year'";
 		anfangZeitraum = LocalDate.now().withDayOfYear(1);
 		endeZeitraum = anfangZeitraum.withDayOfYear(letzterTagJahr);
