@@ -205,6 +205,8 @@ public class Datenbank {
 	public static ArrayList<Benutzer> readBenutzer() throws SQLException{
 			return readBenutzer(null);
 	}
+	
+	//Benutzer auslesen
 	public static ArrayList<Benutzer> readBenutzer(String benutzerName) throws SQLException{				
 		Connection conn = null;
 		PreparedStatement stmt = null;
