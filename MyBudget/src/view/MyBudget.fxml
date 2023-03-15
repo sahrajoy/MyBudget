@@ -263,7 +263,7 @@
                                           </HBox>
                                           <HBox fx:id="hbRadioButtonsDiagramme" alignment="CENTER_LEFT" spacing="35.0">
                                              <children>
-                                                <RadioButton mnemonicParsing="false">
+                                                <RadioButton fx:id="rbTortendiagramm" mnemonicParsing="false" onAction="#showTortendiagramm">
                                                    <padding>
                                                       <Insets bottom="10.0" left="10.0" right="10.0" top="5.0" />
                                                    </padding>
@@ -271,7 +271,7 @@
                                                       <Font size="8.0" />
                                                    </font>
                                                 </RadioButton>
-                                                <RadioButton mnemonicParsing="false">
+                                                <RadioButton fx:id="rbSaeulendiagramm" mnemonicParsing="false" onAction="#showSaulendiagramm">
                                                    <padding>
                                                       <Insets bottom="10.0" left="10.0" right="10.0" top="5.0" />
                                                    </padding>
@@ -300,7 +300,7 @@
                                           <HBox fx:id="hbStatistikZeitraum" alignment="CENTER" spacing="10.0">
                                              <children>
                                                 <Button fx:id="btnStatistikPfeilZurueck" mnemonicParsing="false" text="&lt;" />
-                                                <Label fx:id="lblStatistikZeitraum" alignment="CENTER" contentDisplay="CENTER" minHeight="-Infinity" prefHeight="25.0" prefWidth="48.0" text="Zeitraum" />
+                                                <Label fx:id="lblStatistikZeitraum" alignment="CENTER" contentDisplay="CENTER" minHeight="-Infinity" prefHeight="25.0" text="Zeitraum" />
                                                 <Button fx:id="btnStatistikPfeilVorwaerts" mnemonicParsing="false" text="&gt;" />
                                              </children>
                                              <padding>
@@ -316,7 +316,11 @@
                                     </VBox>
                                  </children>
                               </HBox>
-                              <Pane fx:id="pStatistik" layoutY="130.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="130.0" />
+                              <AnchorPane layoutY="130.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="130.0">
+                                 <children>
+                                    <Pane fx:id="pStatistik" style="-fx-alignment: CENTER;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                 </children>
+                              </AnchorPane>
                            </children></AnchorPane>
                     </content>
                   </Tab>

@@ -21,6 +21,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.chart.PieChart;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -39,6 +40,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.ImageView;
@@ -1031,8 +1033,8 @@ public class MainController {
 	@FXML ImageView ivTortendiagramm;
 	@FXML ImageView ivSaulendiagramm;
 	@FXML HBox hbRadioButtonsDiagramme;
-	@FXML RadioButton rbTortendiagramm; 
-	@FXML RadioButton rbSaeulendiagramm;
+	@FXML RadioButton rbTortendiagramm; //ActionEvent ist showTortendiagramm()
+	@FXML RadioButton rbSaeulendiagramm; //ActionEvent ist showSaulendiagramm()
 	
 	@FXML VBox vbStatistikZeitraum;
 	@FXML HBox hbStatistikButtonsZeitraum;
@@ -1048,15 +1050,23 @@ public class MainController {
 	
 	//Inhalt für Statistik laden
 	@FXML public void ladeStatistik() {
+		//setze rbTortendiagramm als Default
+		rbTortendiagramm.setSelected(true);
+		showTortendiagramm(null);
 		//Zeitraum laden
 		btnStatistikMonat.setDefaultButton(true);
 		getZeitraum();
+		//RadioButtons in ToggleGroup packen
+		setToggleGroup();
 		//CheckBoxen für Benutzer laden
 		setCbBenutzerStatistik();
 	}
 	
+	//Set RadioButtons in ToggleGroup und setze den gewählten RadioButton auf selectedRadioButton 
 	public void setToggleGroup() {
-		
+		ToggleGroup toggleGroup = new ToggleGroup();
+		rbTortendiagramm.setToggleGroup(toggleGroup);
+		rbSaeulendiagramm.setToggleGroup(toggleGroup);
 	}
 	
 	//Statistik Methoden
@@ -1087,8 +1097,43 @@ public class MainController {
 //			    benutzerFX.doSomething();												// perform action when CheckBox is not selected - Methode hinterlegen
 		} 
 	}
-		
 	
+	//Tortendiagramme erstellen und Pane pStatistk hinzufügen
+	@FXML public void showTortendiagramm(ActionEvent event) {
+																						//Benutzer(immer nur einer möglich) und Zeitraum hinzufügen
+		PieChart tortenDiagrammEinnahmen = new PieChart();
+		HBox hb1 = new HBox(tortenDiagrammEinnahmen);
+		tortenDiagrammEinnahmen.setTitle("Einnahmen");
+		PieChart tortenDiagrammAusgaben = new PieChart();
+		HBox hb2 = new HBox(tortenDiagrammAusgaben);
+		tortenDiagrammAusgaben.setTitle("Ausgaben");
+		//Tortendiagramm Einnahmen erstellen
+		try {
+			//Einnahmen Kategorien auslesen 
+			ArrayList<Kategorie> alKategorienEinnahmen = Datenbank.readKategorie(tabEinnahmen.getText());
+			//Kategorien durch iterieren Name und Summe dem Einnahmen-Diagramm hinzufügen
+			for(Kategorie eineKategorie : alKategorienEinnahmen) {
+				eineKategorie.setSummeEintraege(Datenbank.readKategorieSummeEintraege(eineKategorie.getName(), tabEinnahmen.getText()));
+				tortenDiagrammEinnahmen.getData().add(new PieChart.Data(eineKategorie.getName(), eineKategorie.getSummeEintraege()));
+			}
+			//Ausgaben Kategorien auslesen 
+			ArrayList<Kategorie> alKategorienAusgaben = Datenbank.readKategorie(tabAusgaben.getText());
+			//Kategorien durch iterieren Name und Summe dem Ausgaben-Diagramm hinzufügen
+			for(Kategorie eineKategorie : alKategorienAusgaben) {
+				eineKategorie.setSummeEintraege(Datenbank.readKategorieSummeEintraege(eineKategorie.getName(), tabAusgaben.getText()));
+				tortenDiagrammAusgaben.getData().add(new PieChart.Data(eineKategorie.getName(), eineKategorie.getSummeEintraege()));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		HBox hbDiagramme = new HBox(hb1, hb2);
+		pStatistik.getChildren().add(hbDiagramme);
+	}
+	
+	@FXML public void showSaulendiagramm(ActionEvent event){
+																						//Benutzer(immer nur einer möglich) und Zeitraum hinzufügen
+		
+	}
 }
 
 
