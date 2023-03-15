@@ -57,19 +57,19 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 	NumberStringConverter converter = new NumberStringConverter("#0.00");
 		
 	@FXML HBox hbBearbeitenButtonsZeitraum;
-	@FXML Button btnBearbeitenTag;
-	@FXML Button btnBearbeitenWoche;
-	@FXML Button btnBearbeitenMonat;
-	@FXML Button btnBearbeitenJahr;
+	@FXML Button btnBearbeitenTag; //ActionEvent ist setPeriodeTag()
+	@FXML Button btnBearbeitenWoche; //ActionEvent ist setPeriodeWoche()
+	@FXML Button btnBearbeitenMonat; //ActionEvent ist setPeriodeMonat()
+	@FXML Button btnBearbeitenJahr; //ActionEvent ist setPeriodeJahr()
 	
 	@FXML HBox hbBearbeitenZeitraum;
-	@FXML Button btnBearbeitenPfeilZurueck;
+	@FXML Button btnBearbeitenPfeilZurueck; //ActionEvent ist periodeZeitraumZurueck()
 	@FXML Label lblBearbeitenZeitraum;
-	@FXML Button btnBearbeitenPfeilVorwaerts;
+	@FXML Button btnBearbeitenPfeilVorwaerts; //ActionEvent ist periodeZeitraumVor()
 	
 	@FXML HBox hbBearbeitenKategorieName;
 	@FXML TextField txtBearbeitenKategorieName;
-	@FXML Button btnBearbeitenKategorieName;
+	@FXML Button btnBearbeitenKategorieName; //ActionEvent ist kategorieSpeichern()
 	
 	@FXML HBox hbBearbeitenEingabezeile;
 	@FXML Label lblBearbeitenDatum;
@@ -81,10 +81,10 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 	@FXML Label lblBearbeitenBenutzer;
 	@FXML ComboBox<BenutzerFX> cbBearbeitenBenutzer;
 	@FXML Label lblBearbeitenDauereintrag;
-	@FXML ComboBox<Intervall> cbBearbeitenIntervall;
+	@FXML ComboBox<Intervall> cbBearbeitenIntervall; //ActionEvent ist setDatePickerEndeDauereintragOnAble()
 	@FXML Label lblBearbeitenEndeDauereintrag;
 	@FXML DatePicker dpBearbeitenEndeDauereintrag;
-	@FXML Button btnBearbeitenSpeichern;
+	@FXML Button btnBearbeitenSpeichern; //ActionEvent ist btnEintragSpeichern()
 	
 	@FXML TabPane tpBearbeiten;
 	
@@ -248,7 +248,6 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 
 	//TableColumns zuordnen Eintraege tvBearbeitenEintraege
 	public void tableColumnsEintraege() {
-//		getObservableListEintraege();
 		datumCol.setCellValueFactory(new PropertyValueFactory<>("datum"));
 		datumCol.setCellFactory(column -> new TableCell<EintragFX, LocalDate>() {
 			@Override
@@ -323,7 +322,6 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 	
 	//TableColumns zuordnen Dauereintraege tvBearbeitenDauereintraege
 	public void tableColumnsDauereintraege() {
-//		getObservableListDauereintraege();
 		naechsteFaelligkeitCol.setCellValueFactory(new PropertyValueFactory<>("naechsteFaelligkeit"));
 		naechsteFaelligkeitCol.setCellFactory(column -> new TableCell<DauereintragFX, LocalDate>() {
 			@Override
@@ -370,14 +368,10 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 	//TableColumn mit Buttons erstellen und TableView tvBearbeitenDauereintraege hinzufügen 
 	private void addButtonToDauereintraegeTable() {
 		bearbeitenDauereintragCol.setCellFactory(column -> new TableCell<>() {
-			private final Button btnBearbeiten = new Button("Update");
 			private final Button btnLöschen = new Button("Löschen");
-			HBox hbButtons = new HBox(10, btnBearbeiten, btnLöschen);
+			HBox hbButtons = new HBox(10, btnLöschen);
 			{
-				//ActionEvents für Buttons//                    	
-				btnBearbeiten.setOnAction((ActionEvent event) -> {
-					//
-				});
+				//ActionEvent für Button
 				btnLöschen.setOnAction((ActionEvent event) -> {
 					DauereintragFX dauereintragFX = getTableView().getItems().get(getIndex());
 					Alert confirmationDialog = new Alert(Alert.AlertType.CONFIRMATION);
@@ -462,109 +456,109 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 	String periodeZeitraum = null;
 	
 	//ActionEvent btnBearbeitenTag
-		@FXML public void setPeriodeTag(){
-			//Button btnBearbeitenMonat wieder auf default false setzen
-			btnBearbeitenMonat.setDefaultButton(false);
-			//Periden Daten zurückgeben
-			periodeZeitraum = "'day'";
-			anfangZeitraum = LocalDate.now();
-			endeZeitraum = LocalDate.now();
+	@FXML public void setPeriodeTag(){
+		//Button btnBearbeitenMonat wieder auf default false setzen
+		btnBearbeitenMonat.setDefaultButton(false);
+		//Periden Daten zurückgeben
+		periodeZeitraum = "'day'";
+		anfangZeitraum = LocalDate.now();
+		endeZeitraum = LocalDate.now();
+		lblBearbeitenZeitraum.setText(anfangZeitraum.format(formatter));
+	}
+	
+	//ActionEvent btnBearbeitenWoche
+	@FXML public void setPeriodeWoche(){
+		//Button btnBearbeitenMonat wieder auf default false setzen
+		btnBearbeitenMonat.setDefaultButton(false);
+		//Periden Daten zurückgeben
+		periodeZeitraum = "'week'";
+		anfangZeitraum = LocalDate.now().with(DayOfWeek.MONDAY);
+		endeZeitraum = LocalDate.now().with(DayOfWeek.SUNDAY);
+		//lblBearbeitenZeitraum neuen String hinterlegen
+		getZeitraum();
+	}
+	
+	//ActionEvent btnBearbeitenMonat
+	@FXML public void setPeriodeMonat(){
+		//Periden Daten zurückgeben
+		periodeZeitraum = "'month'";
+		anfangZeitraum = LocalDate.now().withDayOfMonth(1);
+		endeZeitraum = anfangZeitraum.withDayOfMonth(letzterTagMonat);
+		//lblBearbeitenZeitraum neuen String hinterlegen
+		getZeitraum();
+	}
+	
+	//ActionEvent btnBearbeitenJahr
+	@FXML public void setPeriodeJahr(){
+		//Button btnBearbeitenMonat wieder auf default false setzen
+		btnBearbeitenMonat.setDefaultButton(false);
+		//Periden Daten zurückgeben
+		periodeZeitraum = "'year'";
+		anfangZeitraum = LocalDate.now().withDayOfYear(1);
+		endeZeitraum = anfangZeitraum.withDayOfYear(letzterTagJahr);
+		//lblBearbeitenZeitraum neuen String hinterlegen
+		getZeitraum();
+	}
+	
+	//ActionEvent btnUebersichtPfeilVorwaerts
+	@FXML public void periodeZeitraumVor(){
+		if(periodeZeitraum.equalsIgnoreCase("'day'")) {
+			anfangZeitraum = anfangZeitraum.plus(1, ChronoUnit.DAYS);
+			endeZeitraum = endeZeitraum.plus(1, ChronoUnit.DAYS);
+			//lblBearbeitenZeitraum neuen String hinterlegen
 			lblBearbeitenZeitraum.setText(anfangZeitraum.format(formatter));
 		}
-			
-		//ActionEvent btnBearbeitenWoche
-		@FXML public void setPeriodeWoche(){
-			//Button btnBearbeitenMonat wieder auf default false setzen
-			btnBearbeitenMonat.setDefaultButton(false);
-			//Periden Daten zurückgeben
-			periodeZeitraum = "'week'";
-			anfangZeitraum = LocalDate.now().with(DayOfWeek.MONDAY);
-			endeZeitraum = LocalDate.now().with(DayOfWeek.SUNDAY);
+		else if(periodeZeitraum.equalsIgnoreCase("'week'")) {
+			anfangZeitraum = anfangZeitraum.plus(1, ChronoUnit.WEEKS);
+			endeZeitraum = endeZeitraum.plus(1, ChronoUnit.WEEKS);
 			//lblBearbeitenZeitraum neuen String hinterlegen
 			getZeitraum();
 		}
-			
-		//ActionEvent btnBearbeitenMonat
-		@FXML public void setPeriodeMonat(){
-			//Periden Daten zurückgeben
-			periodeZeitraum = "'month'";
-			anfangZeitraum = LocalDate.now().withDayOfMonth(1);
-			endeZeitraum = anfangZeitraum.withDayOfMonth(letzterTagMonat);
+		else if(periodeZeitraum.equalsIgnoreCase("'month'")) {
+			anfangZeitraum = anfangZeitraum.plus(1, ChronoUnit.MONTHS);
+			endeZeitraum = endeZeitraum.plus(1, ChronoUnit.MONTHS);
 			//lblBearbeitenZeitraum neuen String hinterlegen
 			getZeitraum();
 		}
-			
-		//ActionEvent btnBearbeitenJahr
-		@FXML public void setPeriodeJahr(){
-			//Button btnBearbeitenMonat wieder auf default false setzen
-			btnBearbeitenMonat.setDefaultButton(false);
-			//Periden Daten zurückgeben
-			periodeZeitraum = "'year'";
-			anfangZeitraum = LocalDate.now().withDayOfYear(1);
-			endeZeitraum = anfangZeitraum.withDayOfYear(letzterTagJahr);
+		else if(periodeZeitraum.equalsIgnoreCase("'year'")) {
+			anfangZeitraum = anfangZeitraum.plus(1, ChronoUnit.YEARS);
+			endeZeitraum = endeZeitraum.plus(1, ChronoUnit.YEARS);
 			//lblBearbeitenZeitraum neuen String hinterlegen
 			getZeitraum();
 		}
-			
-		//ActionEvent btnUebersichtPfeilVorwaerts
-		@FXML public void periodeZeitraumVor(){
-			if(periodeZeitraum.equalsIgnoreCase("'day'")) {
-				anfangZeitraum = anfangZeitraum.plus(1, ChronoUnit.DAYS);
-				endeZeitraum = endeZeitraum.plus(1, ChronoUnit.DAYS);
-				//lblBearbeitenZeitraum neuen String hinterlegen
-				lblBearbeitenZeitraum.setText(anfangZeitraum.format(formatter));
-			}
-			else if(periodeZeitraum.equalsIgnoreCase("'week'")) {
-				anfangZeitraum = anfangZeitraum.plus(1, ChronoUnit.WEEKS);
-				endeZeitraum = endeZeitraum.plus(1, ChronoUnit.WEEKS);
-				//lblBearbeitenZeitraum neuen String hinterlegen
-				getZeitraum();
-			}
-			else if(periodeZeitraum.equalsIgnoreCase("'month'")) {
-				anfangZeitraum = anfangZeitraum.plus(1, ChronoUnit.MONTHS);
-				endeZeitraum = endeZeitraum.plus(1, ChronoUnit.MONTHS);
-				//lblBearbeitenZeitraum neuen String hinterlegen
-				getZeitraum();
-			}
-			else if(periodeZeitraum.equalsIgnoreCase("'year'")) {
-				anfangZeitraum = anfangZeitraum.plus(1, ChronoUnit.YEARS);
-				endeZeitraum = endeZeitraum.plus(1, ChronoUnit.YEARS);
-				//lblBearbeitenZeitraum neuen String hinterlegen
-				getZeitraum();
-			}
+	}
+	
+	//ActionEvent btnUebersichtPfeilZurueck
+	@FXML public void periodeZeitraumZurueck(){
+		if(periodeZeitraum == "'day'") {
+			anfangZeitraum = anfangZeitraum.minus(1, ChronoUnit.DAYS);
+			endeZeitraum = endeZeitraum.minus(1, ChronoUnit.DAYS);
+			//lblBearbeitenZeitraum neuen String hinterlegen
+			lblBearbeitenZeitraum.setText(anfangZeitraum.format(formatter));
 		}
-			
-		//ActionEvent btnUebersichtPfeilZurueck
-		@FXML public void periodeZeitraumZurueck(){
-			if(periodeZeitraum == "'day'") {
-				anfangZeitraum = anfangZeitraum.minus(1, ChronoUnit.DAYS);
-				endeZeitraum = endeZeitraum.minus(1, ChronoUnit.DAYS);
-				//lblBearbeitenZeitraum neuen String hinterlegen
-				lblBearbeitenZeitraum.setText(anfangZeitraum.format(formatter));
-			}
-			else if(periodeZeitraum == "'week'") {
-				anfangZeitraum = anfangZeitraum.minus(1, ChronoUnit.WEEKS);
-				endeZeitraum = endeZeitraum.minus(1, ChronoUnit.WEEKS);
-				//lblBearbeitenZeitraum neuen String hinterlegen
-				getZeitraum();
-			}
-			else if(periodeZeitraum == "'month'") {
-				anfangZeitraum = anfangZeitraum.minus(1, ChronoUnit.MONTHS);
-				endeZeitraum = endeZeitraum.minus(1, ChronoUnit.MONTHS);
-				//lblBearbeitenZeitraum neuen String hinterlegen
-				getZeitraum();
-			}
-			else if(periodeZeitraum == "'year'") {
-				anfangZeitraum = anfangZeitraum.minus(1, ChronoUnit.YEARS);
-				endeZeitraum = endeZeitraum.minus(1, ChronoUnit.YEARS);
-				//lblBearbeitenZeitraum neuen String hinterlegen
-				getZeitraum();
-			}	
+		else if(periodeZeitraum == "'week'") {
+			anfangZeitraum = anfangZeitraum.minus(1, ChronoUnit.WEEKS);
+			endeZeitraum = endeZeitraum.minus(1, ChronoUnit.WEEKS);
+			//lblBearbeitenZeitraum neuen String hinterlegen
+			getZeitraum();
 		}
-			
-		//Retourniert einen String für lblUebersichtZeitraum
-		public void getZeitraum() {
-			lblBearbeitenZeitraum.setText(anfangZeitraum.format(formatter) + " bis " + endeZeitraum.format(formatter));
+		else if(periodeZeitraum == "'month'") {
+			anfangZeitraum = anfangZeitraum.minus(1, ChronoUnit.MONTHS);
+			endeZeitraum = endeZeitraum.minus(1, ChronoUnit.MONTHS);
+			//lblBearbeitenZeitraum neuen String hinterlegen
+			getZeitraum();
 		}
-			
+		else if(periodeZeitraum == "'year'") {
+			anfangZeitraum = anfangZeitraum.minus(1, ChronoUnit.YEARS);
+			endeZeitraum = endeZeitraum.minus(1, ChronoUnit.YEARS);
+			//lblBearbeitenZeitraum neuen String hinterlegen
+			getZeitraum();
+		}	
+	}
+	
+	//Retourniert einen String für lblUebersichtZeitraum
+	public void getZeitraum() {
+		lblBearbeitenZeitraum.setText(anfangZeitraum.format(formatter) + " bis " + endeZeitraum.format(formatter));
+	}
+	
 }

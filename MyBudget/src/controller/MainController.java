@@ -21,7 +21,13 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.chart.Axis;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.PieChart;
+import javafx.scene.chart.XYChart;
+import javafx.scene.chart.XYChart.Data;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -40,6 +46,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
+import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -743,15 +750,10 @@ public class MainController {
 			@Override
 			public TableCell<EintragFX, Void> call(final TableColumn<EintragFX, Void> param) {
 				final TableCell<EintragFX, Void> cell = new TableCell<EintragFX, Void>() {
-					private final Button btnBearbeiten = new Button("Bearbeiten");
 					private final Button btnLöschen = new Button("Löschen");
-					HBox hbButtons = new HBox(10, btnBearbeiten, btnLöschen);
+					HBox hbButtons = new HBox(10, btnLöschen);
 					{
-						//ActionEvents für Buttons//                    	
-						btnBearbeiten.setOnAction((ActionEvent event) -> {
-							EintragFX eintragFX  = getTableView().getItems().get(getIndex());
-//		                            System.out.println("selectedData: " + data);
-						});
+						//ActionEvent für Button
 						btnLöschen.setOnAction((ActionEvent event) -> {
 							EintragFX eintragFX = getTableView().getItems().get(getIndex());
 							Alert confirmationDialog = new Alert(Alert.AlertType.CONFIRMATION);
@@ -896,14 +898,10 @@ public class MainController {
 			@Override
 			public TableCell<DauereintragFX, Void> call(final TableColumn<DauereintragFX, Void> param) {
 				final TableCell<DauereintragFX, Void> cell = new TableCell<DauereintragFX, Void>() {
-					private final Button btnBearbeiten = new Button("Bearbeiten");
 					private final Button btnLöschen = new Button("Löschen");
-					HBox hbButtons = new HBox(10, btnBearbeiten, btnLöschen);
+					HBox hbButtons = new HBox(10, btnLöschen);
 					{
-						//ActionEvents für Buttons//                    	
-						btnBearbeiten.setOnAction((ActionEvent event) -> {
-							//
-						});
+						//ActionEvent für Button
 						btnLöschen.setOnAction((ActionEvent event) -> {
 							DauereintragFX dauereintragFX = getTableView().getItems().get(getIndex());
 							Alert confirmationDialog = new Alert(Alert.AlertType.CONFIRMATION);
@@ -1046,7 +1044,9 @@ public class MainController {
 	@FXML Button btnStatistikPfeilVorwaerts; //ActionEvent ist periodeZeitraumVor()
 	
 	@FXML VBox vbStatistikBenutzer;
-	@FXML Pane pStatistik;
+	@FXML AnchorPane apDiagramme;
+	@FXML StackPane spSauelendiagramm; //ActionEvent showSaulendiagramm
+	@FXML StackPane spTortendiagramm; //ActionEvent showTortendiagramm
 	
 	//Inhalt für Statistik laden
 	@FXML public void ladeStatistik() {
@@ -1056,10 +1056,10 @@ public class MainController {
 		//Zeitraum laden
 		btnStatistikMonat.setDefaultButton(true);
 		getZeitraum();
-		//RadioButtons in ToggleGroup packen
+		//RadioButtons Diagramme in ToggleGroup packen
 		setToggleGroup();
-		//CheckBoxen für Benutzer laden
-		setCbBenutzerStatistik();
+		//RadioButtons für Benutzer laden
+		setRbBenutzerStatistik();
 	}
 	
 	//Set RadioButtons in ToggleGroup und setze den gewählten RadioButton auf selectedRadioButton 
@@ -1071,29 +1071,31 @@ public class MainController {
 	
 	//Statistik Methoden
 	//Add CheckBoxes to vbStatistikBenutzer
-	ArrayList<CheckBox> checkBoxesBenutzer = new ArrayList<>();
-	public void setCbBenutzerStatistik(){
+	ArrayList<RadioButton> radioButtonsBenutzer = new ArrayList<>();
+	ToggleGroup toggleGroupBenutzer = new ToggleGroup();
+	public void setRbBenutzerStatistik(){
 		try {
 			//Erstelle neue CheckBox
 			for(Benutzer einBenutzer : Datenbank.readBenutzer()) {
-				CheckBox checkBox = new CheckBox(einBenutzer.getName());
-				checkBoxesBenutzer.add(checkBox);
+				RadioButton rb = new RadioButton(einBenutzer.getName());
+				rb.setToggleGroup(toggleGroupBenutzer);
+				radioButtonsBenutzer.add(rb);
 				if(einBenutzer.getName().equals("HAUSHALT"))
-					checkBox.setSelected(true);
+					rb.setSelected(true);
 			}
 			//Füge CheckBoxen der VBox hinzu
-			vbStatistikBenutzer.getChildren().addAll(checkBoxesBenutzer);
+			vbStatistikBenutzer.getChildren().addAll(radioButtonsBenutzer);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}
 	
 	//Set CheckBoxes on Action															
-	public void handleCheckBoxActionBenutzerStatistik(CheckBox checkBox) {
+	public void handleRadioButtonActionBenutzerStatistik(RadioButton rb) {
 		List<BenutzerFX> lBenutzerFX = olBenutzer.stream().collect(Collectors.toList());
-		int index = checkBoxesBenutzer.indexOf(checkBox);
+		int index = radioButtonsBenutzer.indexOf(rb);
 		BenutzerFX benutzerFX = lBenutzerFX.get(index);
-		if (checkBox.isSelected()) {
+		if (rb.isSelected()) {
 //			    benutzerFX.doSomething();												// perform action when CheckBox is not selected - Methode hinterlegen
 		} 
 	}
@@ -1101,13 +1103,14 @@ public class MainController {
 	//Tortendiagramme erstellen und Pane pStatistk hinzufügen
 	@FXML public void showTortendiagramm(ActionEvent event) {
 																						//Benutzer(immer nur einer möglich) und Zeitraum hinzufügen
+		//Tortendiagramm Einnahmen erstellen
 		PieChart tortenDiagrammEinnahmen = new PieChart();
 		HBox hb1 = new HBox(tortenDiagrammEinnahmen);
 		tortenDiagrammEinnahmen.setTitle("Einnahmen");
+		//Tortendiagramm Ausgaben erstellen
 		PieChart tortenDiagrammAusgaben = new PieChart();
 		HBox hb2 = new HBox(tortenDiagrammAusgaben);
 		tortenDiagrammAusgaben.setTitle("Ausgaben");
-		//Tortendiagramm Einnahmen erstellen
 		try {
 			//Einnahmen Kategorien auslesen 
 			ArrayList<Kategorie> alKategorienEinnahmen = Datenbank.readKategorie(tabEinnahmen.getText());
@@ -1127,11 +1130,49 @@ public class MainController {
 			e.printStackTrace();
 		}
 		HBox hbDiagramme = new HBox(hb1, hb2);
-		pStatistik.getChildren().add(hbDiagramme);
+		spTortendiagramm.getChildren().add(hbDiagramme);
+		apDiagramme.getChildren().remove(spTortendiagramm);
+		apDiagramme.getChildren().add(spTortendiagramm);
 	}
 	
 	@FXML public void showSaulendiagramm(ActionEvent event){
 																						//Benutzer(immer nur einer möglich) und Zeitraum hinzufügen
+		//Säulendiagramm Einnahmen erstellen
+		CategoryAxis xAxeEinnahmen = new CategoryAxis();
+		xAxeEinnahmen.setLabel("Kategorien");
+		NumberAxis yAxeEinnahmen = new NumberAxis();	
+		yAxeEinnahmen.setLabel("Betrag");
+		BarChart<String, Number> sauelenDiagramm = new BarChart<>( xAxeEinnahmen, yAxeEinnahmen );
+		sauelenDiagramm.setBarGap(10);
+		sauelenDiagramm.setCategoryGap(50);
+		XYChart.Series<String, Number> seriesEinnahmen = new XYChart.Series<>();
+		seriesEinnahmen.setName("Einnahmen");
+		XYChart.Series<String, Number> seriesAusgaben = new XYChart.Series<>();
+		seriesAusgaben.setName("Ausgaben");
+		try {
+			//Einnahmen Kategorien auslesen 
+			ArrayList<Kategorie> alKategorienEinnahmen;
+			alKategorienEinnahmen = Datenbank.readKategorie(tabEinnahmen.getText());
+			//Kategorien durch iterieren Name und Summe dem Einnahmen-Diagramm hinzufügen
+			for(Kategorie eineKategorie : alKategorienEinnahmen) {
+				eineKategorie.setSummeEintraege(Datenbank.readKategorieSummeEintraege(eineKategorie.getName(), tabEinnahmen.getText()));
+				seriesEinnahmen.getData().add(new Data<String, Number>(eineKategorie.getName(), eineKategorie.getSummeEintraege()));
+			}
+			//Einnahmen Kategorien auslesen 
+			ArrayList<Kategorie> alKategorienAusgaben;
+			alKategorienAusgaben = Datenbank.readKategorie(tabAusgaben.getText());
+			//Kategorien durch iterieren Name und Summe dem Einnahmen-Diagramm hinzufügen
+			for(Kategorie eineKategorie : alKategorienAusgaben) {
+				eineKategorie.setSummeEintraege(Datenbank.readKategorieSummeEintraege(eineKategorie.getName(), tabAusgaben.getText()));
+				seriesAusgaben.getData().add(new Data<String, Number>(eineKategorie.getName(), eineKategorie.getSummeEintraege()));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		sauelenDiagramm.getData().addAll(seriesEinnahmen, seriesAusgaben);
+		spSauelendiagramm.getChildren().add(sauelenDiagramm);
+		apDiagramme.getChildren().remove(spSauelendiagramm);
+		apDiagramme.getChildren().add(spSauelendiagramm);
 		
 	}
 }

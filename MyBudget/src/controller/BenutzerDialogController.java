@@ -33,15 +33,15 @@ public class BenutzerDialogController extends Dialog<ButtonType> {
 	
 	@FXML HBox hbNeuerBenutzer;
 	@FXML Label lblNeuerBenutzer;
-	@FXML TextField tfNeuerBenutzer;
+	@FXML TextField tfNeuerBenutzer; //ActionEvent ist insertBenutzerToList()
 	
 	@FXML VBox vbBestehendeBenutzer;
 	@FXML Label lblBestehendeBenutzer;
 	@FXML TableView<BenutzerFX> tvBenutzer;
 	@FXML TableColumn<BenutzerFX, String> benutzerCol;
 	
-	@FXML Button btnBenutzerLoeschen;
-	@FXML Button btnBenutzerBearbeiten;			
+	@FXML Button btnBenutzerLoeschen; //ActionEvent ist loescheBenutzer()
+	@FXML Button btnBenutzerBearbeiten;	//ActionEvent ist bearbeiteBenutzer()
 	
 	//Methoden
 	@FXML public void initialize() {
@@ -109,7 +109,7 @@ public class BenutzerDialogController extends Dialog<ButtonType> {
 	}
 	
 	//Benutzer auslesen und der ObserverList hinzufügen
-	@FXML public void showBenutzer() {
+	public void showBenutzer() {
 		try {
 			alBenutzer = Datenbank.readBenutzer();
 			olBenutzer.clear();

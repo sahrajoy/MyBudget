@@ -785,7 +785,7 @@ public class Datenbank {
 		
 		if(benutzerId != getHaushaltId())
 			select += " WHERE " + 	DAUEREINTRAG_BENUTZERID + "=? AND " + 
-									DAUEREINTRAG_KATEGORIEID + "=? AND" +
+									DAUEREINTRAG_KATEGORIEID + "=? AND " +
 									KATEGORIE_EINNAHMEODERAUSGABE + "=?";
 		else
 			select += " WHERE " + 	DAUEREINTRAG_KATEGORIEID  + "=? AND " + 
@@ -800,8 +800,8 @@ public class Datenbank {
 				stmt.setBoolean(3, isEinnahmenParameter);
 			}
 			else {
-				stmt.setBoolean(1, isEinnahmenParameter);
-				stmt.setInt(2, kategorieId);
+				stmt.setInt(1, kategorieId);
+				stmt.setBoolean(2, isEinnahmenParameter);
 			}
 			
 			rs = stmt.executeQuery();
