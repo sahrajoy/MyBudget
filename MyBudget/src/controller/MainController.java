@@ -1,5 +1,6 @@
 package controller;
 
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.NumberFormat;
@@ -414,7 +415,7 @@ public class MainController {
 			ArrayList<Kategorie> alKategorien = Datenbank.readKategorie(tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText());
 			olKategorie.clear();
 			for(Kategorie eineKategorie : alKategorien) {
-				eineKategorie.setSummeEintraege(Datenbank.readKategorieSummeEintraege(eineKategorie.getName(), tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText()));
+				eineKategorie.setSummeEintraege(Datenbank.readKategorieSummeEintraege(eineKategorie.getName(), tpEinnahmenAusgabenStatistik.getSelectionModel().getSelectedItem().getText(), cbBenutzer.getSelectionModel().getSelectedItem().getBenutzerId()));
 				olKategorie.add(new KategorieFX(eineKategorie));									
 			}
 		} catch (SQLException e) {
@@ -1066,23 +1067,53 @@ public class MainController {
 	@FXML Label lblStatistikZeitraum;
 	@FXML Button btnStatistikPfeilVorwaerts; //ActionEvent ist periodeZeitraumVor()
 	
-	@FXML VBox vbStatistikBenutzer;
+	@FXML VBox vbStatistikBenutzer; //ActionEvent ist aktualisiereDiagramme()
 	@FXML AnchorPane apDiagramme;
-	@FXML StackPane spSauelendiagramm; //ActionEvent showSaulendiagramm
-	@FXML StackPane spTortendiagramm; //ActionEvent showTortendiagramm
+	@FXML StackPane spSauelendiagramm; //ActionEvent showSaulendiagramm()
+	@FXML StackPane spTortendiagramm; //ActionEvent showTortendiagramm()
 	
 	//Inhalt für Statistik laden
-	@FXML public void ladeStatistik() {
-		//setze rbTortendiagramm als Default
-		rbTortendiagramm.setSelected(true);
-		showTortendiagramm(null);
+	public void ladeStatistik() {
 		//Zeitraum laden
 		btnStatistikMonat.setDefaultButton(true);
 		getZeitraum();
-		//RadioButtons Diagramme in ToggleGroup packen
-		setToggleGroup();
 		//RadioButtons für Benutzer laden
 		setRbBenutzerStatistik();
+		toggleGroupBenutzer.selectedToggleProperty().addListener(new ChangeListener<Object>() {
+			@Override
+			public void changed(ObservableValue<? extends Object> arg0, Object arg1, Object arg2) {
+				if(rbTortendiagramm.isSelected())
+					showTortendiagramm(null);
+				if(rbSaeulendiagramm.isSelected())
+					showSaulendiagramm(null);
+			}
+		});
+		//RadioButtons Diagramme in ToggleGroup packen
+		setToggleGroup();
+		//setze rbTortendiagramm als Default
+		rbTortendiagramm.setSelected(true);
+		showTortendiagramm(null);
+	}
+	
+	//Statistik Methoden
+	//Add RadioButtons to vbStatistikBenutzer
+	ArrayList<RadioButton> radioButtonsBenutzer = new ArrayList<>();
+	ToggleGroup toggleGroupBenutzer = new ToggleGroup();
+	public void setRbBenutzerStatistik(){
+		try {
+			//Erstelle neue RadioButtons
+			for(Benutzer einBenutzer : Datenbank.readBenutzer()) {
+				RadioButton rb = new RadioButton(einBenutzer.getName());
+				rb.setToggleGroup(toggleGroupBenutzer);
+				radioButtonsBenutzer.add(rb);
+				if(einBenutzer.getName().equals("HAUSHALT"))
+					rb.setSelected(true);
+			}
+			//Füge RadioButtons der VBox hinzu
+			vbStatistikBenutzer.getChildren().addAll(radioButtonsBenutzer);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	//Set RadioButtons in ToggleGroup und setze den gewählten RadioButton auf selectedRadioButton 
@@ -1092,46 +1123,31 @@ public class MainController {
 		rbSaeulendiagramm.setToggleGroup(toggleGroup);
 	}
 	
-	//Statistik Methoden
-	//Add CheckBoxes to vbStatistikBenutzer
-	ArrayList<RadioButton> radioButtonsBenutzer = new ArrayList<>();
-	ToggleGroup toggleGroupBenutzer = new ToggleGroup();
-	public void setRbBenutzerStatistik(){
+	//gibt die Id des gewählten Benutzers zurück für die Datenbankabfrage der Diagramme
+	public int getSelectedBenutzerId() {
+		RadioButton selectedRadioButton = (RadioButton) toggleGroupBenutzer.getSelectedToggle();
+		int benutzerId = 0;
 		try {
-			//Erstelle neue CheckBox
-			for(Benutzer einBenutzer : Datenbank.readBenutzer()) {
-				RadioButton rb = new RadioButton(einBenutzer.getName());
-				rb.setToggleGroup(toggleGroupBenutzer);
-				radioButtonsBenutzer.add(rb);
-				if(einBenutzer.getName().equals("HAUSHALT"))
-					rb.setSelected(true);
-			}
-			//Füge CheckBoxen der VBox hinzu
-			vbStatistikBenutzer.getChildren().addAll(radioButtonsBenutzer);
+			ArrayList<Benutzer> alBenutzer = Datenbank.readBenutzer(selectedRadioButton.getText());
+			for(Benutzer einBenutzer : alBenutzer) 
+				benutzerId = einBenutzer.getBenutzerId();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-	}
-	
-	//Set CheckBoxes on Action															
-	public void handleRadioButtonActionBenutzerStatistik(RadioButton rb) {
-		List<BenutzerFX> lBenutzerFX = olBenutzer.stream().collect(Collectors.toList());
-		int index = radioButtonsBenutzer.indexOf(rb);
-		BenutzerFX benutzerFX = lBenutzerFX.get(index);
-		if (rb.isSelected()) {
-//			    benutzerFX.doSomething();												// perform action when CheckBox is not selected - Methode hinterlegen
-		} 
+		return benutzerId;
 	}
 	
 	//Tortendiagramme erstellen und Pane pStatistk hinzufügen
+	PieChart tortenDiagrammEinnahmen = new PieChart();
+	PieChart tortenDiagrammAusgaben = new PieChart();
 	@FXML public void showTortendiagramm(ActionEvent event) {
-																						//Benutzer(immer nur einer möglich) und Zeitraum hinzufügen
+		//Inhalt der Tortendiagramme entfernen
+		tortenDiagrammEinnahmen.getData().clear();
+		tortenDiagrammAusgaben.getData().clear();
 		//Tortendiagramm Einnahmen erstellen
-		PieChart tortenDiagrammEinnahmen = new PieChart();
 		HBox hb1 = new HBox(tortenDiagrammEinnahmen);
 		tortenDiagrammEinnahmen.setTitle("Einnahmen");
 		//Tortendiagramm Ausgaben erstellen
-		PieChart tortenDiagrammAusgaben = new PieChart();
 		HBox hb2 = new HBox(tortenDiagrammAusgaben);
 		tortenDiagrammAusgaben.setTitle("Ausgaben");
 		try {
@@ -1139,15 +1155,19 @@ public class MainController {
 			ArrayList<Kategorie> alKategorienEinnahmen = Datenbank.readKategorie(tabEinnahmen.getText());
 			//Kategorien durch iterieren Name und Summe dem Einnahmen-Diagramm hinzufügen
 			for(Kategorie eineKategorie : alKategorienEinnahmen) {
-				eineKategorie.setSummeEintraege(Datenbank.readKategorieSummeEintraege(eineKategorie.getName(), tabEinnahmen.getText()));
-				tortenDiagrammEinnahmen.getData().add(new PieChart.Data(eineKategorie.getName(), eineKategorie.getSummeEintraege()));
+				eineKategorie.setSummeEintraege(Datenbank.readKategorieSummeEintraege(eineKategorie.getName(), tabEinnahmen.getText(), getSelectedBenutzerId()));
+				//Überprüfen ob Summe der Einträge einer Kategorie größer als null ist
+				if(eineKategorie.getSummeEintraege() > 0)					
+					tortenDiagrammEinnahmen.getData().add(new PieChart.Data(eineKategorie.getName(), eineKategorie.getSummeEintraege()));
 			}
 			//Ausgaben Kategorien auslesen 
-			ArrayList<Kategorie> alKategorienAusgaben = Datenbank.readKategorie(tabAusgaben.getText());
+			ArrayList<Kategorie> alKategorienAusgaben = Datenbank.readKategorie(tabAusgaben.getText()); 		
 			//Kategorien durch iterieren Name und Summe dem Ausgaben-Diagramm hinzufügen
 			for(Kategorie eineKategorie : alKategorienAusgaben) {
-				eineKategorie.setSummeEintraege(Datenbank.readKategorieSummeEintraege(eineKategorie.getName(), tabAusgaben.getText()));
-				tortenDiagrammAusgaben.getData().add(new PieChart.Data(eineKategorie.getName(), eineKategorie.getSummeEintraege()));
+				eineKategorie.setSummeEintraege(Datenbank.readKategorieSummeEintraege(eineKategorie.getName(), tabAusgaben.getText(), getSelectedBenutzerId()));
+				//Überprüfen ob Summe der Einträge einer Kategorie größer als null ist
+				if(eineKategorie.getSummeEintraege() > 0)					
+					tortenDiagrammAusgaben.getData().add(new PieChart.Data(eineKategorie.getName(), eineKategorie.getSummeEintraege()));
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -1158,45 +1178,52 @@ public class MainController {
 		apDiagramme.getChildren().add(spTortendiagramm);
 	}
 	
+	//Säulendiagramm erstellen und Pane pStatistk hinzufügen
+	CategoryAxis xAxe = new CategoryAxis();
+	NumberAxis yAxe = new NumberAxis();	
+	BarChart<String, Number> sauelenDiagramm = new BarChart<>(xAxe, yAxe);
 	@FXML public void showSaulendiagramm(ActionEvent event){
-																						//Benutzer(immer nur einer möglich) und Zeitraum hinzufügen
+		//Inhalt der Säulendiagramm entfernen
+		sauelenDiagramm.getData().clear();
+		XYChart.Series<String, Number> seriesEinnahmen = new XYChart.Series<>();
+		XYChart.Series<String, Number> seriesAusgaben = new XYChart.Series<>();
 		//Säulendiagramm Einnahmen erstellen
-		CategoryAxis xAxeEinnahmen = new CategoryAxis();
-		xAxeEinnahmen.setLabel("Kategorien");
-		NumberAxis yAxeEinnahmen = new NumberAxis();	
-		yAxeEinnahmen.setLabel("Betrag");
-		BarChart<String, Number> sauelenDiagramm = new BarChart<>( xAxeEinnahmen, yAxeEinnahmen );
+		xAxe.setLabel("Kategorien");
+		yAxe.setLabel("Betrag");
 		sauelenDiagramm.setBarGap(10);
 		sauelenDiagramm.setCategoryGap(50);
-		XYChart.Series<String, Number> seriesEinnahmen = new XYChart.Series<>();
 		seriesEinnahmen.setName("Einnahmen");
-		XYChart.Series<String, Number> seriesAusgaben = new XYChart.Series<>();
 		seriesAusgaben.setName("Ausgaben");
 		try {
 			//Einnahmen Kategorien auslesen 
 			ArrayList<Kategorie> alKategorienEinnahmen;
-			alKategorienEinnahmen = Datenbank.readKategorie(tabEinnahmen.getText());
+			alKategorienEinnahmen = Datenbank.readKategorie(tabEinnahmen.getText());		
 			//Kategorien durch iterieren Name und Summe dem Einnahmen-Diagramm hinzufügen
 			for(Kategorie eineKategorie : alKategorienEinnahmen) {
-				eineKategorie.setSummeEintraege(Datenbank.readKategorieSummeEintraege(eineKategorie.getName(), tabEinnahmen.getText()));
-				seriesEinnahmen.getData().add(new Data<String, Number>(eineKategorie.getName(), eineKategorie.getSummeEintraege()));
+				eineKategorie.setSummeEintraege(Datenbank.readKategorieSummeEintraege(eineKategorie.getName(), tabEinnahmen.getText(), getSelectedBenutzerId()));  
+				//Überprüfen ob Summe der Einträge einer Kategorie größer als null ist
+				if(eineKategorie.getSummeEintraege() > 0)					
+					seriesEinnahmen.getData().add(new Data<String, Number>(eineKategorie.getName(), eineKategorie.getSummeEintraege()));
 			}
 			//Einnahmen Kategorien auslesen 
 			ArrayList<Kategorie> alKategorienAusgaben;
 			alKategorienAusgaben = Datenbank.readKategorie(tabAusgaben.getText());
 			//Kategorien durch iterieren Name und Summe dem Einnahmen-Diagramm hinzufügen
 			for(Kategorie eineKategorie : alKategorienAusgaben) {
-				eineKategorie.setSummeEintraege(Datenbank.readKategorieSummeEintraege(eineKategorie.getName(), tabAusgaben.getText()));
-				seriesAusgaben.getData().add(new Data<String, Number>(eineKategorie.getName(), eineKategorie.getSummeEintraege()));
+				eineKategorie.setSummeEintraege(Datenbank.readKategorieSummeEintraege(eineKategorie.getName(), tabAusgaben.getText(), getSelectedBenutzerId()));
+				//Überprüfen ob Summe der Einträge einer Kategorie größer als null ist
+				if(eineKategorie.getSummeEintraege() > 0)					
+					seriesAusgaben.getData().add(new Data<String, Number>(eineKategorie.getName(), eineKategorie.getSummeEintraege()));
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+		sauelenDiagramm.getData().removeAll();
 		sauelenDiagramm.getData().addAll(seriesEinnahmen, seriesAusgaben);
+		spSauelendiagramm.getChildren().removeAll(sauelenDiagramm);
 		spSauelendiagramm.getChildren().add(sauelenDiagramm);
 		apDiagramme.getChildren().remove(spSauelendiagramm);
 		apDiagramme.getChildren().add(spSauelendiagramm);
-		
 	}
 }
 

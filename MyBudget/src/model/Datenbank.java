@@ -205,8 +205,6 @@ public class Datenbank {
 	public static ArrayList<Benutzer> readBenutzer() throws SQLException{
 			return readBenutzer(null);
 	}
-	
-	//Benutzer auslesen
 	public static ArrayList<Benutzer> readBenutzer(String benutzerName) throws SQLException{				
 		Connection conn = null;
 		PreparedStatement stmt = null;
@@ -326,7 +324,6 @@ public class Datenbank {
 		}
 		return alKategorien;
 	}
-	
 	//Kategorien nach Datum auslesen
 	public static ArrayList<Kategorie> readKategorieNachDatum(String einnahmeOderAusgabe, LocalDate anfangDatum, LocalDate endeDatum) throws SQLException {
 		return readKategorieNachDatum(null, einnahmeOderAusgabe, anfangDatum, endeDatum);
@@ -399,7 +396,7 @@ public class Datenbank {
 		return alKategorien;
 	}
 	//Kategorie Summe aller Eintrage auslesen
-	public static double readKategorieSummeEintraege(String kategorieName, String einnahmeOderAusgabe) throws SQLException{  		
+	public static double readKategorieSummeEintraege(String kategorieName, String einnahmeOderAusgabe, int benutzerId) throws SQLException{  		
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
@@ -409,13 +406,26 @@ public class Datenbank {
 				+ " INNER JOIN " + KATEGORIE_TABLE 
 				+ " ON " + 	EINTRAG_TABLE + "." + EINTRAG_KATEGORIEID + "=" + 
 							KATEGORIE_TABLE + "." + KATEGORIE_ID;
-		if(kategorieName != null)
+							
+		if(benutzerId != getHaushaltId()) {
+		select += " WHERE " + 	EINTRAG_BENUTZERID + "=? AND " + 
+					KATEGORIE_NAME + "=? AND " + 
+					KATEGORIE_EINNAHMEODERAUSGABE + "=?";
+		}
+		else {
 			select += " WHERE " + 	KATEGORIE_NAME + "=? AND " + 
-									KATEGORIE_EINNAHMEODERAUSGABE + "=?";
+					KATEGORIE_EINNAHMEODERAUSGABE + "=?";
+		}
+							
 		try {
 			conn = DriverManager.getConnection(CONNECTION_URL);
 			stmt = conn.prepareStatement(select);
-			if(kategorieName != null) {
+			if(benutzerId != getHaushaltId()) {
+				stmt.setInt(1, benutzerId);
+				stmt.setString(2, kategorieName);
+				stmt.setBoolean(3, isEinnahmenParameter);
+			}
+			else {
 				stmt.setString(1, kategorieName);
 				stmt.setBoolean(2, isEinnahmenParameter);
 			}

@@ -447,7 +447,7 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 	//Kategorien auslesen und der ObserverList hinzufügen
 	public void showKategorie() {
 		try {
-			ArrayList<Kategorie> alKategorien =  Datenbank.readKategorie(mainController.getTabPane().getSelectionModel().getSelectedItem().getText());
+			ArrayList<Kategorie> alKategorien =  Datenbank.readKategorie(mainController.getTabPane().getSelectionModel().getSelectedItem().getText());			//mainController.cbBenutzer.getSelectionModel().getSelectedItem().getBenutzerId()
 			olKategorien.clear();
 			for(Kategorie einKategorie : alKategorien)
 				olKategorien.add(new KategorieFX(einKategorie));	
