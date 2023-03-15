@@ -8,15 +8,7 @@ public class Kategorie {
 	private boolean favorite = false;
 	private double summeEintraege;
 	
-	public Kategorie(int kategorieId, boolean einnahmeOderAusgabe, String name, boolean favorite,
-			double summeEintraege) {
-		super();
-		this.kategorieId = kategorieId;
-		this.einnahmeOderAusgabe = einnahmeOderAusgabe;
-		this.name = name;
-		this.favorite = favorite;
-		this.summeEintraege = summeEintraege;
-	}
+	//Konstruktor um aus Datenbank auszulesen
 	public Kategorie(int kategorieId, boolean einnahmeOderAusgabe, String name, boolean favorite) {
 		super();
 		this.kategorieId = kategorieId;
@@ -24,12 +16,14 @@ public class Kategorie {
 		this.name = name;
 		this.favorite = favorite;
 	}
+	//Konstruktor zum Kategorie speichern
 	public Kategorie(boolean einnahmeOderAusgabe, String name, boolean favorite) {
 		super();
 		this.einnahmeOderAusgabe = einnahmeOderAusgabe;
 		this.name = name;
 		this.favorite = favorite;
 	}
+	//Konstruktor für die Datenbank Methode readDauereintraege(), um nur die ID mitzugeben
 	public Kategorie(int kategorieId) {
 		super();
 		this.kategorieId = kategorieId;

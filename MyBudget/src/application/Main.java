@@ -27,7 +27,6 @@ public class Main extends Application {
 		fxmlLoaderMainController.setLocation(getClass().getResource("/view/MyBudget.fxml"));
 		Parent root = fxmlLoaderMainController.load();
 		
-		//Parent root = FXMLLoader.load(getClass().getResource("/view/MyBudget.fxml"));
 		MainController mc = (MainController)fxmlLoaderMainController.getController();
 		
 		try {

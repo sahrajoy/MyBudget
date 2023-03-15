@@ -99,7 +99,8 @@
                                                     <TableColumn fx:id="betragCol" minWidth="-1.0" prefWidth="151.0" style="-fx-alignment: CENTER;" text="Betrag" />
                                                     <TableColumn fx:id="benutzerCol" minWidth="-1.0" prefWidth="180.0" style="-fx-alignment: CENTER;" text="Benutzer" />
                                                       <TableColumn fx:id="intervallCol" minWidth="-1.0" prefWidth="198.0" style="-fx-alignment: CENTER;" text="Intervall" />
-                                                      <TableColumn fx:id="endeDauereintragCol" minWidth="-1.0" prefWidth="182.0" style="-fx-alignment: CENTER;" text="Ende Dauereintrag" />
+                                                      <TableColumn fx:id="endeDauereintragCol" minWidth="-1.0" prefWidth="208.0" style="-fx-alignment: CENTER;" text="Ende Dauereintrag" />
+                                                      <TableColumn fx:id="buttonsDauereintragCol" prefWidth="124.0" />
                                                   </columns>
                                                 </TableView>
                                              </children>

@@ -11,6 +11,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javafx.beans.value.ChangeListener;
@@ -21,7 +22,6 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
-import javafx.scene.chart.Axis;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
@@ -31,7 +31,6 @@ import javafx.scene.chart.XYChart.Data;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Dialog;
@@ -46,7 +45,6 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
-import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -56,7 +54,6 @@ import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -620,6 +617,22 @@ public class MainController {
 	
 	//Einnahmen Einträge/Dauereinträge speichern über Favoriten											
 	@FXML public void btnSpeichernUeberFavoriten(ActionEvent event) {
+		if(cbFavoritenKategorie.getSelectionModel().getSelectedItem() == null) {
+			new Alert(AlertType.ERROR, "Kategorie wählen").showAndWait();
+			return;
+		}
+		if(txtFavoritenTitel.getText() == null || txtFavoritenTitel.getText().length() == 0) {
+			new Alert(AlertType.ERROR, "Titel eingeben").showAndWait();
+			return;
+		}
+		if(txtFavoritenBetrag.getText() == null || txtFavoritenBetrag.getText().length() == 0) {
+			new Alert(AlertType.ERROR, "Betrag eingeben").showAndWait();
+			return;
+		}
+		if(!cbFavoritenIntervall.getSelectionModel().getSelectedItem().equals("keine") && dpFavoritenEndeDauereintrag.getValue() == null) {
+			new Alert(AlertType.ERROR, "Datum Ende-Dauereintrag wählen").showAndWait();
+			return;
+		}
 		if(cbFavoritenIntervall.getValue().toString().equalsIgnoreCase("keine")) {
 			try {
 				//Eintrag hinzufügen
@@ -709,11 +722,11 @@ public class MainController {
 				}
 			}
 		});
-		datumCol.setPrefWidth(187.34);
+		datumCol.setPrefWidth(260);
 		datumCol.setStyle("-fx-alignment: CENTER;");
 		TableColumn<EintragFX, String> titelCol = new TableColumn<>("Titel");
 		titelCol.setCellValueFactory(new PropertyValueFactory<>("titel"));
-		titelCol.setPrefWidth(231.37);
+		titelCol.setPrefWidth(260);
 		titelCol.setStyle("-fx-alignment: CENTER;");
 		TableColumn<EintragFX, Double> betragCol = new TableColumn<>("Betrag");
 		betragCol.setCellValueFactory(new PropertyValueFactory<>("betrag"));
@@ -728,15 +741,15 @@ public class MainController {
 				}
 			}
 		});
-		betragCol.setPrefWidth(209.33);
+		betragCol.setPrefWidth(260);
 		betragCol.setStyle("-fx-alignment: CENTER;");
 		TableColumn<EintragFX, String> benutzerCol = new TableColumn<>("Benutzer");
 		benutzerCol.setCellValueFactory(new PropertyValueFactory<>("benutzerName"));
-		benutzerCol.setPrefWidth(212.66);
+		benutzerCol.setPrefWidth(260);
 		benutzerCol.setStyle("-fx-alignment: CENTER;");
 		TableColumn<EintragFX, String> intervallCol = new TableColumn<>("Dauereintrag");
 		intervallCol.setCellValueFactory(new PropertyValueFactory<>("intervall"));
-		intervallCol.setPrefWidth(212.66);
+		intervallCol.setPrefWidth(260);
 		intervallCol.setStyle("-fx-alignment: CENTER;");								
 		tvFavoriten.getColumns().addAll(datumCol, titelCol, betragCol, benutzerCol, intervallCol, addButtonToEintraegeTable());
 		tvFavoriten.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);	
@@ -785,7 +798,7 @@ public class MainController {
 			}
 		};
 		buttonCol.setCellFactory(cellFactory);
-		buttonCol.setPrefWidth(190);
+		buttonCol.setPrefWidth(80);
 		buttonCol.setStyle("-fx-alignment: CENTER;");
 		return buttonCol;
 	}
@@ -827,6 +840,7 @@ public class MainController {
 	@FXML TableColumn<DauereintragFX, String> benutzerCol;
 	@FXML TableColumn<DauereintragFX, Intervall> intervallCol;
 	@FXML TableColumn<DauereintragFX, LocalDate> endeDauereintragCol;
+	@FXML TableColumn<DauereintragFX, Node> buttonsDauereintragCol;
 	
 	//Inhalt für Dauereintrag laden
 	public void ladeDauereintraege() {
@@ -875,6 +889,26 @@ public class MainController {
 	
 	//Einnahmen Einträge/Dauereinträge speichern über Dauereintrag	
 	@FXML public void btnSpeichernUeberDauereintrag(ActionEvent event) {
+		if(txtDauereintraegeTitel.getText() == null || txtDauereintraegeTitel.getText().length() == 0) {
+			new Alert(AlertType.ERROR, "Titel eingeben").showAndWait();
+			return;
+		}
+		if(txtDauereintraegeBetrag.getText() == null || txtDauereintraegeBetrag.getText().length() == 0) {
+			new Alert(AlertType.ERROR, "Betrag eingeben").showAndWait();
+			return;
+		}
+		if(cbDauereintraegeIntervall.getSelectionModel().getSelectedItem().equals("keine")) {
+			new Alert(AlertType.ERROR, "Bitte Intervall wählen").showAndWait();
+			return;
+		}
+		if(dpDauereintraegeEndeDauereintrag.getValue() == null) {
+			new Alert(AlertType.ERROR, "Datum Ende-Dauereintrag wählen").showAndWait();
+			return;
+		}
+		if(cbDauereintraegeKategorie.getSelectionModel().getSelectedItem() == null) {
+			new Alert(AlertType.ERROR, "Kategorie wählen").showAndWait();
+			return;
+		}
 		try {
 			Datenbank.insertDauereintrag(new Dauereintrag(
 				dpDauereintraegeDatum.getValue(),
@@ -893,49 +927,38 @@ public class MainController {
 			
 	//TableColumn mit Buttons erstellen und TableView Dauereinträge zuordnen
 	private void addButtonToDauereintraegeTable() {
-		TableColumn<DauereintragFX, Void> buttonCol = new TableColumn();
-		Callback<TableColumn<DauereintragFX, Void>, TableCell<DauereintragFX, Void>> cellFactory = new Callback<TableColumn<DauereintragFX, Void>, TableCell<DauereintragFX, Void>>() {
-			@Override
-			public TableCell<DauereintragFX, Void> call(final TableColumn<DauereintragFX, Void> param) {
-				final TableCell<DauereintragFX, Void> cell = new TableCell<DauereintragFX, Void>() {
-					private final Button btnLöschen = new Button("Löschen");
-					HBox hbButtons = new HBox(10, btnLöschen);
-					{
-						//ActionEvent für Button
-						btnLöschen.setOnAction((ActionEvent event) -> {
-							DauereintragFX dauereintragFX = getTableView().getItems().get(getIndex());
-							Alert confirmationDialog = new Alert(Alert.AlertType.CONFIRMATION);
-							confirmationDialog.setTitle("Dauereintrag löschen");
-							confirmationDialog.setContentText("Soll der Dauereintrag wirklich gelöscht werden, Änderungen können nicht rückgängig gemacht werden!");
-							Optional<ButtonType> clickedButton = confirmationDialog.showAndWait();
-							if (clickedButton.isPresent() && clickedButton.get() == ButtonType.OK) {
-								try {
-									Datenbank.deleteDauereintrag(dauereintragFX.getDauereintragId());
-									tableColumnsDauereintraege();
-								} catch (SQLException e) {
-									e.printStackTrace();
-								}
-							}
-						});
-					}
-					//Button nur anzeigen wenn Text in der Zeile gezeigt wird
-					@Override
-					public void updateItem(Void item, boolean empty) {
-						super.updateItem(item, empty);
-						if (empty) {
-							setGraphic(null);
-						} else {
-							setGraphic(hbButtons);
+		buttonsDauereintragCol.setCellFactory(column -> new TableCell<>() {
+			private final Button btnLöschen = new Button("Löschen");
+			HBox hbButtons = new HBox(10, btnLöschen);
+			{
+				//ActionEvent für Button
+				btnLöschen.setOnAction((ActionEvent event) -> {
+					DauereintragFX dauereintragFX = getTableView().getItems().get(getIndex());
+					Alert confirmationDialog = new Alert(Alert.AlertType.CONFIRMATION);
+					confirmationDialog.setTitle("Eintrag löschen");
+					confirmationDialog.setContentText("Soll der Eintrag wirklich gelöscht werden, Änderungen können nicht rückgängig gemacht werden!");
+					Optional<ButtonType> clickedButton = confirmationDialog.showAndWait();
+					if (clickedButton.isPresent() && clickedButton.get() == ButtonType.OK) {
+						try {
+							Datenbank.deleteDauereintrag(dauereintragFX.getDauereintragId());
+							tableColumnsDauereintraege();
+						} catch (SQLException e) {
+							e.printStackTrace();
 						}
 					}
-				};
-				return cell;
+				});
 			}
-		};
-		buttonCol.setCellFactory(cellFactory);
-		buttonCol.setPrefWidth(190);
-		buttonCol.setStyle("-fx-alignment: CENTER;");
-		tvDauereintraege.getColumns().add(buttonCol);
+			//Button nur anzeigen wenn Text in der Zeile gezeigt wird
+			@Override
+			public void updateItem(Node item, boolean empty) {
+				super.updateItem(item, empty);
+				if (empty) {
+					setGraphic(null);
+				} else {
+					setGraphic(hbButtons);
+				}
+			}
+		});
 	}
 			
 	//TableColumns zuordnen Dauereintraege
@@ -1176,5 +1199,4 @@ public class MainController {
 		
 	}
 }
-
 

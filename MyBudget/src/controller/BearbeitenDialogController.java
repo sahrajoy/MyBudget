@@ -96,7 +96,7 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 	@FXML TableColumn<EintragFX, Double> betragCol;
 	@FXML TableColumn<EintragFX, String> benutzerCol;
 	@FXML TableColumn<EintragFX, Intervall> intervallDauereintragCol;
-	@FXML TableColumn<EintragFX, Node> bearbeitenEintragCol;
+	@FXML TableColumn<EintragFX, Node> buttonsEintragCol;
 		
 	@FXML Tab tabBearbeitenDauereintraege;
 	
@@ -107,7 +107,7 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 	@FXML TableColumn<DauereintragFX, String> benutzerDauereintragCol;
 	@FXML TableColumn<DauereintragFX, Intervall> intervallCol;
 	@FXML TableColumn<DauereintragFX, LocalDate> endeDauereintragCol;
-	@FXML TableColumn<DauereintragFX, Node> bearbeitenDauereintragCol;
+	@FXML TableColumn<DauereintragFX, Node> buttonsDauereintragCol;
 	
 	//Methoden
 	@FXML public void initialize() {
@@ -211,6 +211,18 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 	
 	//Eintrag/Dauereintrag speichern über Button btnBearbeitenSpeichern
 	@FXML public void btnEintragSpeichern(){
+		if(txtBearbeitenTitel.getText() == null || txtBearbeitenTitel.getText().length() == 0) {
+			new Alert(AlertType.ERROR, "Titel eingeben").showAndWait();
+			return;
+		}
+		if(txtBearbeitenBetrag.getText() == null || txtBearbeitenBetrag.getText().length() == 0) {
+			new Alert(AlertType.ERROR, "Betrag eingeben").showAndWait();
+			return;
+		}
+		if(!cbBearbeitenIntervall.getSelectionModel().getSelectedItem().equals("keine") && dpBearbeitenEndeDauereintrag.getValue() == null) {
+			new Alert(AlertType.ERROR, "Datum Ende-Dauereintrag wählen").showAndWait();
+			return;
+		}
 		if(cbBearbeitenIntervall.getValue().toString().equals("keine")) {
 			try {
 				Datenbank.insertEintrag(new Eintrag(
@@ -281,15 +293,11 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 	//TableColumn mit Buttons erstellen und TableView tvBearbeitenEintraege hinzufügen 
 	EintragFX e = null;
 	private void addButtonToEintraegeTable() {
-		bearbeitenEintragCol.setCellFactory(column -> new TableCell<>() {
-			private final Button btnBearbeiten = new Button("Update");
+		buttonsEintragCol.setCellFactory(column -> new TableCell<>() {
 			private final Button btnLöschen = new Button("Löschen");
-			HBox hbButtons = new HBox(10, btnBearbeiten, btnLöschen);
+			HBox hbButtons = new HBox(10, btnLöschen);
 			{
-				//ActionEvents für Buttons//                    	
-				btnBearbeiten.setOnAction((ActionEvent event) -> {
-					titelCol.setEditable(true);
-				});
+				//ActionEvent für Button
 				btnLöschen.setOnAction((ActionEvent event) -> {
 					EintragFX eintragFX = getTableView().getItems().get(getIndex());
 					Alert confirmationDialog = new Alert(Alert.AlertType.CONFIRMATION);
@@ -367,7 +375,7 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 	
 	//TableColumn mit Buttons erstellen und TableView tvBearbeitenDauereintraege hinzufügen 
 	private void addButtonToDauereintraegeTable() {
-		bearbeitenDauereintragCol.setCellFactory(column -> new TableCell<>() {
+		buttonsDauereintragCol.setCellFactory(column -> new TableCell<>() {
 			private final Button btnLöschen = new Button("Löschen");
 			HBox hbButtons = new HBox(10, btnLöschen);
 			{
@@ -375,8 +383,8 @@ public class BearbeitenDialogController extends Dialog<ButtonType> {
 				btnLöschen.setOnAction((ActionEvent event) -> {
 					DauereintragFX dauereintragFX = getTableView().getItems().get(getIndex());
 					Alert confirmationDialog = new Alert(Alert.AlertType.CONFIRMATION);
-					confirmationDialog.setTitle("Eintrag löschen");
-					confirmationDialog.setContentText("Soll der Eintrag wirklich gelöscht werden, Änderungen können nicht rückgängig gemacht werden!");
+					confirmationDialog.setTitle("Dauereintrag löschen");
+					confirmationDialog.setContentText("Soll der Dauereintrag wirklich gelöscht werden, Änderungen können nicht rückgängig gemacht werden!");
 					Optional<ButtonType> clickedButton = confirmationDialog.showAndWait();
 					if (clickedButton.isPresent() && clickedButton.get() == ButtonType.OK) {
 						try {
