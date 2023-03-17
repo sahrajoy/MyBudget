@@ -324,59 +324,59 @@ public class Datenbank {
 		}
 		return alKategorien;
 	}
-	//Kategorien nach Datum auslesen
-	public static ArrayList<Kategorie> readKategorieNachDatum(String einnahmeOderAusgabe, LocalDate anfangDatum, LocalDate endeDatum) throws SQLException {
-		return readKategorieNachDatum(null, einnahmeOderAusgabe, anfangDatum, endeDatum);
-	}
-	public static ArrayList<Kategorie> readKategorieNachDatum(String kategorieName, String einnahmeOderAusgabe, LocalDate anfangDatum, LocalDate endeDatum) throws SQLException{  	
+	//Kategorie Summe aller Einnahmen-/Ausgaben-Einträge eines Benutzers auslesen nach Datum
+	public static double readKategorieSummeEintraegeNachDatum(String kategorieName, String einnahmeOderAusgabe, int benutzerId, LocalDate anfangZeitraum, LocalDate endeZeitraum) throws SQLException{  		
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
-		ArrayList<Kategorie> alKategorien = new ArrayList<>();
+		double summeEintraege = 0;
 		boolean isEinnahmenParameter = einnahmeOderAusgabe.equals("Einnahmen");
-		String select = "SELECT * FROM " + KATEGORIE_TABLE
-						+ " INNER JOIN " + EINTRAG_TABLE 
-						+ " ON " + 	KATEGORIE_TABLE + "." + KATEGORIE_ID + "=" + 
-									EINTRAG_TABLE + "." + EINTRAG_KATEGORIEID;
-		if(kategorieName != null)
+		String select =  "SELECT SUM(" + EINTRAG_TABLE + "." + EINTRAG_BETRAG + ") AS " + KATEGORIE_SUMMEEINTRAEGE + " FROM " + EINTRAG_TABLE 
+				+ " INNER JOIN " + KATEGORIE_TABLE 
+				+ " ON " + 	EINTRAG_TABLE + "." + EINTRAG_KATEGORIEID + "=" + 
+							KATEGORIE_TABLE + "." + KATEGORIE_ID;
+							
+		if(benutzerId != getHaushaltId()) {
+		select += " WHERE " + 	EINTRAG_BENUTZERID + "=? AND " + 
+								KATEGORIE_NAME + "=? AND " + 
+								KATEGORIE_EINNAHMEODERAUSGABE +  "=? AND " +
+								EINTRAG_DATUM + " >=? AND " + 
+								EINTRAG_DATUM + " <=?";
+		}
+		else {
 			select += " WHERE " + 	KATEGORIE_NAME + "=? AND " + 
 									KATEGORIE_EINNAHMEODERAUSGABE + "=? AND " +
 									EINTRAG_DATUM + " >=? AND " + 
 									EINTRAG_DATUM + " <=?";
-		else
-			select += " WHERE " + 	KATEGORIE_EINNAHMEODERAUSGABE + "=? AND " +
-									EINTRAG_DATUM + " >=? AND " + 
-									EINTRAG_DATUM + " <=?";
-		
+		}
+							
 		try {
 			conn = DriverManager.getConnection(CONNECTION_URL);
 			stmt = conn.prepareStatement(select);
-			if(kategorieName != null) {
-				stmt.setString(1, kategorieName);
-				stmt.setBoolean(2, isEinnahmenParameter);
-				LocalDateTime ldt1 = LocalDateTime.of(anfangDatum, LocalTime.of(0, 0, 0));
+			if(benutzerId != getHaushaltId()) {
+				stmt.setInt(1, benutzerId);
+				stmt.setString(2, kategorieName);
+				stmt.setBoolean(3, isEinnahmenParameter);
+				LocalDateTime ldt1 = LocalDateTime.of(anfangZeitraum, LocalTime.of(0, 0, 0));
 				java.sql.Date dateBeginn = new java.sql.Date(ldt1.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()); 
 				stmt.setDate(3, dateBeginn);
-				LocalDateTime ldt2 = LocalDateTime.of(endeDatum, LocalTime.of(0, 0, 0));
+				LocalDateTime ldt2 = LocalDateTime.of(endeZeitraum, LocalTime.of(0, 0, 0));
 				java.sql.Date dateEnd = new java.sql.Date(ldt2.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()); 
 				stmt.setDate(4, dateEnd);
 			}
 			else {
-				stmt.setBoolean(1, isEinnahmenParameter);
-				LocalDateTime ldt1 = LocalDateTime.of(anfangDatum, LocalTime.of(0, 0, 0));
+				stmt.setString(1, kategorieName);
+				stmt.setBoolean(2, isEinnahmenParameter);
+				LocalDateTime ldt1 = LocalDateTime.of(anfangZeitraum, LocalTime.of(0, 0, 0));
 				java.sql.Date dateBeginn = new java.sql.Date(ldt1.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()); 
-				stmt.setDate(2, dateBeginn);
-				LocalDateTime ldt2 = LocalDateTime.of(endeDatum, LocalTime.of(0, 0, 0));
+				stmt.setDate(3, dateBeginn);
+				LocalDateTime ldt2 = LocalDateTime.of(endeZeitraum, LocalTime.of(0, 0, 0));
 				java.sql.Date dateEnd = new java.sql.Date(ldt2.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()); 
-				stmt.setDate(3, dateEnd);
+				stmt.setDate(4, dateEnd);
 			}
 			rs = stmt.executeQuery();
 			while(rs.next())
-				alKategorien.add(new Kategorie(
-						rs.getInt(KATEGORIE_ID), 
-						rs.getBoolean(KATEGORIE_EINNAHMEODERAUSGABE), 
-						rs.getString(KATEGORIE_NAME), 
-						rs.getBoolean(KATEGORIE_FAVORITE)));
+				summeEintraege = rs.getDouble(KATEGORIE_SUMMEEINTRAEGE);
 			rs.close();
 		}
 		catch(SQLException e) {
@@ -393,9 +393,9 @@ public class Datenbank {
 				throw e;
 			}
 		}
-		return alKategorien;
+		return summeEintraege;
 	}
-	//Kategorie Summe aller Eintrage auslesen
+	//Kategorie Summe aller Einnahmen-/Ausgaben-Einträge eines Benutzers auslesen
 	public static double readKategorieSummeEintraege(String kategorieName, String einnahmeOderAusgabe, int benutzerId) throws SQLException{  		
 		Connection conn = null;
 		PreparedStatement stmt = null;

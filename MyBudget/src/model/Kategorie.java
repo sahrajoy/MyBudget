@@ -28,7 +28,6 @@ public class Kategorie {
 		super();
 		this.kategorieId = kategorieId;
 	}
-	public Kategorie() {}
 	
 	public int getKategorieId() {
 		return kategorieId;

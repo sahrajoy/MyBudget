@@ -24,7 +24,8 @@ public class Eintrag {
 		this.kategorie = kategorie;
 		this.intervall = intervall;
 	}
-	//Konstruktor um Eintraege über die dauereintraegeAusfuehren() Methode zu speichern
+	//Konstruktor um Eintraege über die dauereintraegeAusfuehren() Methode 
+	//und über die Eingabezeilen zu speichern
 	public Eintrag(LocalDate datum, String titel, double betrag,
 			Benutzer benutzer, Kategorie kategorie, Intervall intervall) {
 		super();
@@ -35,18 +36,7 @@ public class Eintrag {
 		this.kategorie = kategorie;
 		this.intervall = intervall;
 	}
-	//Konstruktor um Einträge über die Eingabezeilen zu speichern
-	public Eintrag(LocalDate datum, String titel, double betrag,
-			Benutzer benutzer, Kategorie kategorie) {
-		super();
-		this.datum = datum;
-		this.titel = titel;
-		this.betrag = betrag;
-		this.benutzer = benutzer;
-		this.kategorie = kategorie;
-	}
-	public Eintrag() {}
-
+	
 	public int getEintragId() {
 		return eintragId;
 	}

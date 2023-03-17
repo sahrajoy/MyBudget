@@ -5,20 +5,23 @@ public class Benutzer {
 	private int benutzerId;
 	private String name;
 	
+	//Konstruktor um aus der Datenbank auszulesen
 	public Benutzer(int benutzerId, String name) {
 		super();
 		this.benutzerId = benutzerId;
 		this.name = name;
 	}
+	//Konstruktor um in die Datenbank einzulesen und 
+	//HAUSHALT bei createTable() zu erstellen
 	public Benutzer(String name) {
 		super();
 		this.name = name;
 	}
+	//Konstruktor um aus der Datenbank Dauereintraege auszulesen
 	public Benutzer(int benutzerId) {
 		super();
 		this.benutzerId = benutzerId;
 	}
-	public Benutzer() {}
 
 	public int getBenutzerId() {
 		return benutzerId;

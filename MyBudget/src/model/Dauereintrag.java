@@ -38,7 +38,6 @@ public class Dauereintrag {
 		this.enddatum = enddatum;
 		this.deKategorie = deKategorie;
 	}
-	public Dauereintrag() {}
 	
 	public int getDauereintragId() {
 		return dauereintragId;

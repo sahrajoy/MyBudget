@@ -936,8 +936,8 @@ public class MainController {
 				btnLöschen.setOnAction((ActionEvent event) -> {
 					DauereintragFX dauereintragFX = getTableView().getItems().get(getIndex());
 					Alert confirmationDialog = new Alert(Alert.AlertType.CONFIRMATION);
-					confirmationDialog.setTitle("Eintrag löschen");
-					confirmationDialog.setContentText("Soll der Eintrag wirklich gelöscht werden, Änderungen können nicht rückgängig gemacht werden!");
+					confirmationDialog.setTitle("Dauereintrag löschen");
+					confirmationDialog.setContentText("Soll der Dauereintrag wirklich gelöscht werden, Änderungen können nicht rückgängig gemacht werden!");
 					Optional<ButtonType> clickedButton = confirmationDialog.showAndWait();
 					if (clickedButton.isPresent() && clickedButton.get() == ButtonType.OK) {
 						try {
