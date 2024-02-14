@@ -1,21 +1,6 @@
-MyBudget
-Haushaltsbuch
-
-Dokumentenentwicklung
-Version	Beschreibung	Datum
-0.1	Erste Erstellung des Dokuments 	20.01.2023
-0.1.1	Erstellung der Punkte 1 bis 3.3	24.01.2023
-0.1.2	Überarbeitung der Punkte 1 bis 3.3	27.01.2023
-0.2.	Überarbeitung der Punkte 1 bis 3.3	30.01.2023
-0.2.1	Erstellung Punkt 3.4	02.02.2023
-0.3.1	Erstellung Punkt 3.5 	05.02.2023
-0.3.2	Überarbeitung Punkt 3.5	07.02.2023
-0.3.3	Überarbeitung Punkt 3.5	08.02.2023
-0.3.4	Überarbeitung Punkt 3.5	10.02.2023
+MyBudget - Haushaltsbuch
  
-Inhaltsverzeichnis
- 
-1 Vision                                                                                                                                                                                            
+1 Vision                                                                                
 1.1 Vision und Kurzbeschreibung des Projekts
 MyBudget ist ein einfaches, aber effektives Finanzverwaltungstool, mit dem Sie Ihre Einnahmen und Ausgaben für einen ganzen Haushalt im Auge behalten können. Mit seiner benutzerfreundlichen Oberfläche können Sie Ihre Einnahmen und Ausgaben einfach eingeben und bereits vorplanen. Sie können sich Statistiken anzeigen lassen, um einen Überblick über Ihre finanzielle Situation zu erhalten. Durch die Verwendung von MyBudget behalten Sie Ihre Finanzen im Griff, um Ihre finanziellen Ziele zu erreichen.
 2 Grobe Spezifikation                                                                     
